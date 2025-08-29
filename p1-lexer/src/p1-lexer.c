@@ -12,6 +12,9 @@ lex (const char *text)
   /* compile regular expressions */
   Regex *whitespace = Regex_new ("^[ \n]");
   Regex *letter = Regex_new ("^[a-z]");
+  Regex *symbol = Regex_new("^[()\\+\\*]");
+  Regex *decimal_int = Regex_new("^(0 | [1-9][0-9]*)");
+  Regex *identifier = Regex_new("^([a-z A-Z][a-z A-Z 0-9]*)");
 
   /* read and handle input */
   /* Read through decaf and understand program*/
