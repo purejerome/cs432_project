@@ -44,6 +44,3 @@ lex (const char *text)
 
   return tokens;
 }
-
-return tokens;
-}
