@@ -12,7 +12,7 @@ lex (const char *text)
   /* compile regular expressions */
   Regex *whitespace = Regex_new ("^[ \n]");
   Regex *symbol = Regex_new("^[()\\+\\*]");
-  Regex *decimal_int = Regex_new("^(0 | [1-9][0-9]*)");
+  Regex *decimal_int = Regex_new("^(0|[1-9][0-9]*)");
   Regex *identifier = Regex_new("^([a-z A-Z][a-z A-Z 0-9]*)");
 
   /* read and handle input */
@@ -20,35 +20,34 @@ lex (const char *text)
   char match[MAX_TOKEN_LEN];
   while (*text != '\0')
     {
-
+      int line_count = 1;
       /* match regular expressions */
       if (Regex_match (whitespace, text, match))
         {
           /* ignore whitespace */
+          if(match[0] == '\n'){
+            line_count++;
+          }
         }
       else if (Regex_match (identifier, text, match))
         {
           /* TODO: implement line count and replace placeholder (-1) */
-          printf("Found identifier: %s\n", match);
-          TokenQueue_add (tokens, Token_new (ID, match, -1));
+          TokenQueue_add (tokens, Token_new (ID, match, line_count));
         }
       else if (Regex_match (symbol, text, match))
         {
           /* TODO: implement line count and replace placeholder (-1) */
-          printf("Found symbol: %s\n", match);
-          TokenQueue_add (tokens, Token_new (SYM, match, -1));
+          TokenQueue_add (tokens, Token_new (SYM, match, line_count));
         }
       else if (Regex_match (decimal_int, text, match))
         {
           /* TODO: implement line count and replace placeholder (-1) */
-          printf("Found decimal integer: %s\n", match);
-          TokenQueue_add (tokens, Token_new (DECLIT, match, -1));
+          TokenQueue_add (tokens, Token_new (DECLIT, match, line_count));
         }
       else
         {
           Error_throw_printf ("Invalid token!\n");
         }
-
       /* skip matched text to look for next token */
       text += strlen (match);
     }
