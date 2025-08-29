@@ -11,7 +11,6 @@ lex (const char *text)
 
   /* compile regular expressions */
   Regex *whitespace = Regex_new ("^[ \n]");
-  Regex *letter = Regex_new ("^[a-z]");
   Regex *symbol = Regex_new("^[()\\+\\*]");
   Regex *decimal_int = Regex_new("^(0 | [1-9][0-9]*)");
   Regex *identifier = Regex_new("^([a-z A-Z][a-z A-Z 0-9]*)");
@@ -27,7 +26,7 @@ lex (const char *text)
         {
           /* ignore whitespace */
         }
-      else if (Regex_match (letter, text, match))
+      else if (Regex_match (identifier, text, match))
         {
           /* TODO: implement line count and replace placeholder (-1) */
           TokenQueue_add (tokens, Token_new (ID, match, -1));
@@ -43,7 +42,9 @@ lex (const char *text)
 
   /* clean up */
   Regex_free (whitespace);
-  Regex_free (letter);
+  Regex_free (identifier);
+  Regex_free (symbol);
+  Regex_free (decimal_int);
 
   return tokens;
 }
