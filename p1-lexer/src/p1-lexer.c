@@ -14,7 +14,7 @@ lex (const char *text)
   Regex *letter = Regex_new ("^[a-z]");
 
   /* read and handle input */
-  // Read through decaf and understand program
+  /* Read through decaf and understand program*/
   char match[MAX_TOKEN_LEN];
   while (*text != '\0')
     {
