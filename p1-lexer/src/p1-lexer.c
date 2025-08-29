@@ -18,15 +18,15 @@ lex (const char *text)
   /* read and handle input */
   /* Read through decaf and understand program*/
   char match[MAX_TOKEN_LEN];
+  int line_count = 1;
   while (*text != '\0')
     {
-      int line_count = 1;
       /* match regular expressions */
       if (Regex_match (whitespace, text, match))
         {
           /* ignore whitespace */
           if(match[0] == '\n'){
-            line_count++;
+            line_count = line_count + 1;
           }
         }
       else if (Regex_match (identifier, text, match))
