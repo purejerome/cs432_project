@@ -29,7 +29,20 @@ lex (const char *text)
       else if (Regex_match (identifier, text, match))
         {
           /* TODO: implement line count and replace placeholder (-1) */
+          printf("Found identifier: %s\n", match);
           TokenQueue_add (tokens, Token_new (ID, match, -1));
+        }
+      else if (Regex_match (symbol, text, match))
+        {
+          /* TODO: implement line count and replace placeholder (-1) */
+          printf("Found symbol: %s\n", match);
+          TokenQueue_add (tokens, Token_new (SYM, match, -1));
+        }
+      else if (Regex_match (decimal_int, text, match))
+        {
+          /* TODO: implement line count and replace placeholder (-1) */
+          printf("Found decimal integer: %s\n", match);
+          TokenQueue_add (tokens, Token_new (DECLIT, match, -1));
         }
       else
         {
