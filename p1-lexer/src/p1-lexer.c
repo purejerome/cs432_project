@@ -10,12 +10,13 @@ lex (const char *text)
   TokenQueue *tokens = TokenQueue_new ();
 //"^(==|<=|>=|&&|\\|\\||[()\\+\\*{}\\[\\],;=\\-\\/<>!%])"
   /* compile regular expressions */
-  Regex *whitespace = Regex_new ("^[ \n]");
+  Regex *whitespace = Regex_new ("^[ \n\t\r]");
   Regex *symbol = Regex_new("^(==|<=|>=|!=|&&|\\|\\||[][(){};=,+*\\-\\/%<>!])");
   Regex *decimal_int = Regex_new("^(0|[1-9][0-9]*)");
   Regex *identifier = Regex_new("^([a-z A-Z][a-zA-Z0-9]*)");
-  Regex *string = Regex_new("^\"([^\"]*)\"");
+  Regex *string = Regex_new("^\"[^\n\r\"]*\"");
   Regex *hex_literal = Regex_new("^(0x[0-9a-fA-F]+)");
+  Regex *key_words = Regex_new("^(if|else|while|return|int|def|true|false)");
 
   /* read and handle input */
   /* Read through decaf and understand program*/
@@ -33,8 +34,13 @@ lex (const char *text)
         }
       else if (Regex_match (identifier, text, match))
         {
-          /* TODO: implement line count and replace placeholder (-1) */
-          TokenQueue_add (tokens, Token_new (ID, match, line_count));
+          char keyword_match[MAX_TOKEN_LEN];
+          if(Regex_match (key_words, text, keyword_match)){
+            TokenQueue_add (tokens, Token_new (KEY, keyword_match, line_count));
+          }
+          else{
+            TokenQueue_add (tokens, Token_new (ID, match, line_count));
+          }   
         }
       else if (Regex_match (symbol, text, match))
         {
@@ -53,6 +59,7 @@ lex (const char *text)
         }
       else
         {
+          printf("error: %s\n", text);
           Error_throw_printf ("Invalid token!\n");
         }
       /* skip matched text to look for next token */
