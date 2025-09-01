@@ -11,12 +11,15 @@ lex (const char *text)
 //"^(==|<=|>=|&&|\\|\\||[()\\+\\*{}\\[\\],;=\\-\\/<>!%])"
   /* compile regular expressions */
   Regex *whitespace = Regex_new ("^[ \n\t\r]");
-  Regex *symbol = Regex_new("^(==|<=|>=|!=|&&|\\|\\||[][(){};=,+*\\-\\/%<>!])");
+  Regex *symbol = Regex_new("^[][(){};=,+*\\-\\/%<>!]");
+  Regex *double_symbol = Regex_new("^(==|<=|>=|!=|&&|\\|\\|)");
   Regex *decimal_int = Regex_new("^(0|[1-9][0-9]*)");
   Regex *identifier = Regex_new("^([a-z A-Z][a-zA-Z0-9]*)");
   Regex *string = Regex_new("^\"[^\n\r\"]*\"");
   Regex *hex_literal = Regex_new("^(0x[0-9a-fA-F]+)");
   Regex *key_words = Regex_new("^(if|else|while|return|int|def|true|false)");
+  // add regex to ignore comments, and find out why unit tests arent passing.
+  // add check for ids to make sure they arent other keywords
 
   /* read and handle input */
   /* Read through decaf and understand program*/
@@ -42,7 +45,7 @@ lex (const char *text)
             TokenQueue_add (tokens, Token_new (ID, match, line_count));
           }   
         }
-      else if (Regex_match (symbol, text, match))
+      else if (Regex_match (double_symbol, text, match) || Regex_match (symbol, text, match))
         {
           /* TODO: implement line count and replace placeholder (-1) */
           TokenQueue_add (tokens, Token_new (SYM, match, line_count));
@@ -71,6 +74,10 @@ lex (const char *text)
   Regex_free (identifier);
   Regex_free (symbol);
   Regex_free (decimal_int);
+  Regex_free (string);
+  Regex_free (hex_literal);
+  Regex_free (key_words);
+  Regex_free (double_symbol);
 
   return tokens;
 }
