@@ -8,16 +8,17 @@ TokenQueue *
 lex (const char *text)
 {
   TokenQueue *tokens = TokenQueue_new ();
-//"^(==|<=|>=|&&|\\|\\||[()\\+\\*{}\\[\\],;=\\-\\/<>!%])"
   /* compile regular expressions */
   Regex *whitespace = Regex_new ("^[ \n\t\r]");
-  Regex *symbol = Regex_new("^[][(){};=,+*\\-\\/%<>!]");
+  Regex *comment = Regex_new ("^//[^\n\r]*");
+  Regex *symbol = Regex_new("^[][(){};=,+*-/%<>!]");
   Regex *double_symbol = Regex_new("^(==|<=|>=|!=|&&|\\|\\|)");
   Regex *decimal_int = Regex_new("^(0|[1-9][0-9]*)");
   Regex *identifier = Regex_new("^([a-z A-Z][a-zA-Z0-9]*)");
   Regex *string = Regex_new("^\"[^\n\r\"]*\"");
   Regex *hex_literal = Regex_new("^(0x[0-9a-fA-F]+)");
-  Regex *key_words = Regex_new("^(if|else|while|return|int|def|true|false)");
+  Regex *key_words = Regex_new("^\\b(if|else|while|return|int|def|true|false)\\b");
+  Regex *invalid_words = Regex_new("^\\b(for|callout|class|interface|extends|implements|new|this|string|float|double|null)\\b");
   // add regex to ignore comments, and find out why unit tests arent passing.
   // add check for ids to make sure they arent other keywords
 
@@ -25,10 +26,14 @@ lex (const char *text)
   /* Read through decaf and understand program*/
   char match[MAX_TOKEN_LEN];
   int line_count = 1;
+  if(text == NULL) {
+    Error_throw_printf ("Invalid text\n");
+    return tokens;
+  }
   while (*text != '\0')
     {
       /* match regular expressions */
-      if (Regex_match (whitespace, text, match))
+      if (Regex_match (whitespace, text, match) || Regex_match (comment, text, match))
         {
           /* ignore whitespace */
           if(match[0] == '\n'){
@@ -42,7 +47,12 @@ lex (const char *text)
             TokenQueue_add (tokens, Token_new (KEY, keyword_match, line_count));
           }
           else{
-            TokenQueue_add (tokens, Token_new (ID, match, line_count));
+            char invalid_match[MAX_TOKEN_LEN];
+            if (Regex_match(invalid_words, text, invalid_match)) {
+              Error_throw_printf ("Invalid token!\n");
+            } else {
+              TokenQueue_add (tokens, Token_new (ID, match, line_count));
+            }
           }   
         }
       else if (Regex_match (double_symbol, text, match) || Regex_match (symbol, text, match))
@@ -63,11 +73,13 @@ lex (const char *text)
       else
         {
           printf("error: %s\n", text);
+          TokenQueue_free (tokens);
           Error_throw_printf ("Invalid token!\n");
         }
       /* skip matched text to look for next token */
       text += strlen (match);
     }
+
 
   /* clean up */
   Regex_free (whitespace);
@@ -78,6 +90,8 @@ lex (const char *text)
   Regex_free (hex_literal);
   Regex_free (key_words);
   Regex_free (double_symbol);
+  Regex_free (invalid_words);
+  Regex_free (comment);
 
   return tokens;
 }
