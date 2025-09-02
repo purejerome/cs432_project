@@ -36,7 +36,7 @@ lex (const char *text)
       if (Regex_match (whitespace, text, match) || Regex_match (comment, text, match))
         {
           /* ignore whitespace */
-          if(match[0] == '\n'){
+          if(strncmp(match, "\n", MAX_TOKEN_LEN) == 0){
             line_count = line_count + 1;
           }
         }
