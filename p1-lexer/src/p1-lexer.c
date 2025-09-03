@@ -72,8 +72,6 @@ lex (const char *text)
         }
       else
         {
-          printf("error: %s\n", text);
-          TokenQueue_free (tokens);
           Error_throw_printf ("Invalid token!\n");
         }
       /* skip matched text to look for next token */
