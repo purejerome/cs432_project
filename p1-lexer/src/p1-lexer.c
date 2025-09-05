@@ -11,7 +11,7 @@ lex (const char *text)
   TokenQueue *tokens = TokenQueue_new ();
   /* compile regular expressions */
   Regex *whitespace = Regex_new ("^[ \n\t\r]");
-  Regex *comment = Regex_new ("^//[^\n\r]*\n");
+  Regex *comment = Regex_new ("^//[^\n\r]*");
   Regex *symbol = Regex_new("^[][(){};=,+*-/%<>!]");
   Regex *double_symbol = Regex_new("^(==|<=|>=|!=|&&|\\|\\|)");
   Regex *decimal_int = Regex_new("^(0|[1-9][0-9]*)");
