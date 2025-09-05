@@ -28,7 +28,7 @@ lex (const char *text)
   char match[MAX_TOKEN_LEN];
   int line_count = 1;
   if(text == NULL) {
-    Error_throw_printf ("Invalid text\n");
+    Error_throw_printf ("Invalid text!\n");
     return tokens;
   }
   while (*text != '\0')
@@ -50,7 +50,7 @@ lex (const char *text)
           else{
             char invalid_match[MAX_TOKEN_LEN];
             if (Regex_match(invalid_words, text, invalid_match)) {
-              Error_throw_printf ("Invalid token!\n");
+              Error_throw_printf ("Invalid identifier name!\n");
             } else {
               TokenQueue_add (tokens, Token_new (ID, match, line_count));
             }
