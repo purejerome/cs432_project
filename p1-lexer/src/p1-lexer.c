@@ -2,7 +2,7 @@
  * @file p1-lexer.c
  * @brief Compiler phase 1: lexer
  */
-// Use of Copilot to assist in regex creation.
+// Use of Copilot to assist in regex creation and ChatGPT create tests.
 #include "p1-lexer.h"
 
 TokenQueue *
@@ -13,7 +13,7 @@ lex (const char *text)
   Regex *whitespace = Regex_new ("^[ \n\t\r]");
   Regex *comment = Regex_new ("^//[^\n\r]*");
   Regex *symbol = Regex_new ("^[][(){};=,+*-/%<>!]");
-  Regex *double_symbol = Regex_new ("^(==|<=|>=|!=|&&|\\|\\|)");
+  Regex *double_symbol = Regex_new ("^(==|<=\\(?!=\\)|>=\\(?!=\\)|!=\\(?!=\\)|&&|\\|\\|)");
   Regex *decimal_int = Regex_new ("^(0|[1-9][0-9]*)");
   Regex *identifier = Regex_new ("^([a-z A-Z][a-zA-Z0-9_]*)");
   Regex *string
@@ -24,9 +24,6 @@ lex (const char *text)
   Regex *invalid_words
       = Regex_new ("^\\b(for|callout|class|interface|extends|implements|new|"
                    "this|string|float|double|null)\\b");
-
-  // add regex to ignore comments, and find out why unit tests arent passing.
-  // add check for ids to make sure they arent other keywords
 
   /* read and handle input */
   /* Read through decaf and understand program*/
@@ -75,7 +72,6 @@ lex (const char *text)
       else if (Regex_match (double_symbol, text, match)
                || Regex_match (symbol, text, match))
         {
-          /* TODO: implement line count and replace placeholder (-1) */
           TokenQueue_add (tokens, Token_new (SYM, match, line_count));
         }
       else if (Regex_match (hex_literal, text, match)
@@ -87,7 +83,6 @@ lex (const char *text)
         }
       else if (Regex_match (string, text, match))
         {
-          /* TODO: implement line count and replace placeholder (-1) */
           TokenQueue_add (tokens, Token_new (STRLIT, match, line_count));
         }
       else
