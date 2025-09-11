@@ -33,7 +33,7 @@ lex (const char *text)
   int text_length = -1;
   if (text == NULL)
     {
-      Error_throw_printf ("lexer received NULL input string");
+      Error_throw_printf ("Lexer received NULL input string");
     }
   const char *set_text = text;
   text_length = strlen (text);
