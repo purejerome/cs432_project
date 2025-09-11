@@ -13,7 +13,7 @@ lex (const char *text)
   Regex *whitespace = Regex_new ("^[ \n\t\r]");
   Regex *comment = Regex_new ("^//[^\n\r]*");
   Regex *symbol = Regex_new ("^[][(){};=,+*-/%<>!]");
-  Regex *double_symbol = Regex_new ("^(==|<=\\(?!=\\)|>=\\(?!=\\)|!=\\(?!=\\)|&&|\\|\\|)");
+  Regex *double_symbol = Regex_new ("^(==|<=|>=|!=|&&|\\|\\|)");
   Regex *decimal_int = Regex_new ("^(0|[1-9][0-9]*)");
   Regex *identifier = Regex_new ("^([a-z A-Z][a-zA-Z0-9_]*)");
   Regex *string
@@ -29,10 +29,14 @@ lex (const char *text)
   /* Read through decaf and understand program*/
   char match[MAX_TOKEN_LEN];
   int line_count = 1;
+  int position = 0;
+  int text_length = -1;
   if (text == NULL)
     {
       Error_throw_printf ("lexer received NULL input string");
     }
+  const char *set_text = text;
+  text_length = strlen (text);
 
   while (*text != '\0')
     {
@@ -72,7 +76,19 @@ lex (const char *text)
       else if (Regex_match (double_symbol, text, match)
                || Regex_match (symbol, text, match))
         {
-          TokenQueue_add (tokens, Token_new (SYM, match, line_count));
+          if(position < text_length - 2 &&(strncmp(match, ">=", MAX_TOKEN_LEN) == 0 || strncmp(match, "<=", MAX_TOKEN_LEN) == 0 || strncmp(match, "!=", MAX_TOKEN_LEN) == 0 )){
+            if(set_text[position + 2] == '='){
+              char double_equals[3] = "==";
+              char first_char[2] = {match[0], '\0'};
+              strcat(match, "=");
+              TokenQueue_add (tokens, Token_new (SYM, first_char, line_count));
+              TokenQueue_add (tokens, Token_new (SYM, double_equals, line_count));
+            } else {
+              TokenQueue_add (tokens, Token_new (SYM, match, line_count));
+            }
+          } else {
+            TokenQueue_add (tokens, Token_new (SYM, match, line_count));
+          }
         }
       else if (Regex_match (hex_literal, text, match)
                || Regex_match (decimal_int, text, match))
@@ -91,6 +107,7 @@ lex (const char *text)
         }
       /* skip matched text to look for next token */
       text += strlen (match);
+      position += strlen (match);
     }
 
   /* clean up */
