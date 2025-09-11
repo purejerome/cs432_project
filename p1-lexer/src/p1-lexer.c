@@ -64,8 +64,8 @@ lex (const char *text)
               if (Regex_match (invalid_words, text, invalid_match))
                 {
                   Error_throw_printf (
-                      "reserved word used as identifier on line %d: %s\n",
-                      line_count, invalid_match);
+                      "Reserved word: \"%s\"\n",
+                      invalid_match);
                 }
               else
                 {
@@ -103,7 +103,16 @@ lex (const char *text)
         }
       else
         {
-          Error_throw_printf ("Invalid token!\n");
+          int error_text_length = strlen(text);
+          char invalid_match[error_text_length + 1];
+          for(int i = 0; i < error_text_length; i++) {
+            if(text[i] == '\n'){
+              invalid_match[i] = '\0';
+              break;
+            }
+            invalid_match[i] = text[i];
+          }
+          Error_throw_printf ("Invalid token on line %d: \"%s\"\n", line_count, invalid_match);
         }
       /* skip matched text to look for next token */
       text += strlen (match);
