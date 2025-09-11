@@ -5,7 +5,7 @@
 // Use of Copilot to assist in regex creation, and some clean up help and ChatGPT create tests.
 #include "p1-lexer.h"
 
-void cleanup_and_exit(Regex *invalid_regexes[], int size) {
+void cleanup_and_exit(Regex *invalid_regexes[], size_t size) {
       for (int i = 0; i < size; i++) {
           Regex_free(invalid_regexes[i]);
       }
