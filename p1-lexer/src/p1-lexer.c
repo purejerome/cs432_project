@@ -2,8 +2,14 @@
  * @file p1-lexer.c
  * @brief Compiler phase 1: lexer
  */
-// Use of Copilot to assist in regex creation and ChatGPT create tests.
+// Use of Copilot to assist in regex creation, and some clean up help and ChatGPT create tests.
 #include "p1-lexer.h"
+
+void cleanup_and_exit(Regex *invalid_regexes[], int size) {
+      for (int i = 0; i < size; i++) {
+          Regex_free(invalid_regexes[i]);
+      }
+}
 
 TokenQueue *
 lex (const char *text)
@@ -25,6 +31,9 @@ lex (const char *text)
       = Regex_new ("^\\b(for|callout|class|interface|extends|implements|new|"
                    "this|string|float|double|null)\\b");
 
+  Regex *invalid_regexes[] = {whitespace, comment, symbol, double_symbol, decimal_int, identifier, string, hex_literal, key_words, invalid_words};
+  size_t regex_array_len = sizeof(invalid_regexes) / sizeof(invalid_regexes[0]);
+
   /* read and handle input */
   /* Read through decaf and understand program*/
   char match[MAX_TOKEN_LEN];
@@ -33,6 +42,7 @@ lex (const char *text)
   int text_length = -1;
   if (text == NULL)
     {
+      cleanup_and_exit(invalid_regexes, regex_array_len);
       Error_throw_printf ("Lexer received NULL input string");
     }
   const char *set_text = text;
@@ -63,6 +73,7 @@ lex (const char *text)
               char invalid_match[MAX_TOKEN_LEN];
               if (Regex_match (invalid_words, text, invalid_match))
                 {
+                  cleanup_and_exit(invalid_regexes, regex_array_len);
                   Error_throw_printf (
                       "Reserved word: \"%s\"\n",
                       invalid_match);
@@ -112,6 +123,7 @@ lex (const char *text)
             }
             invalid_match[i] = text[i];
           }
+          cleanup_and_exit(invalid_regexes, regex_array_len);
           Error_throw_printf ("Invalid token on line %d: \"%s\"\n", line_count, invalid_match);
         }
       /* skip matched text to look for next token */
@@ -120,16 +132,7 @@ lex (const char *text)
     }
 
   /* clean up */
-  Regex_free (whitespace);
-  Regex_free (identifier);
-  Regex_free (symbol);
-  Regex_free (decimal_int);
-  Regex_free (string);
-  Regex_free (hex_literal);
-  Regex_free (key_words);
-  Regex_free (double_symbol);
-  Regex_free (invalid_words);
-  Regex_free (comment);
+  cleanup_and_exit(invalid_regexes, regex_array_len);
 
   return tokens;
 }
