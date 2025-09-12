@@ -15,6 +15,10 @@ void cleanup_and_exit(Regex *invalid_regexes[], size_t size) {
 TokenQueue *
 lex (const char *text)
 {
+  if (text == NULL)
+    {
+      Error_throw_printf ("Lexer received NULL input string");
+    }
   TokenQueue *tokens = TokenQueue_new ();
   /* compile regular expressions */
   Regex *whitespace = Regex_new ("^[ \n\t\r]");
@@ -39,11 +43,6 @@ lex (const char *text)
   /* Read through decaf and understand program*/
   char match[MAX_TOKEN_LEN];
   int line_count = 1;
-  if (text == NULL)
-    {
-      cleanup_and_exit(invalid_regexes, regex_array_len);
-      Error_throw_printf ("Lexer received NULL input string");
-    }
 
   while (*text != '\0')
     {
