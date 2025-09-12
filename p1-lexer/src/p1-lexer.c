@@ -2,7 +2,8 @@
  * @file p1-lexer.c
  * @brief Compiler phase 1: lexer
  */
-// Use of Copilot to assist in regex creation, and some clean up help and ChatGPT create tests.
+/* Use of Copilot to assist in regex creation and code autocomplete, 
+and some clean up help and ChatGPT create tests. */
 #include "p1-lexer.h"
 
 void cleanup_and_exit(Regex *invalid_regexes[], size_t size) {
@@ -58,6 +59,7 @@ lex (const char *text)
         }
       else if (Regex_match (identifier, text, match))
         {
+          /* check if identifier is a keyword */
           char keyword_match[MAX_TOKEN_LEN];
           if (Regex_match (key_words, text, keyword_match))
             {
@@ -66,6 +68,7 @@ lex (const char *text)
             }
           else
             {
+              /* check if identifier is an illegal word */
               char invalid_match[MAX_TOKEN_LEN];
               if (Regex_match (invalid_words, text, invalid_match))
                 {
@@ -81,12 +84,12 @@ lex (const char *text)
             }
         }
       else if (Regex_match (double_symbol, text, match)
-               || Regex_match (symbol, text, match))
+               || Regex_match (symbol, text, match)) /* first checks for double symbols, then single symbols */
         {
           TokenQueue_add (tokens, Token_new (SYM, match, line_count));
         }
       else if (Regex_match (hex_literal, text, match)
-               || Regex_match (decimal_int, text, match))
+               || Regex_match (decimal_int, text, match)) /* first checks for hex literals, then decimal integers */
         {
           bool hex_match = Regex_match (hex_literal, text, match);
           TokenQueue_add (tokens, Token_new (hex_match ? HEXLIT : DECLIT,
@@ -98,10 +101,12 @@ lex (const char *text)
         }
       else
         {
+          /* prints error line */
+          /* prints where the lexer last left of, and ends at the end of the line. */
           int error_text_length = strlen(text);
           char invalid_match[error_text_length + 1];
           for(int i = 0; i < error_text_length; i++) {
-            if(text[i] == '\n'){
+            if(text[i] == '\n' || text[i] == '\r' || text[i] == '\t' || text[i] == ' ') {
               invalid_match[i] = '\0';
               break;
             }
