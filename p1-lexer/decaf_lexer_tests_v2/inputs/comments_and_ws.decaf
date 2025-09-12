@@ -1,0 +1,7 @@
+// leading comment
+def   int    main ( )   {   // inline comment
+	int		b ;     // tabs and extra spaces
+// full-line comment
+b=0+1;    // another comment
+return  b ; // trailing
+}

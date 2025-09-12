@@ -1,0 +1,4 @@
+\
+def int main() {
+  return "line1\nline2\tquote:\" backslash:\\"";
+}

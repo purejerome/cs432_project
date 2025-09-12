@@ -1,0 +1,5 @@
+def int main() {
+  int x;
+  x = 0x0 + 0x1A2b + 42;
+  return "hello";
+}

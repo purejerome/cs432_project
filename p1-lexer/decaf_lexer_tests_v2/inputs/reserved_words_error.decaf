@@ -1,0 +1,3 @@
+def int main() {
+  int class;  // reserved in Decaf
+}
