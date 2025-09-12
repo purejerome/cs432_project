@@ -48,10 +48,12 @@ lex (const char *text)
   while (*text != '\0')
     {
       /* match regular expressions */
+      
+      /* ignore whitespace or comments */
       if (Regex_match (whitespace, text, match)
           || Regex_match (comment, text, match))
         {
-          /* ignore whitespace */
+          /* increase line count */
           if (strncmp (match, "\n", MAX_TOKEN_LEN) == 0)
             {
               line_count = line_count + 1;
@@ -95,14 +97,14 @@ lex (const char *text)
           TokenQueue_add (tokens, Token_new (hex_match ? HEXLIT : DECLIT,
                                              match, line_count));
         }
-      else if (Regex_match (string, text, match))
+      else if (Regex_match (string, text, match)) /* matches strings */
         {
           TokenQueue_add (tokens, Token_new (STRLIT, match, line_count));
         }
       else
         {
           /* prints error line */
-          /* prints where the lexer last left of, and ends at the end of the line. */
+          /* prints where the lexer last left of, and ends at the end of the line */
           int error_text_length = strlen(text);
           char invalid_match[error_text_length + 1];
           for(int i = 0; i < error_text_length; i++) {
