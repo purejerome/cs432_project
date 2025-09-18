@@ -26,12 +26,12 @@ lex (const char *text)
   Regex *symbol = Regex_new ("^[][(){};=,+*-/%<>!]");
   Regex *double_symbol = Regex_new ("^(==|<=|>=|!=|&&|\\|\\|)");
   Regex *decimal_int = Regex_new ("^(0|[1-9][0-9]*)");
-  Regex *identifier = Regex_new ("^([a-z A-Z][a-zA-Z0-9_]*)");
+  Regex *identifier = Regex_new ("^([a-zA-Z][a-zA-Z0-9_]*)");
   Regex *string
       = Regex_new ("^\"([^\n\r\"\\\\]|(\\\\\\\\)|\\\\\"|\\\\n|\\\\t)*\"");
   Regex *hex_literal = Regex_new ("^(0x[0-9a-fA-F]+)");
   Regex *key_words
-      = Regex_new ("^\\b(if|else|while|return|int|def|true|false)\\b");
+      = Regex_new ("^\\b(if|else|while|return|int|def|true|false|void)\\b");
   Regex *invalid_words
       = Regex_new ("^\\b(for|callout|class|interface|extends|implements|new|"
                    "this|string|float|double|null)\\b");
