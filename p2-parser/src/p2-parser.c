@@ -6,6 +6,8 @@
 #include "p2-parser.h"
 
 ASTNode* parse_vardecl(TokenQueue* input);
+ASTNode* parse_var_or_func(TokenQueue* input);
+ASTNode* parse_funcdecl(TokenQueue* input);
 DecafType parse_type (TokenQueue* input);
 void parse_id (TokenQueue* input, char* buffer);
 
@@ -98,6 +100,21 @@ bool check_next_token (TokenQueue* input, TokenType type, const char* text)
     return (token->type == type) && (token_str_eq(token->text, text));
 }
 
+ASTNode* parse_var_or_func(TokenQueue* input)
+{
+    if (TokenQueue_is_empty(input)) {
+        Error_throw_printf("Unexpected end of input (expected variable declaration)\n");
+    }
+    
+    bool is_func_decl = check_next_token(input, KEY, "def");
+
+    if (is_func_decl) {
+        return parse_vardecl(input);
+    } else {
+        return parse_vardecl(input);
+    }
+}
+
 ASTNode* parse_vardecl (TokenQueue* input)
 {
     if (TokenQueue_is_empty(input)) {
@@ -170,13 +187,12 @@ ASTNode* parse_program (TokenQueue* input)
     NodeList* vars = NodeList_new();
     NodeList* funcs = NodeList_new();
     while(!TokenQueue_is_empty(input)){
-        ASTNode* node = parse_vardecl(input);
-        NodeList_add(vars, node);
-        // if(node->type == VARDECL){
-        //     NodeList_add(vars, node);
-        // } else {
-        //     NodeList_add(funcs, node);
-        // }  
+        ASTNode* node = parse_var_or_func(input);
+        if (node->type == VARDECL) {
+            NodeList_add(vars, node);
+        } else {
+            NodeList_add(funcs, node);
+        }
     }
 
     return ProgramNode_new(vars, funcs);
