@@ -104,13 +104,12 @@ ASTNode* parse_vardecl (TokenQueue* input)
         Error_throw_printf("Unexpected end of input (expected variable declaration)\n");
     }
     
+    int token_line = get_next_token_line(input);
     DecafType type = parse_type(input);
-    printf("parse ttype: %s\n", DecafType_to_string(type));
     char id[MAX_TOKEN_LEN];
     parse_id(input, id);
     match_and_discard_next_token(input, SYM, ";");
-    printf("parse id: %s\n", id);
-    return VarDeclNode_new(id, type, false, 1, get_next_token_line(input));
+    return VarDeclNode_new(id, type, false, 1, token_line);
 }
 
 /**

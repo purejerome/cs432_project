@@ -1,41 +1,41 @@
-==3937277== Memcheck, a memory error detector
-==3937277== Copyright (C) 2002-2022, and GNU GPL'd, by Julian Seward et al.
-==3937277== Using Valgrind-3.22.0 and LibVEX; rerun with -h for copyright info
-==3937277== Command: ../decaf inputs/add.decaf
-==3937277== 
+==4007993== Memcheck, a memory error detector
+==4007993== Copyright (C) 2002-2022, and GNU GPL'd, by Julian Seward et al.
+==4007993== Using Valgrind-3.22.0 and LibVEX; rerun with -h for copyright info
+==4007993== Command: ../decaf inputs/add.decaf
+==4007993== 
 Invalid type 'def' on line 1
 Starting parse...
-==3937277== 
-==3937277== HEAP SUMMARY:
-==3937277==     in use at exit: 320 bytes in 3 blocks
-==3937277==   total heap usage: 1,727 allocs, 1,724 frees, 191,216 bytes allocated
-==3937277== 
-==3937277== 24 bytes in 1 blocks are definitely lost in loss record 1 of 3
-==3937277==    at 0x484D953: calloc (in /usr/libexec/valgrind/vgpreload_memcheck-amd64-linux.so)
-==3937277==    by 0x10C646: NodeList_new (ast.c:44)
-==3937277==    by 0x109912: parse_program (p2-parser.c:171)
-==3937277==    by 0x109997: parse (p2-parser.c:189)
-==3937277==    by 0x10DFE8: main (main.c:98)
-==3937277== 
-==3937277== 24 bytes in 1 blocks are definitely lost in loss record 2 of 3
-==3937277==    at 0x484D953: calloc (in /usr/libexec/valgrind/vgpreload_memcheck-amd64-linux.so)
-==3937277==    by 0x10C646: NodeList_new (ast.c:44)
-==3937277==    by 0x10991B: parse_program (p2-parser.c:172)
-==3937277==    by 0x109997: parse (p2-parser.c:189)
-==3937277==    by 0x10DFE8: main (main.c:98)
-==3937277== 
-==3937277== 272 bytes in 1 blocks are definitely lost in loss record 3 of 3
-==3937277==    at 0x484D953: calloc (in /usr/libexec/valgrind/vgpreload_memcheck-amd64-linux.so)
-==3937277==    by 0x10DA61: Token_new (token.c:56)
-==3937277==    by 0x10E41F: lex (p1-lexer.c:78)
-==3937277==    by 0x10DFD2: main (main.c:95)
-==3937277== 
-==3937277== LEAK SUMMARY:
-==3937277==    definitely lost: 320 bytes in 3 blocks
-==3937277==    indirectly lost: 0 bytes in 0 blocks
-==3937277==      possibly lost: 0 bytes in 0 blocks
-==3937277==    still reachable: 0 bytes in 0 blocks
-==3937277==         suppressed: 0 bytes in 0 blocks
-==3937277== 
-==3937277== For lists of detected and suppressed errors, rerun with: -s
-==3937277== ERROR SUMMARY: 3 errors from 3 contexts (suppressed: 0 from 0)
+==4007993== 
+==4007993== HEAP SUMMARY:
+==4007993==     in use at exit: 320 bytes in 3 blocks
+==4007993==   total heap usage: 1,727 allocs, 1,724 frees, 191,216 bytes allocated
+==4007993== 
+==4007993== 24 bytes in 1 blocks are definitely lost in loss record 1 of 3
+==4007993==    at 0x484D953: calloc (in /usr/libexec/valgrind/vgpreload_memcheck-amd64-linux.so)
+==4007993==    by 0x10C650: NodeList_new (ast.c:44)
+==4007993==    by 0x10991C: parse_program (p2-parser.c:170)
+==4007993==    by 0x1099A1: parse (p2-parser.c:188)
+==4007993==    by 0x10DFF2: main (main.c:98)
+==4007993== 
+==4007993== 24 bytes in 1 blocks are definitely lost in loss record 2 of 3
+==4007993==    at 0x484D953: calloc (in /usr/libexec/valgrind/vgpreload_memcheck-amd64-linux.so)
+==4007993==    by 0x10C650: NodeList_new (ast.c:44)
+==4007993==    by 0x109925: parse_program (p2-parser.c:171)
+==4007993==    by 0x1099A1: parse (p2-parser.c:188)
+==4007993==    by 0x10DFF2: main (main.c:98)
+==4007993== 
+==4007993== 272 bytes in 1 blocks are definitely lost in loss record 3 of 3
+==4007993==    at 0x484D953: calloc (in /usr/libexec/valgrind/vgpreload_memcheck-amd64-linux.so)
+==4007993==    by 0x10DA6B: Token_new (token.c:56)
+==4007993==    by 0x10E429: lex (p1-lexer.c:78)
+==4007993==    by 0x10DFDC: main (main.c:95)
+==4007993== 
+==4007993== LEAK SUMMARY:
+==4007993==    definitely lost: 320 bytes in 3 blocks
+==4007993==    indirectly lost: 0 bytes in 0 blocks
+==4007993==      possibly lost: 0 bytes in 0 blocks
+==4007993==    still reachable: 0 bytes in 0 blocks
+==4007993==         suppressed: 0 bytes in 0 blocks
+==4007993== 
+==4007993== For lists of detected and suppressed errors, rerun with: -s
+==4007993== ERROR SUMMARY: 3 errors from 3 contexts (suppressed: 0 from 0)
