@@ -105,11 +105,11 @@ ASTNode* parse_vardecl (TokenQueue* input)
     }
     
     DecafType type = parse_type(input);
-    //printf("parse ttype: %s\n", DecafType_to_string(type));
+    printf("parse ttype: %s\n", DecafType_to_string(type));
     char id[MAX_TOKEN_LEN];
     parse_id(input, id);
     match_and_discard_next_token(input, SYM, ";");
-    //printf("parse id: %s\n", id);
+    printf("parse id: %s\n", id);
     return VarDeclNode_new(id, type, false, 1, get_next_token_line(input));
 }
 
@@ -185,6 +185,6 @@ ASTNode* parse_program (TokenQueue* input)
 
 ASTNode* parse (TokenQueue* input)
 {
-
+    printf("Starting parse...\n");
     return parse_program(input);
 }
