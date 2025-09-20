@@ -10,6 +10,7 @@ ASTNode* parse_var_or_func (TokenQueue* input);
 ASTNode* parse_funcdecl (TokenQueue* input);
 ASTNode* parse_block (TokenQueue* input);
 ASTNode* parse_statement (TokenQueue* input);
+ASTNode* parse_literal (TokenQueue* input);
 ParameterList* parse_params (TokenQueue* input);
 DecafType parse_type (TokenQueue* input);
 void parse_id (TokenQueue* input, char* buffer);
@@ -103,6 +104,41 @@ bool check_next_token (TokenQueue* input, TokenType type, const char* text)
     return (token->type == type) && (token_str_eq(token->text, text));
 }
 
+ASTNode* parse_literal (TokenQueue* input)
+{
+   if (TokenQueue_is_empty(input)) {
+        Error_throw_printf("Unexpected end of input (expected literal)\n");
+    } 
+    int source_line = get_next_token_line(input);
+    if(check_next_token_type(input, DECLIT)) {
+        Token* int_token = TokenQueue_remove(input);
+        int value = strtol(int_token->text, NULL, 10);
+        Token_free(int_token);
+        return LiteralNode_new_int(value, source_line);
+    } else if(check_next_token_type(input, HEXLIT)) {
+        Token* hex_token = TokenQueue_remove(input);
+        int value = strtol(hex_token->text, NULL, 16);
+        printf("Hex value: %d\n", value);
+        Token_free(hex_token);
+        return LiteralNode_new_int(value, source_line);
+    } else if (check_next_token_type(input, STRLIT)) {
+        Token* str_token = TokenQueue_remove(input);
+        char string_value[MAX_LINE_LEN];
+        strncpy(string_value, str_token->text, MAX_LINE_LEN);
+        Token_free(str_token);
+        return LiteralNode_new_string(string_value, source_line);
+    } else if(check_next_token(input, KEY, "true")) {
+        discard_next_token(input);
+        return LiteralNode_new_bool(true, source_line);
+    } else if(check_next_token(input, KEY, "false")) {
+        discard_next_token(input);
+        return LiteralNode_new_bool(false, source_line);
+    }
+    
+    Error_throw_printf("Error in literal layer.\n");
+    return NULL;
+}
+
 ASTNode* parse_statement (TokenQueue* input)
 {
     if (TokenQueue_is_empty(input)) {
@@ -130,11 +166,9 @@ ASTNode* parse_statement (TokenQueue* input)
             discard_next_token(input);
             match_and_discard_next_token(input, SYM, ";");
             return ContinueNode_new(source_line);
-        } else {
-            Error_throw_printf("Error in statement layer.");
         }
     }
-    Error_throw_printf("Error in statement layer.");
+    Error_throw_printf("Error in statement layer.\n");
     return NULL;
 }
 
@@ -300,14 +334,16 @@ ASTNode* parse_program (TokenQueue* input)
 {
     NodeList* vars = NodeList_new();
     NodeList* funcs = NodeList_new();
-    while(!TokenQueue_is_empty(input)){
-        ASTNode* node = parse_var_or_func(input);
-        if (node->type == VARDECL) {
-            NodeList_add(vars, node);
-        } else {
-            NodeList_add(funcs, node);
-        }
-    }
+    ASTNode* node = parse_literal(input);
+    NodeList_add(vars, node);
+    // while(!TokenQueue_is_empty(input)){
+    //     ASTNode* node = parse_var_or_func(input);
+    //     if (node->type == VARDECL) {
+    //         NodeList_add(vars, node);
+    //     } else {
+    //         NodeList_add(funcs, node);
+    //     }
+    // }
     printf("Finished parsing program.\n");
     printf("There are %d global variables and %d functions.\n", NodeList_size(vars), NodeList_size(funcs));
     return ProgramNode_new(vars, funcs);
