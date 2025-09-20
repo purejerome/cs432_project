@@ -10,6 +10,7 @@ ASTNode* parse_var_or_func (TokenQueue* input);
 ASTNode* parse_funcdecl (TokenQueue* input);
 ASTNode* parse_block (TokenQueue* input);
 ASTNode* parse_statement (TokenQueue* input);
+ParameterList* parse_params (TokenQueue* input);
 DecafType parse_type (TokenQueue* input);
 void parse_id (TokenQueue* input, char* buffer);
 
@@ -116,7 +117,7 @@ ASTNode* parse_statement (TokenQueue* input)
                 match_and_discard_next_token(input, SYM, ";");
                 return ReturnNode_new(NULL, source_line);
             } else {
-                // implement proper functionality later
+                // implement proper functionality later (binary parsing)
                 // ASTNode* return_value = NULL;
                 match_and_discard_next_token(input, SYM, ";");
                 return ReturnNode_new(NULL, source_line);
@@ -178,6 +179,24 @@ ASTNode* parse_var_or_func(TokenQueue* input)
     }
 }
 
+ParameterList* parse_params (TokenQueue* input)
+{
+    if (TokenQueue_is_empty(input)) {
+        Error_throw_printf("Unexpected end of input (parameters)\n");
+    }
+    ParameterList* params = ParameterList_new();
+    while(!check_next_token(input, SYM, ")")) {
+        if(check_next_token(input, SYM, ",")) {
+            discard_next_token(input);
+        }
+        DecafType type = parse_type(input);
+        char id[MAX_TOKEN_LEN];
+        parse_id(input, id);
+        ParameterList_add_new(params, id, type);
+    }
+    return params;
+}
+
 ASTNode* parse_funcdecl (TokenQueue* input)
 {
     if (TokenQueue_is_empty(input)) {
@@ -189,12 +208,10 @@ ASTNode* parse_funcdecl (TokenQueue* input)
     char id[MAX_TOKEN_LEN];
     parse_id(input, id);
     match_and_discard_next_token(input, SYM, "(");
-    ParameterList* params = ParameterList_new();
-    // parse parameters --- IGNORE ---
+    ParameterList* params = parse_params(input);
     match_and_discard_next_token(input, SYM, ")");
     ASTNode* block = parse_block(input);
     return FuncDeclNode_new(id, type, params, block, source_line);
-    // reutrn FuncDeclNode_
 }
 
 ASTNode* parse_vardecl (TokenQueue* input)
