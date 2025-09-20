@@ -1,3 +1,4 @@
 def void love() {
-    return;
+    int nums[100];
+    continue;
 }

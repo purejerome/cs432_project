@@ -121,6 +121,14 @@ ASTNode* parse_statement (TokenQueue* input)
                 match_and_discard_next_token(input, SYM, ";");
                 return ReturnNode_new(NULL, source_line);
             }
+        } else if (check_next_token(input, KEY, "break")) {
+            discard_next_token(input);
+            match_and_discard_next_token(input, SYM, ";");
+            return BreakNode_new(source_line);
+        } else if (check_next_token(input, KEY, "continue")) {
+            discard_next_token(input);
+            match_and_discard_next_token(input, SYM, ";");
+            return ContinueNode_new(source_line);
         } else {
             Error_throw_printf("Error in statement layer.");
         }
@@ -196,12 +204,26 @@ ASTNode* parse_vardecl (TokenQueue* input)
     }
     
     int source_line = get_next_token_line(input);
+    int array_length = 1;
+    bool is_array = false;
     DecafType type = parse_type(input);
     char id[MAX_TOKEN_LEN];
     parse_id(input, id);
+    if(check_next_token(input, SYM, "[")) {
+        is_array = true;
+        discard_next_token(input);
+        if(check_next_token_type(input, DECLIT)) {
+            Token* array_length_token = TokenQueue_remove(input);
+            array_length = strtol(array_length_token->text, NULL, 10);
+            Token_free(array_length_token);
+        } else {
+            Error_throw_printf("Invalid array length on line %d\n", get_next_token_line(input));
+        }
+        match_and_discard_next_token(input, SYM, "]");
+    }
     match_and_discard_next_token(input, SYM, ";");
     
-    return VarDeclNode_new(id, type, false, 1, source_line);
+    return VarDeclNode_new(id, type, is_array, array_length, source_line);
 }
 
 /**
@@ -277,5 +299,8 @@ ASTNode* parse_program (TokenQueue* input)
 ASTNode* parse (TokenQueue* input)
 {
     printf("Starting parse...\n");
+    if(input == NULL) {
+        Error_throw_printf("Input token queue is NULL\n");
+    }
     return parse_program(input);
 }

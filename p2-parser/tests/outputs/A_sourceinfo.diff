@@ -1,4 +1,4 @@
---- outputs/A_sourceinfo.txt	2025-09-19 18:03:00.615360668 -0400
+--- outputs/A_sourceinfo.txt	2025-09-20 17:43:14.393721445 -0400
 +++ expected/A_sourceinfo.txt	2025-08-25 20:42:26.000000000 -0400
 @@ -1 +1,11 @@
 -Starting parse...
