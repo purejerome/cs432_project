@@ -118,7 +118,6 @@ ASTNode* parse_literal (TokenQueue* input)
     } else if(check_next_token_type(input, HEXLIT)) {
         Token* hex_token = TokenQueue_remove(input);
         int value = strtol(hex_token->text, NULL, 16);
-        printf("Hex value: %d\n", value);
         Token_free(hex_token);
         return LiteralNode_new_int(value, source_line);
     } else if (check_next_token_type(input, STRLIT)) {
