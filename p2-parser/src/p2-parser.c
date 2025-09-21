@@ -219,7 +219,12 @@ ParameterList* parse_params (TokenQueue* input)
         Error_throw_printf("Unexpected end of input (parameters)\n");
     }
     ParameterList* params = ParameterList_new();
-    while(!check_next_token(input, SYM, ")")) {
+    DecafType type = parse_type(input);
+    char id[MAX_TOKEN_LEN];
+    parse_id(input, id);
+    ParameterList_add_new(params, id, type);
+    
+    while(check_next_token(input, SYM, ",")){
         if(check_next_token(input, SYM, ",")) {
             discard_next_token(input);
         }
@@ -228,6 +233,31 @@ ParameterList* parse_params (TokenQueue* input)
         parse_id(input, id);
         ParameterList_add_new(params, id, type);
     }
+    // if(check_next_token_type(input, KEY)){
+    //     DecafType type = parse_type(input);
+    //     char id[MAX_TOKEN_LEN];
+    //     parse_id(input, id);
+    //     ParameterList_add_new(params, id, type);
+        
+    //     while(check_next_token(input, SYM, ",")){
+    //         if(check_next_token(input, SYM, ",")) {
+    //             discard_next_token(input);
+    //         }
+    //         DecafType type = parse_type(input);
+    //         char id[MAX_TOKEN_LEN];
+    //         parse_id(input, id);
+    //         ParameterList_add_new(params, id, type);
+    //     }
+    // }
+    // while(!check_next_token(input, SYM, ")")) {
+        // if(check_next_token(input, SYM, ",")) {
+        //     discard_next_token(input);
+        // }
+    //     DecafType type = parse_type(input);
+    //     char id[MAX_TOKEN_LEN];
+    //     parse_id(input, id);
+    //     ParameterList_add_new(params, id, type);
+    // }
     return params;
 }
 
@@ -242,7 +272,17 @@ ASTNode* parse_funcdecl (TokenQueue* input)
     char id[MAX_TOKEN_LEN];
     parse_id(input, id);
     match_and_discard_next_token(input, SYM, "(");
-    ParameterList* params = parse_params(input);
+    ParameterList* params;
+    // if(check_next_token_type(input, KEY)) {
+    //     params = parse_params(input);
+    // } else {
+    //     params = ParameterList_new();
+    // }
+    if(check_next_token(input, SYM, ")")) {
+        params = ParameterList_new();
+    } else {
+        params = parse_params(input);
+    }
     match_and_discard_next_token(input, SYM, ")");
     ASTNode* block = parse_block(input);
     return FuncDeclNode_new(id, type, params, block, source_line);
@@ -334,16 +374,16 @@ ASTNode* parse_program (TokenQueue* input)
 {
     NodeList* vars = NodeList_new();
     NodeList* funcs = NodeList_new();
-    ASTNode* node = parse_literal(input);
-    NodeList_add(vars, node);
-    // while(!TokenQueue_is_empty(input)){
-    //     ASTNode* node = parse_var_or_func(input);
-    //     if (node->type == VARDECL) {
-    //         NodeList_add(vars, node);
-    //     } else {
-    //         NodeList_add(funcs, node);
-    //     }
-    // }
+    // ASTNode* node = parse_literal(input);
+    // NodeList_add(vars, node);
+    while(!TokenQueue_is_empty(input)){
+        ASTNode* node = parse_var_or_func(input);
+        if (node->type == VARDECL) {
+            NodeList_add(vars, node);
+        } else {
+            NodeList_add(funcs, node);
+        }
+    }
     printf("Finished parsing program.\n");
     printf("There are %d global variables and %d functions.\n", NodeList_size(vars), NodeList_size(funcs));
     return ProgramNode_new(vars, funcs);

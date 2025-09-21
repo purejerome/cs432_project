@@ -1,5 +1,11 @@
 digraph AST {
-1 [shape=box, label="Literal value='\\\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\\\"'"];
+3 [shape=box, label="VarDecl name='nums'"];
+4 [shape=box, label="Continue"];
+2 [shape=box, label="Block"];
+2 -> 3;
+2 -> 4;
+1 [shape=box, label="FuncDecl name='love'"];
+1 -> 2;
 0 [shape=box, label="Program"];
 0 -> 1;
 }
