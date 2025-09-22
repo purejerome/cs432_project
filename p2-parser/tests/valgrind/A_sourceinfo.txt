@@ -1,64 +1,64 @@
-==1052651== Memcheck, a memory error detector
-==1052651== Copyright (C) 2002-2022, and GNU GPL'd, by Julian Seward et al.
-==1052651== Using Valgrind-3.22.0 and LibVEX; rerun with -h for copyright info
-==1052651== Command: ../decaf inputs/add.decaf
-==1052651== 
+==1471908== Memcheck, a memory error detector
+==1471908== Copyright (C) 2002-2022, and GNU GPL'd, by Julian Seward et al.
+==1471908== Using Valgrind-3.22.0 and LibVEX; rerun with -h for copyright info
+==1471908== Command: ../decaf inputs/add.decaf
+==1471908== 
 Error in statement layer.
 Starting parse...
-==1052651== 
-==1052651== HEAP SUMMARY:
-==1052651==     in use at exit: 424 bytes in 6 blocks
-==1052651==   total heap usage: 1,731 allocs, 1,725 frees, 191,592 bytes allocated
-==1052651== 
-==1052651== 24 bytes in 1 blocks are definitely lost in loss record 1 of 6
-==1052651==    at 0x484D953: calloc (in /usr/libexec/valgrind/vgpreload_memcheck-amd64-linux.so)
-==1052651==    by 0x10D126: NodeList_new (ast.c:44)
-==1052651==    by 0x10A372: parse_program (p2-parser.c:375)
-==1052651==    by 0x10A477: parse (p2-parser.c:398)
-==1052651==    by 0x10EAC8: main (main.c:98)
-==1052651== 
-==1052651== 24 bytes in 1 blocks are definitely lost in loss record 2 of 6
-==1052651==    at 0x484D953: calloc (in /usr/libexec/valgrind/vgpreload_memcheck-amd64-linux.so)
-==1052651==    by 0x10D126: NodeList_new (ast.c:44)
-==1052651==    by 0x10A37B: parse_program (p2-parser.c:376)
-==1052651==    by 0x10A477: parse (p2-parser.c:398)
-==1052651==    by 0x10EAC8: main (main.c:98)
-==1052651== 
-==1052651== 24 bytes in 1 blocks are definitely lost in loss record 3 of 6
-==1052651==    at 0x484D953: calloc (in /usr/libexec/valgrind/vgpreload_memcheck-amd64-linux.so)
-==1052651==    by 0x10D272: ParameterList_new (ast.c:45)
-==1052651==    by 0x109F07: parse_funcdecl (p2-parser.c:282)
-==1052651==    by 0x109CAC: parse_var_or_func (p2-parser.c:210)
-==1052651==    by 0x10A38D: parse_program (p2-parser.c:380)
-==1052651==    by 0x10A477: parse (p2-parser.c:398)
-==1052651==    by 0x10EAC8: main (main.c:98)
-==1052651== 
-==1052651== 24 bytes in 1 blocks are definitely lost in loss record 4 of 6
-==1052651==    at 0x484D953: calloc (in /usr/libexec/valgrind/vgpreload_memcheck-amd64-linux.so)
-==1052651==    by 0x10D126: NodeList_new (ast.c:44)
-==1052651==    by 0x109B2A: parse_block (p2-parser.c:184)
-==1052651==    by 0x109F50: parse_funcdecl (p2-parser.c:287)
-==1052651==    by 0x109CAC: parse_var_or_func (p2-parser.c:210)
-==1052651==    by 0x10A38D: parse_program (p2-parser.c:380)
-==1052651==    by 0x10A477: parse (p2-parser.c:398)
-==1052651==    by 0x10EAC8: main (main.c:98)
-==1052651== 
-==1052651== 328 (24 direct, 304 indirect) bytes in 1 blocks are definitely lost in loss record 6 of 6
-==1052651==    at 0x484D953: calloc (in /usr/libexec/valgrind/vgpreload_memcheck-amd64-linux.so)
-==1052651==    by 0x10D126: NodeList_new (ast.c:44)
-==1052651==    by 0x109B21: parse_block (p2-parser.c:183)
-==1052651==    by 0x109F50: parse_funcdecl (p2-parser.c:287)
-==1052651==    by 0x109CAC: parse_var_or_func (p2-parser.c:210)
-==1052651==    by 0x10A38D: parse_program (p2-parser.c:380)
-==1052651==    by 0x10A477: parse (p2-parser.c:398)
-==1052651==    by 0x10EAC8: main (main.c:98)
-==1052651== 
-==1052651== LEAK SUMMARY:
-==1052651==    definitely lost: 120 bytes in 5 blocks
-==1052651==    indirectly lost: 304 bytes in 1 blocks
-==1052651==      possibly lost: 0 bytes in 0 blocks
-==1052651==    still reachable: 0 bytes in 0 blocks
-==1052651==         suppressed: 0 bytes in 0 blocks
-==1052651== 
-==1052651== For lists of detected and suppressed errors, rerun with: -s
-==1052651== ERROR SUMMARY: 5 errors from 5 contexts (suppressed: 0 from 0)
+==1471908== 
+==1471908== HEAP SUMMARY:
+==1471908==     in use at exit: 424 bytes in 6 blocks
+==1471908==   total heap usage: 1,731 allocs, 1,725 frees, 191,592 bytes allocated
+==1471908== 
+==1471908== 24 bytes in 1 blocks are definitely lost in loss record 1 of 6
+==1471908==    at 0x484D953: calloc (in /usr/libexec/valgrind/vgpreload_memcheck-amd64-linux.so)
+==1471908==    by 0x10D15E: NodeList_new (ast.c:44)
+==1471908==    by 0x10A3AA: parse_program (p2-parser.c:386)
+==1471908==    by 0x10A4AF: parse (p2-parser.c:409)
+==1471908==    by 0x10EB00: main (main.c:98)
+==1471908== 
+==1471908== 24 bytes in 1 blocks are definitely lost in loss record 2 of 6
+==1471908==    at 0x484D953: calloc (in /usr/libexec/valgrind/vgpreload_memcheck-amd64-linux.so)
+==1471908==    by 0x10D15E: NodeList_new (ast.c:44)
+==1471908==    by 0x10A3B3: parse_program (p2-parser.c:387)
+==1471908==    by 0x10A4AF: parse (p2-parser.c:409)
+==1471908==    by 0x10EB00: main (main.c:98)
+==1471908== 
+==1471908== 24 bytes in 1 blocks are definitely lost in loss record 3 of 6
+==1471908==    at 0x484D953: calloc (in /usr/libexec/valgrind/vgpreload_memcheck-amd64-linux.so)
+==1471908==    by 0x10D2AA: ParameterList_new (ast.c:45)
+==1471908==    by 0x109F3F: parse_funcdecl (p2-parser.c:293)
+==1471908==    by 0x109CE4: parse_var_or_func (p2-parser.c:221)
+==1471908==    by 0x10A3C5: parse_program (p2-parser.c:391)
+==1471908==    by 0x10A4AF: parse (p2-parser.c:409)
+==1471908==    by 0x10EB00: main (main.c:98)
+==1471908== 
+==1471908== 24 bytes in 1 blocks are definitely lost in loss record 4 of 6
+==1471908==    at 0x484D953: calloc (in /usr/libexec/valgrind/vgpreload_memcheck-amd64-linux.so)
+==1471908==    by 0x10D15E: NodeList_new (ast.c:44)
+==1471908==    by 0x109B62: parse_block (p2-parser.c:195)
+==1471908==    by 0x109F88: parse_funcdecl (p2-parser.c:298)
+==1471908==    by 0x109CE4: parse_var_or_func (p2-parser.c:221)
+==1471908==    by 0x10A3C5: parse_program (p2-parser.c:391)
+==1471908==    by 0x10A4AF: parse (p2-parser.c:409)
+==1471908==    by 0x10EB00: main (main.c:98)
+==1471908== 
+==1471908== 328 (24 direct, 304 indirect) bytes in 1 blocks are definitely lost in loss record 6 of 6
+==1471908==    at 0x484D953: calloc (in /usr/libexec/valgrind/vgpreload_memcheck-amd64-linux.so)
+==1471908==    by 0x10D15E: NodeList_new (ast.c:44)
+==1471908==    by 0x109B59: parse_block (p2-parser.c:194)
+==1471908==    by 0x109F88: parse_funcdecl (p2-parser.c:298)
+==1471908==    by 0x109CE4: parse_var_or_func (p2-parser.c:221)
+==1471908==    by 0x10A3C5: parse_program (p2-parser.c:391)
+==1471908==    by 0x10A4AF: parse (p2-parser.c:409)
+==1471908==    by 0x10EB00: main (main.c:98)
+==1471908== 
+==1471908== LEAK SUMMARY:
+==1471908==    definitely lost: 120 bytes in 5 blocks
+==1471908==    indirectly lost: 304 bytes in 1 blocks
+==1471908==      possibly lost: 0 bytes in 0 blocks
+==1471908==    still reachable: 0 bytes in 0 blocks
+==1471908==         suppressed: 0 bytes in 0 blocks
+==1471908== 
+==1471908== For lists of detected and suppressed errors, rerun with: -s
+==1471908== ERROR SUMMARY: 5 errors from 5 contexts (suppressed: 0 from 0)

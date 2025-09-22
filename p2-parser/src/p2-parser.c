@@ -5,15 +5,22 @@
 
 #include "p2-parser.h"
 
+ASTNode* parse (TokenQueue* input);
+ASTNode* parse_program (TokenQueue* input);
 ASTNode* parse_vardecl (TokenQueue* input);
 ASTNode* parse_var_or_func (TokenQueue* input);
 ASTNode* parse_funcdecl (TokenQueue* input);
 ASTNode* parse_block (TokenQueue* input);
 ASTNode* parse_statement (TokenQueue* input);
 ASTNode* parse_literal (TokenQueue* input);
+ASTNode* parse_base_expression (TokenQueue* input);
 ParameterList* parse_params (TokenQueue* input);
 DecafType parse_type (TokenQueue* input);
 void parse_id (TokenQueue* input, char* buffer);
+/*
+ * IMPROTANT TO IMPLEMENT, SPLIT THE LOC AND FUNC CALL
+ * PARSING INTO TWO SECTIONS CAUSE THEY BOTH BEGIN WITH ID.
+*/
 
 /*
  * helper functions
@@ -138,6 +145,22 @@ ASTNode* parse_literal (TokenQueue* input)
     return NULL;
 }
 
+ASTNode* parse_base_expression (TokenQueue* input)
+{
+    // change this later to allow for more than just literals
+    if (TokenQueue_is_empty(input)) {
+        Error_throw_printf("Unexpected end of input (expected statement)\n");
+    }
+    if(check_next_token(input, SYM, "(")) {
+        discard_next_token(input);
+        ASTNode* expr = NULL; // IMPLEMENTS THIS TO USE EXPR PARSING LATER
+        match_and_discard_next_token(input, SYM, ")");
+        return expr;
+    } else {
+        return parse_literal(input);
+    }
+}
+
 ASTNode* parse_statement (TokenQueue* input)
 {
     if (TokenQueue_is_empty(input)) {
@@ -152,10 +175,10 @@ ASTNode* parse_statement (TokenQueue* input)
                 match_and_discard_next_token(input, SYM, ";");
                 return ReturnNode_new(NULL, source_line);
             } else {
-                // implement proper functionality later (binary parsing)
-                // ASTNode* return_value = NULL;
+                // change this later to allow from expr and not just base expr
+                ASTNode* return_value = parse_base_expression(input);
                 match_and_discard_next_token(input, SYM, ";");
-                return ReturnNode_new(NULL, source_line);
+                return ReturnNode_new(return_value, source_line);
             }
         } else if (check_next_token(input, KEY, "break")) {
             discard_next_token(input);
