@@ -14,10 +14,6 @@ ASTNode *parse_block (TokenQueue *input);
 ASTNode *parse_statement (TokenQueue *input);
 ASTNode *parse_literal (TokenQueue *input);
 ASTNode *parse_base_expression (TokenQueue *input);
-ASTNode *parse_function_call (TokenQueue *input, char *id);
-ASTNode *parse_location (TokenQueue *input, char *id);
-ASTNode *parse_loc_or_func_call (TokenQueue *input);
-NodeList *parse_args (TokenQueue *input);
 ParameterList *parse_params (TokenQueue *input);
 DecafType parse_type (TokenQueue *input);
 void parse_id (TokenQueue *input, char *buffer);
@@ -190,7 +186,6 @@ parse_base_expression (TokenQueue *input)
     }
   else
     {
-      printf ("parsing literal...\n");
       return parse_literal (input);
     }
 }
@@ -202,6 +197,7 @@ parse_statement (TokenQueue *input)
     {
       Error_throw_printf ("Unexpected end of input (expected statement)\n");
     }
+
   int source_line = get_next_token_line (input);
   if (check_next_token_type (input, KEY))
     {
@@ -234,15 +230,7 @@ parse_statement (TokenQueue *input)
           return ContinueNode_new (source_line);
         }
     }
-  else if (check_next_token_type (input, ID))
-    {
-      ASTNode *loc_or_func = parse_loc_or_func_call (input);
-      match_and_discard_next_token (input, SYM, ";");
-      return loc_or_func;
-    }
-  Error_throw_printf ("Error with this token %s on line %d\n",
-                      TokenQueue_peek (input)->text,
-                      get_next_token_line (input));
+  Error_throw_printf ("Error in statement layer.\n");
   return NULL;
 }
 
@@ -304,51 +292,6 @@ parse_var_or_func (TokenQueue *input)
     }
 }
 
-ASTNode *
-parse_loc_or_func_call (TokenQueue *input)
-{
-  if (TokenQueue_is_empty (input))
-    {
-      Error_throw_printf ("Unexpected end of input (parameters)\n");
-    }
-  printf ("parsing loc or func call...\n");
-  char id[MAX_TOKEN_LEN];
-  parse_id (input, id);
-
-  if (check_next_token (input, SYM, "("))
-    {
-      return parse_function_call (input, id);
-    }
-  else
-    {
-      return parse_location (input, id);
-    }
-}
-
-NodeList *
-parse_args (TokenQueue *input)
-{
-  if (TokenQueue_is_empty (input))
-    {
-      Error_throw_printf ("Unexpected end of input (arguments)\n");
-    }
-  NodeList *args = NodeList_new ();
-  ASTNode *expr
-      = parse_base_expression (input); // CHANGE IT EXPR PASRING LATER
-  NodeList_add (args, expr);
-  printf ("added an arg\n");
-  while (check_next_token (input, SYM, ","))
-    {
-      if (check_next_token (input, SYM, ","))
-        {
-          discard_next_token (input);
-        }
-      ASTNode *expr = parse_base_expression (input);
-      NodeList_add (args, expr);
-    }
-  return args;
-}
-
 ParameterList *
 parse_params (TokenQueue *input)
 {
@@ -373,33 +316,32 @@ parse_params (TokenQueue *input)
       parse_id (input, id);
       ParameterList_add_new (params, id, type);
     }
-  return params;
-}
+  // if(check_next_token_type(input, KEY)){
+  //     DecafType type = parse_type(input);
+  //     char id[MAX_TOKEN_LEN];
+  //     parse_id(input, id);
+  //     ParameterList_add_new(params, id, type);
 
-ASTNode *
-parse_function_call (TokenQueue *input, char *id)
-{
-  if (TokenQueue_is_empty (input))
-    {
-      Error_throw_printf (
-          "Unexpected end of input (expected function call)\n");
-    }
-  printf ("parsing function call...\n");
-  int source_line = get_next_token_line (input);
-  // char id[MAX_TOKEN_LEN];
-  // parse_id(input, id);
-  match_and_discard_next_token (input, SYM, "(");
-  NodeList *args;
-  if (check_next_token (input, SYM, ")"))
-    {
-      args = NodeList_new ();
-    }
-  else
-    {
-      args = parse_args (input);
-    }
-  match_and_discard_next_token (input, SYM, ")");
-  return FuncCallNode_new (id, args, source_line);
+  //     while(check_next_token(input, SYM, ",")){
+  //         if(check_next_token(input, SYM, ",")) {
+  //             discard_next_token(input);
+  //         }
+  //         DecafType type = parse_type(input);
+  //         char id[MAX_TOKEN_LEN];
+  //         parse_id(input, id);
+  //         ParameterList_add_new(params, id, type);
+  //     }
+  // }
+  // while(!check_next_token(input, SYM, ")")) {
+  // if(check_next_token(input, SYM, ",")) {
+  //     discard_next_token(input);
+  // }
+  //     DecafType type = parse_type(input);
+  //     char id[MAX_TOKEN_LEN];
+  //     parse_id(input, id);
+  //     ParameterList_add_new(params, id, type);
+  // }
+  return params;
 }
 
 ASTNode *
@@ -409,7 +351,6 @@ parse_funcdecl (TokenQueue *input)
     {
       Error_throw_printf ("Unexpected end of input (expected type)\n");
     }
-
   int source_line = get_next_token_line (input);
   match_and_discard_next_token (input, KEY, "def");
   DecafType type = parse_type (input);
@@ -417,6 +358,11 @@ parse_funcdecl (TokenQueue *input)
   parse_id (input, id);
   match_and_discard_next_token (input, SYM, "(");
   ParameterList *params;
+  // if(check_next_token_type(input, KEY)) {
+  //     params = parse_params(input);
+  // } else {
+  //     params = ParameterList_new();
+  // }
   if (check_next_token (input, SYM, ")"))
     {
       params = ParameterList_new ();
@@ -428,24 +374,6 @@ parse_funcdecl (TokenQueue *input)
   match_and_discard_next_token (input, SYM, ")");
   ASTNode *block = parse_block (input);
   return FuncDeclNode_new (id, type, params, block, source_line);
-}
-
-ASTNode *
-parse_location (TokenQueue *input, char *id)
-{
-  if (TokenQueue_is_empty (input))
-    {
-      Error_throw_printf ("Unexpected end of input (expected location)\n");
-    }
-  int source_line = get_next_token_line (input);
-  ASTNode *index = NULL;
-  if (check_next_token (input, SYM, "["))
-    {
-      discard_next_token (input);
-      index = parse_base_expression (input); // CHANGE IT TO EXPR PARSING LATER
-      match_and_discard_next_token (input, SYM, "]");
-    }
-  return LocationNode_new (id, index, source_line);
 }
 
 ASTNode *
@@ -587,306 +515,4 @@ parse (TokenQueue *input)
       Error_throw_printf ("Input token queue is NULL\n");
     }
   return parse_program (input);
-}
-
-/* =======================
- * Expression parser (Decaf)
- * Uses enums & constructors from ast.h:
- *   - BinaryOpType, UnaryOpType
- *   - BinaryOpNode_new, UnaryOpNode_new, LocationNode_new, FuncCallNode_new
- *   - LiteralNode_new_int/bool/string
- * And token API from token.h:
- *   - TokenQueue_peek, TokenQueue_remove, token_str_eq, Token types
- * ======================= */
-
-static ASTNode *parse_expr (TokenQueue *in);
-static ASTNode *parse_bin_expr (TokenQueue *in, int min_prec);
-static ASTNode *parse_unary (TokenQueue *in);
-static ASTNode *parse_primary (TokenQueue *in);
-
-/* ---- tiny queue helpers ---- */
-static inline Token *
-tq_peek (TokenQueue *q)
-{
-  return TokenQueue_peek (q);
-}
-static inline Token *
-tq_pop (TokenQueue *q)
-{
-  return TokenQueue_remove (q);
-}
-
-static inline bool
-peek_is_text (TokenQueue *q, const char *s)
-{
-  Token *t = tq_peek (q);
-  return t && token_str_eq (t->text, s);
-}
-static inline bool
-peek_is_type (TokenQueue *q, TokenType ty)
-{
-  Token *t = tq_peek (q);
-  return t && t->type == ty;
-}
-
-static Token *
-expect_type (TokenQueue *q, TokenType ty, const char *what)
-{
-  Token *t = tq_peek (q);
-  if (!t || t->type != ty)
-    {
-      int line = t ? t->line : -1;
-      Error_throw_printf ("line %d: expected %s\n", line, what);
-    }
-  return tq_pop (q);
-}
-
-static void
-expect_text (TokenQueue *q, const char *s)
-{
-  Token *t = tq_peek (q);
-  if (!t || !token_str_eq (t->text, s))
-    {
-      int line = t ? t->line : -1;
-      Error_throw_printf ("line %d: expected '%s'\n", line, s);
-    }
-  (void)tq_pop (q);
-}
-
-/* ---- operator mapping & precedence ---- */
-
-static bool
-tok_to_binop (Token *t, BinaryOpType *out)
-{
-  if (!t)
-    return false;
-  if (token_str_eq (t->text, "||"))
-    {
-      *out = OROP;
-      return true;
-    }
-  if (token_str_eq (t->text, "&&"))
-    {
-      *out = ANDOP;
-      return true;
-    }
-  if (token_str_eq (t->text, "=="))
-    {
-      *out = EQOP;
-      return true;
-    }
-  if (token_str_eq (t->text, "!="))
-    {
-      *out = NEQOP;
-      return true;
-    }
-  if (token_str_eq (t->text, "<"))
-    {
-      *out = LTOP;
-      return true;
-    }
-  if (token_str_eq (t->text, "<="))
-    {
-      *out = LEOP;
-      return true;
-    }
-  if (token_str_eq (t->text, ">="))
-    {
-      *out = GEOP;
-      return true;
-    }
-  if (token_str_eq (t->text, ">"))
-    {
-      *out = GTOP;
-      return true;
-    }
-  if (token_str_eq (t->text, "+"))
-    {
-      *out = ADDOP;
-      return true;
-    }
-  if (token_str_eq (t->text, "-"))
-    {
-      *out = SUBOP;
-      return true;
-    }
-  if (token_str_eq (t->text, "*"))
-    {
-      *out = MULOP;
-      return true;
-    }
-  if (token_str_eq (t->text, "/"))
-    {
-      *out = DIVOP;
-      return true;
-    }
-  if (token_str_eq (t->text, "%"))
-    {
-      *out = MODOP;
-      return true;
-    }
-  return false;
-}
-
-/* higher number = tighter */
-static int
-bin_prec (BinaryOpType k)
-{
-  switch (k)
-    {
-    case OROP:
-      return 1; /* || */
-    case ANDOP:
-      return 2; /* && */
-    case EQOP:
-    case NEQOP:
-      return 3; /* == != */
-    case LTOP:
-    case LEOP:
-    case GEOP:
-    case GTOP:
-      return 4; /* < <= >= > */
-    case ADDOP:
-    case SUBOP:
-      return 5; /* + - */
-    case MULOP:
-    case DIVOP:
-    case MODOP:
-      return 6; /* * / % */
-    default:
-      return 0;
-    }
-}
-
-/* all binaries left-assoc in Decaf */
-static inline bool
-bin_left_assoc (BinaryOpType k)
-{
-  (void)k;
-  return true;
-}
-
-/* ---- public entry ---- */
-static ASTNode *
-parse_expr (TokenQueue *in)
-{
-  return parse_bin_expr (in, /*min_prec=*/1);
-}
-
-/* ---- precedence-climbing core ---- */
-static ASTNode *
-parse_bin_expr (TokenQueue *in, int min_prec)
-{
-  ASTNode *lhs = parse_unary (in);
-
-  for (;;)
-    {
-      Token *t = tq_peek (in);
-      BinaryOpType op;
-      if (!tok_to_binop (t, &op))
-        break;
-
-      int prec = bin_prec (op);
-      if (prec < min_prec)
-        break;
-
-      Token *op_tok = tq_pop (in); /* consume operator */
-
-      int next_min = bin_left_assoc (op) ? prec + 1 : prec;
-      ASTNode *rhs = parse_bin_expr (in, next_min);
-
-      int line = lhs ? lhs->source_line : (op_tok ? op_tok->line : -1);
-      lhs = BinaryOpNode_new (op, lhs, rhs, line);
-    }
-  return lhs;
-}
-
-/* ---- unary & primary ---- */
-static ASTNode *
-parse_unary (TokenQueue *in)
-{
-  Token *t = tq_peek (in);
-  if (!t)
-    Error_throw_printf ("unexpected end of input in unary\n");
-
-  if (token_str_eq (t->text, "-") || token_str_eq (t->text, "!"))
-    {
-      tq_pop (in);
-      UnaryOpType uop = token_str_eq (t->text, "-") ? NEGOP : NOTOP;
-      ASTNode *child = parse_unary (in); /* right-assoc */
-      return UnaryOpNode_new (uop, child, t->line);
-    }
-  return parse_primary (in);
-}
-
-/* primary:
- *   '(' expr ')'
- * | literal
- * | ID ('(' args? ')' | '[' expr ']' )?
- */
-static ASTNode *
-parse_primary (TokenQueue *in)
-{
-  Token *t = tq_peek (in);
-  if (!t)
-    Error_throw_printf ("unexpected end of input in expression\n");
-
-  /* ( expr ) */
-  if (token_str_eq (t->text, "("))
-    {
-      tq_pop (in);
-      ASTNode *e = parse_expr (in);
-      expect_text (in, ")");
-      if (e)
-        e->source_line = t->line;
-      return e;
-    }
-
-  /* literals */
-  if (t->type == DECLIT || t->type == HEXLIT || t->type == STRLIT
-      || (t->type == KEY
-          && (token_str_eq (t->text, "true")
-              || token_str_eq (t->text, "false"))))
-    {
-      return parse_literal (in);
-    }
-
-  /* identifier → func call or location */
-  if (t->type == ID)
-    {
-      Token *id = tq_pop (in);
-      int line = id->line;
-
-      if (peek_is_text (in, "("))
-        {
-          tq_pop (in); /* '(' */
-          NodeList *args = NULL;
-          if (!peek_is_text (in, ")"))
-            {
-              args = NodeList_new ();
-              NodeList_add (args, parse_expr (in));
-              while (peek_is_text (in, ","))
-                {
-                  tq_pop (in);
-                  NodeList_add (args, parse_expr (in));
-                }
-            }
-          expect_text (in, ")");
-          return FuncCallNode_new (id->text, args, line);
-        }
-
-      if (peek_is_text (in, "["))
-        {
-          tq_pop (in); /* '[' */
-          ASTNode *idx = parse_expr (in);
-          expect_text (in, "]");
-          return LocationNode_new (id->text, idx, line);
-        }
-
-      return LocationNode_new (id->text, /*index=*/NULL, line);
-    }
-
-  Error_throw_printf ("line %d: expected expression, found '%s'\n", t->line,
-                      t->text);
-  return NULL;
 }
