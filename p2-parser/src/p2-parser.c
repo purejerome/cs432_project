@@ -2,6 +2,8 @@
  * @file p2-parser.c
  * @brief Compiler phase 2: parser
  */
+/* Use of Chatgpt to reduce coding time for token_to_binop after we created the
+ * a singluar function (since much of the code is similar to itself) */
 
 #include "p2-parser.h"
 
@@ -515,4 +517,113 @@ parse (TokenQueue *input)
       Error_throw_printf ("Input token queue is NULL\n");
     }
   return parse_program (input);
+}
+
+static ASTNode *parse_expr (TokenQueue *input);
+static ASTNode *parse_bin_expr (TokenQueue *input, int min_prec);
+static ASTNode *parse_unary (TokenQueue *input);
+static ASTNode *parse_primary (TokenQueue *input);
+
+/* ---- operator mapping & precedence ---- */
+static bool
+tok_to_binop (Token *t, BinaryOpType *output)
+{
+  if (!t)
+    return false;
+  if (token_str_eq (t->text, "||"))
+    {
+      *output = OROP;
+      return true;
+    }
+  if (token_str_eq (t->text, "&&"))
+    {
+      *output = ANDOP;
+      return true;
+    }
+  if (token_str_eq (t->text, "=="))
+    {
+      *output = EQOP;
+      return true;
+    }
+  if (token_str_eq (t->text, "!="))
+    {
+      *output = NEQOP;
+      return true;
+    }
+  if (token_str_eq (t->text, "<"))
+    {
+      *output = LTOP;
+      return true;
+    }
+  if (token_str_eq (t->text, "<="))
+    {
+      *output = LEOP;
+      return true;
+    }
+  if (token_str_eq (t->text, ">="))
+    {
+      *output = GEOP;
+      return true;
+    }
+  if (token_str_eq (t->text, ">"))
+    {
+      *output = GTOP;
+      return true;
+    }
+  if (token_str_eq (t->text, "+"))
+    {
+      *output = ADDOP;
+      return true;
+    }
+  if (token_str_eq (t->text, "-"))
+    {
+      *output = SUBOP;
+      return true;
+    }
+  if (token_str_eq (t->text, "*"))
+    {
+      *output = MULOP;
+      return true;
+    }
+  if (token_str_eq (t->text, "/"))
+    {
+      *output = DIVOP;
+      return true;
+    }
+  if (token_str_eq (t->text, "%"))
+    {
+      *output = MODOP;
+      return true;
+    }
+  return false;
+}
+
+/* higher number = higher precedence */
+static int
+bin_prec (BinaryOpType k)
+{
+  switch (k)
+    {
+    case OROP:
+      return 1; /* || */
+    case ANDOP:
+      return 2; /* && */
+    case EQOP:
+    case NEQOP:
+      return 3; /* == != */
+    case LTOP:
+    case LEOP:
+    case GEOP:
+    case GTOP:
+      return 4; /* < <= >= > */
+    case ADDOP:
+    case SUBOP:
+      return 5; /* + - */
+    case MULOP:
+    case DIVOP:
+    case MODOP:
+      return 6; /* * / % */
+    default:
+      return 0;
+    }
 }
