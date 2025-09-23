@@ -14,6 +14,10 @@ ASTNode* parse_block (TokenQueue* input);
 ASTNode* parse_statement (TokenQueue* input);
 ASTNode* parse_literal (TokenQueue* input);
 ASTNode* parse_base_expression (TokenQueue* input);
+ASTNode* parse_function_call (TokenQueue* input, char* id);
+ASTNode* parse_location (TokenQueue* input, char* id);
+ASTNode* parse_loc_or_func_call (TokenQueue* input);
+NodeList* parse_args (TokenQueue* input);
 ParameterList* parse_params (TokenQueue* input);
 DecafType parse_type (TokenQueue* input);
 void parse_id (TokenQueue* input, char* buffer);
@@ -157,6 +161,7 @@ ASTNode* parse_base_expression (TokenQueue* input)
         match_and_discard_next_token(input, SYM, ")");
         return expr;
     } else {
+        printf("parsing literal...\n");
         return parse_literal(input);
     }
 }
@@ -166,7 +171,6 @@ ASTNode* parse_statement (TokenQueue* input)
     if (TokenQueue_is_empty(input)) {
         Error_throw_printf("Unexpected end of input (expected statement)\n");
     }
-
     int source_line = get_next_token_line(input);
     if(check_next_token_type(input, KEY)) {
         if(check_next_token(input, KEY, "return")) {
@@ -189,8 +193,12 @@ ASTNode* parse_statement (TokenQueue* input)
             match_and_discard_next_token(input, SYM, ";");
             return ContinueNode_new(source_line);
         }
+    } else if (check_next_token_type(input, ID)) {
+        ASTNode* loc_or_func = parse_loc_or_func_call(input);
+        match_and_discard_next_token(input, SYM, ";");
+        return loc_or_func;
     }
-    Error_throw_printf("Error in statement layer.\n");
+    Error_throw_printf("Error with this token %s on line %d\n", TokenQueue_peek(input)->text, get_next_token_line(input));
     return NULL;
 }
 
@@ -235,6 +243,41 @@ ASTNode* parse_var_or_func(TokenQueue* input)
     }
 }
 
+ASTNode* parse_loc_or_func_call (TokenQueue* input)
+{
+    if (TokenQueue_is_empty(input)) {
+        Error_throw_printf("Unexpected end of input (parameters)\n");
+    }
+    printf("parsing loc or func call...\n");
+    char id[MAX_TOKEN_LEN];
+    parse_id(input, id);
+    
+    if(check_next_token(input, SYM, "(")) {
+        return parse_function_call(input, id);
+    } else {
+        return parse_location(input, id);
+    }
+}
+
+NodeList* parse_args (TokenQueue* input)
+{
+    if (TokenQueue_is_empty(input)) {
+        Error_throw_printf("Unexpected end of input (arguments)\n");
+    }
+    NodeList* args = NodeList_new();
+    ASTNode* expr = parse_base_expression(input); // CHANGE IT EXPR PASRING LATER
+    NodeList_add(args, expr);
+    printf("added an arg\n");
+    while(check_next_token(input, SYM, ",")){
+        if(check_next_token(input, SYM, ",")) {
+            discard_next_token(input);
+        }
+        ASTNode* expr = parse_base_expression(input);
+        NodeList_add(args, expr);
+    }
+    return args;
+}
+
 ParameterList* parse_params (TokenQueue* input)
 {
     if (TokenQueue_is_empty(input)) {
@@ -255,32 +298,27 @@ ParameterList* parse_params (TokenQueue* input)
         parse_id(input, id);
         ParameterList_add_new(params, id, type);
     }
-    // if(check_next_token_type(input, KEY)){
-    //     DecafType type = parse_type(input);
-    //     char id[MAX_TOKEN_LEN];
-    //     parse_id(input, id);
-    //     ParameterList_add_new(params, id, type);
-        
-    //     while(check_next_token(input, SYM, ",")){
-    //         if(check_next_token(input, SYM, ",")) {
-    //             discard_next_token(input);
-    //         }
-    //         DecafType type = parse_type(input);
-    //         char id[MAX_TOKEN_LEN];
-    //         parse_id(input, id);
-    //         ParameterList_add_new(params, id, type);
-    //     }
-    // }
-    // while(!check_next_token(input, SYM, ")")) {
-        // if(check_next_token(input, SYM, ",")) {
-        //     discard_next_token(input);
-        // }
-    //     DecafType type = parse_type(input);
-    //     char id[MAX_TOKEN_LEN];
-    //     parse_id(input, id);
-    //     ParameterList_add_new(params, id, type);
-    // }
     return params;
+}
+
+ASTNode* parse_function_call (TokenQueue* input, char* id)
+{
+    if (TokenQueue_is_empty(input)) {
+        Error_throw_printf("Unexpected end of input (expected function call)\n");
+    }
+    printf("parsing function call...\n");
+    int source_line = get_next_token_line(input);
+    // char id[MAX_TOKEN_LEN];
+    // parse_id(input, id);
+    match_and_discard_next_token(input, SYM, "(");
+    NodeList* args;
+    if(check_next_token(input, SYM, ")")) {
+        args = NodeList_new();
+    } else {
+        args = parse_args(input);
+    }
+    match_and_discard_next_token(input, SYM, ")");
+    return FuncCallNode_new(id, args, source_line);
 }
 
 ASTNode* parse_funcdecl (TokenQueue* input)
@@ -288,6 +326,7 @@ ASTNode* parse_funcdecl (TokenQueue* input)
     if (TokenQueue_is_empty(input)) {
         Error_throw_printf("Unexpected end of input (expected type)\n");
     }
+    
     int source_line = get_next_token_line(input);
     match_and_discard_next_token(input, KEY, "def");
     DecafType type = parse_type(input);
@@ -295,11 +334,6 @@ ASTNode* parse_funcdecl (TokenQueue* input)
     parse_id(input, id);
     match_and_discard_next_token(input, SYM, "(");
     ParameterList* params;
-    // if(check_next_token_type(input, KEY)) {
-    //     params = parse_params(input);
-    // } else {
-    //     params = ParameterList_new();
-    // }
     if(check_next_token(input, SYM, ")")) {
         params = ParameterList_new();
     } else {
@@ -308,6 +342,21 @@ ASTNode* parse_funcdecl (TokenQueue* input)
     match_and_discard_next_token(input, SYM, ")");
     ASTNode* block = parse_block(input);
     return FuncDeclNode_new(id, type, params, block, source_line);
+}
+
+ASTNode* parse_location (TokenQueue* input, char* id)
+{
+    if (TokenQueue_is_empty(input)) {
+        Error_throw_printf("Unexpected end of input (expected location)\n");
+    }
+    int source_line = get_next_token_line(input);
+    ASTNode* index = NULL;
+    if(check_next_token(input, SYM, "[")) {
+        discard_next_token(input);
+        index = parse_base_expression(input); // CHANGE IT TO EXPR PARSING LATER
+        match_and_discard_next_token(input, SYM, "]");
+    }
+    return LocationNode_new(id, index, source_line);
 }
 
 ASTNode* parse_vardecl (TokenQueue* input)

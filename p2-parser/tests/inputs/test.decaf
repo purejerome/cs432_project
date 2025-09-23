@@ -1,1 +1,5 @@
-def int main() { return true; }
+def int main(){
+    int loves;
+    bool lobesd[2];
+    funccall(1, 23);
+}
