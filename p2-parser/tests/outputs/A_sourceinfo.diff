@@ -1,8 +1,7 @@
---- outputs/A_sourceinfo.txt	2025-09-23 13:33:17.700002978 -0400
+--- outputs/A_sourceinfo.txt	2025-09-23 17:41:02.413291321 -0400
 +++ expected/A_sourceinfo.txt	2025-09-18 12:37:02.157206334 -0400
-@@ -1,2 +1,11 @@
+@@ -1 +1,11 @@
 -Starting parse...
--parsing loc or func call...
 +Program [line 1]
 +  FuncDecl name="main" return_type=int parameters={} [line 1]
 +    Block [line 2]
