@@ -1,5 +1,6 @@
 def int main(){
-    int loves;
-    bool lobesd[2];
-    funccall(1, 23);
+    // int loves;
+    // bool lobesd[2];
+    // funccall(1, 23);
+    return (-9 - -10) * 10;
 }
