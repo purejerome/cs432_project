@@ -142,6 +142,7 @@ ASTNode* parse_literal (TokenQueue* input)
         Token* str_token = TokenQueue_remove(input);
         char string_value[MAX_LINE_LEN];
         snprintf(string_value, MAX_LINE_LEN, "%s", str_token->text);
+        // the removal of quotes and handling of escape sequences written by Copilot.
         //remove the quotes
         memmove(string_value, string_value+1, strlen(string_value));
         string_value[strlen(string_value)-1] = '\0';

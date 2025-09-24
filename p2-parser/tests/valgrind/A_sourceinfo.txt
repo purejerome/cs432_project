@@ -1,8 +1,8 @@
-==2450966== Memcheck, a memory error detector
-==2450966== Copyright (C) 2002-2022, and GNU GPL'd, by Julian Seward et al.
-==2450966== Using Valgrind-3.22.0 and LibVEX; rerun with -h for copyright info
-==2450966== Command: ../decaf inputs/add.decaf
-==2450966== 
+==3513298== Memcheck, a memory error detector
+==3513298== Copyright (C) 2002-2022, and GNU GPL'd, by Julian Seward et al.
+==3513298== Using Valgrind-3.22.0 and LibVEX; rerun with -h for copyright info
+==3513298== Command: ../decaf inputs/add.decaf
+==3513298== 
 Program [line 1]
   FuncDecl name="main" return_type=int parameters={} [line 1]
     Block [line 2]
@@ -14,12 +14,12 @@ Program [line 1]
           Literal type=int value=5 [line 4]
       Return [line 5]
         Location name="a" [line 5]
-==2450966== 
-==2450966== HEAP SUMMARY:
-==2450966==     in use at exit: 0 bytes in 0 blocks
-==2450966==   total heap usage: 1,779 allocs, 1,779 frees, 205,696 bytes allocated
-==2450966== 
-==2450966== All heap blocks were freed -- no leaks are possible
-==2450966== 
-==2450966== For lists of detected and suppressed errors, rerun with: -s
-==2450966== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
+==3513298== 
+==3513298== HEAP SUMMARY:
+==3513298==     in use at exit: 0 bytes in 0 blocks
+==3513298==   total heap usage: 1,779 allocs, 1,779 frees, 205,696 bytes allocated
+==3513298== 
+==3513298== All heap blocks were freed -- no leaks are possible
+==3513298== 
+==3513298== For lists of detected and suppressed errors, rerun with: -s
+==3513298== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
