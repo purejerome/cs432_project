@@ -1,4 +1,2 @@
 Running suite(s): Default
-string token text: "abc"
-string token text: "ab\nc"
 100%: Checks: 30, Failures: 0, Errors: 0

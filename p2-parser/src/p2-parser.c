@@ -157,9 +157,6 @@ ASTNode* parse_literal (TokenQueue* input)
                     case 't':
                         string_value[i] = '\t';
                         break;
-                    case 'r':
-                        string_value[i] = '\r';
-                        break;
                     case '\\':
                         string_value[i] = '\\';
                         break;
