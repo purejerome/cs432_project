@@ -1,6 +1,1 @@
-def int main(){
-    // int loves;
-    // bool lobesd[2];
-    // funccall(1, 23);
-    return love[10 + 2 * 8];
-}
+def int main() { return "abc\n\n\"" ; }

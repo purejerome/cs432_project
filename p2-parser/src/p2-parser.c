@@ -141,7 +141,36 @@ ASTNode* parse_literal (TokenQueue* input)
     } else if (check_next_token_type(input, STRLIT)) {
         Token* str_token = TokenQueue_remove(input);
         char string_value[MAX_LINE_LEN];
-        strncpy(string_value, str_token->text, MAX_LINE_LEN);
+        snprintf(string_value, MAX_LINE_LEN, "%s", str_token->text);
+        //remove the quotes
+        memmove(string_value, string_value+1, strlen(string_value));
+        string_value[strlen(string_value)-1] = '\0';
+        //handle escape sequences
+        for(int i = 0; i < strlen(string_value); i++) {
+            if(string_value[i] == '\\') {
+                //shift the string to the left
+                memmove(&string_value[i], &string_value[i+1], strlen(string_value)-i);
+                switch(string_value[i]) {
+                    case 'n':
+                        string_value[i] = '\n';
+                        break;
+                    case 't':
+                        string_value[i] = '\t';
+                        break;
+                    case 'r':
+                        string_value[i] = '\r';
+                        break;
+                    case '\\':
+                        string_value[i] = '\\';
+                        break;
+                    case '\"':
+                        string_value[i] = '\"';
+                        break;
+                    default:
+                        Error_throw_printf("Invalid escape sequence \\%c\n", string_value[i]);
+                }
+            } 
+        }
         Token_free(str_token);
         return LiteralNode_new_string(string_value, source_line);
     } else if(check_next_token(input, KEY, "true")) {
@@ -350,7 +379,6 @@ ASTNode* parse_base_expression (TokenQueue* input)
     } else if (check_next_token_type(input, ID)) {
         return parse_loc_or_func_call(input);
     } else {
-        printf("parsing literal...\n");
         return parse_literal(input);
     }
 }
@@ -368,7 +396,6 @@ ASTNode* parse_statement (TokenQueue* input)
                 match_and_discard_next_token(input, SYM, ";");
                 return ReturnNode_new(NULL, source_line);
             } else {
-                // change this later to allow from expr and not just base expr
                 ASTNode* return_value = parse_expression_lvl0(input);
                 match_and_discard_next_token(input, SYM, ";");
                 return ReturnNode_new(return_value, source_line);
@@ -381,11 +408,37 @@ ASTNode* parse_statement (TokenQueue* input)
             discard_next_token(input);
             match_and_discard_next_token(input, SYM, ";");
             return ContinueNode_new(source_line);
+        } else if(check_next_token(input, KEY, "if")) {
+            discard_next_token(input);
+            match_and_discard_next_token(input, SYM, "(");
+            ASTNode* condition = parse_expression_lvl0(input);
+            match_and_discard_next_token(input, SYM, ")");
+            ASTNode* if_block = parse_block(input);
+            ASTNode* else_block = NULL;
+            if(check_next_token(input, KEY, "else")) {
+                discard_next_token(input);
+                else_block = parse_block(input);
+            }
+            return ConditionalNode_new(condition, if_block, else_block, source_line);
+        } else if (check_next_token(input, KEY, "while")) {
+            discard_next_token(input);
+            match_and_discard_next_token(input, SYM, "(");
+            ASTNode* condition = parse_expression_lvl0(input);
+            match_and_discard_next_token(input, SYM, ")");
+            ASTNode* body = parse_block(input);
+            return WhileLoopNode_new(condition, body, source_line);
         }
     } else if (check_next_token_type(input, ID)) {
         ASTNode* loc_or_func = parse_loc_or_func_call(input);
-        match_and_discard_next_token(input, SYM, ";");
-        return loc_or_func;
+        if(check_next_token(input, SYM, "=")) {
+            discard_next_token(input);
+            ASTNode* value = parse_expression_lvl0(input);
+            match_and_discard_next_token(input, SYM, ";");
+            return AssignmentNode_new(loc_or_func, value, source_line);
+        } else {
+            match_and_discard_next_token(input, SYM, ";");
+            return loc_or_func;
+        }
     }
     Error_throw_printf("Error with this token %s on line %d\n", TokenQueue_peek(input)->text, get_next_token_line(input));
     return NULL;
@@ -437,7 +490,6 @@ ASTNode* parse_loc_or_func_call (TokenQueue* input)
     if (TokenQueue_is_empty(input)) {
         Error_throw_printf("Unexpected end of input (parameters)\n");
     }
-    printf("parsing loc or func call...\n");
     char id[MAX_TOKEN_LEN];
     parse_id(input, id);
     
@@ -456,7 +508,6 @@ NodeList* parse_args (TokenQueue* input)
     NodeList* args = NodeList_new();
     ASTNode* expr = parse_expression_lvl0(input);
     NodeList_add(args, expr);
-    printf("added an arg\n");
     while(check_next_token(input, SYM, ",")){
         if(check_next_token(input, SYM, ",")) {
             discard_next_token(input);
@@ -495,7 +546,6 @@ ASTNode* parse_function_call (TokenQueue* input, char* id)
     if (TokenQueue_is_empty(input)) {
         Error_throw_printf("Unexpected end of input (expected function call)\n");
     }
-    printf("parsing function call...\n");
     int source_line = get_next_token_line(input);
     // char id[MAX_TOKEN_LEN];
     // parse_id(input, id);
@@ -540,7 +590,6 @@ ASTNode* parse_location (TokenQueue* input, char* id)
     }
     int source_line = get_next_token_line(input);
     ASTNode* index = NULL;
-    printf("parsing location...\n");
     if(check_next_token(input, SYM, "[")) {
         discard_next_token(input);
         index = parse_expression_lvl0(input);
@@ -635,8 +684,6 @@ ASTNode* parse_program (TokenQueue* input)
 {
     NodeList* vars = NodeList_new();
     NodeList* funcs = NodeList_new();
-    // ASTNode* node = parse_literal(input);
-    // NodeList_add(vars, node);
     while(!TokenQueue_is_empty(input)){
         ASTNode* node = parse_var_or_func(input);
         if (node->type == VARDECL) {
@@ -645,14 +692,11 @@ ASTNode* parse_program (TokenQueue* input)
             NodeList_add(funcs, node);
         }
     }
-    printf("Finished parsing program.\n");
-    printf("There are %d global variables and %d functions.\n", NodeList_size(vars), NodeList_size(funcs));
     return ProgramNode_new(vars, funcs);
 }
 
 ASTNode* parse (TokenQueue* input)
 {
-    printf("Starting parse...\n");
     if(input == NULL) {
         Error_throw_printf("Input token queue is NULL\n");
     }
