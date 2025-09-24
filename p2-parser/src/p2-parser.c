@@ -347,6 +347,8 @@ ASTNode* parse_base_expression (TokenQueue* input)
         ASTNode* expr = parse_expression_lvl0(input);
         match_and_discard_next_token(input, SYM, ")");
         return expr;
+    } else if (check_next_token_type(input, ID)) {
+        return parse_loc_or_func_call(input);
     } else {
         printf("parsing literal...\n");
         return parse_literal(input);
@@ -538,9 +540,10 @@ ASTNode* parse_location (TokenQueue* input, char* id)
     }
     int source_line = get_next_token_line(input);
     ASTNode* index = NULL;
+    printf("parsing location...\n");
     if(check_next_token(input, SYM, "[")) {
         discard_next_token(input);
-        index = parse_expression_lvl0(input); // CHANGE IT TO EXPR PARSING LATER
+        index = parse_expression_lvl0(input);
         match_and_discard_next_token(input, SYM, "]");
     }
     return LocationNode_new(id, index, source_line);
