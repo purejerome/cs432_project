@@ -760,6 +760,7 @@ parse_vardecl (TokenQueue *input)
     }
 
   int source_line = get_next_token_line (input);
+
   int array_length = 1;
   bool is_array = false;
   DecafType type = parse_type (input);
