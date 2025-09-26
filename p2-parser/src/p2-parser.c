@@ -763,6 +763,12 @@ parse_vardecl (TokenQueue *input)
   int array_length = 1;
   bool is_array = false;
   DecafType type = parse_type (input);
+  if (type == VOID)
+    {
+      Error_throw_printf (
+          "Variable declarations cannot use type 'void' on line %d\n",
+          get_next_token_line (input));
+    }
   char id[MAX_TOKEN_LEN];
   parse_id (input, id);
   if (check_next_token (input, SYM, "["))
