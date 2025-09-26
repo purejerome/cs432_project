@@ -1,0 +1,6 @@
+// Should FAIL to parse (missing ';' after assignment)
+def int main() {
+  int a;
+  a = 3
+  return 0;
+}

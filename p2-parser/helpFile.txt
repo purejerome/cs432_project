@@ -1,0 +1,19 @@
+//TODO: should RETURN VALUE = be printing?
+//Best way to run tests, make to update changes
+chmod +x compare_ast.sh
+make clean && make
+./compare_ast.sh ./decaf /cs/students/cs432/f25/decaf
+
+//Tree png
+//Instructor Implementation:
+boycedal@stu:~/cs432/cs432_project/p2-parser$ /cs/students/cs432/f25/decaf p2_parser_tests/01_minimal_main.decaf
+
+//Our Implementation
+./decaf p2_parser_tests/01_minimal_main.decaf
+
+
+---IGNORE---
+////Text diff
+///cs/students/cs432/f25/decaf --fdump-tree p2_parser_tests/06_expressions_precedence.decaf > ref_ast.txt
+//diff -u ref_ast.txt my_ast.txt
+---IGNORE---

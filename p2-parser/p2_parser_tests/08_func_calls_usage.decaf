@@ -1,0 +1,11 @@
+// Should parse
+def int id(int v) { return v; }
+def void ping() { return; }
+
+def int main() {
+  int x;
+  x = id(5);      // in expression
+  ping();         // as a statement (void)
+  id(7);          // result-ignoring call is allowed
+  return x;
+}

@@ -1,0 +1,10 @@
+// Should parse
+def int main() {
+  int x;
+  bool b;
+  x = -5;
+  b = !false;
+  x = -(-(-1));
+  b = !(!true);
+  return 0;
+}

@@ -1,0 +1,10 @@
+// Should parse (arrays are only allowed globally; semantics later)
+// Parser should accept 'void' vars syntactically; semantics will flag later.
+int x;
+bool flag;
+int arr[5];
+void v; // syntactically allowed, semantically invalid (later phase)
+
+def int main() {
+  return 0;
+}

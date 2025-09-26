@@ -249,7 +249,8 @@ parse_expression_lvl1 (TokenQueue *input)
     {
       ASTNode *left = root;
       match_and_discard_next_token (input, SYM, "&&");
-      ASTNode *right = parse_expression_lvl1 (input);
+      // Changed && to left associative
+      ASTNode *right = parse_expression_lvl2 (input);
       ASTNode *new_root = BinaryOpNode_new (ANDOP, left, right, source_line);
       root = new_root;
     }

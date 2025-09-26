@@ -1,0 +1,7 @@
+// Should FAIL to parse
+def int f(int x) { return x; }
+def int main() {
+  int y;
+  y = f(1, 2;   // missing ')'
+  return y;
+}

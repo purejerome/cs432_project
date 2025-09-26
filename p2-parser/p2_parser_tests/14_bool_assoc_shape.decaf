@@ -1,0 +1,8 @@
+// Should parse. AST should show left-associative structure for && and ||
+// Current parser likely parses '&&' as right-associative due to parse_expression_lvl1 bug.
+def int main() {
+  bool a;
+  a = true && false && true;
+  a = false || false || true;
+  return 0;
+}

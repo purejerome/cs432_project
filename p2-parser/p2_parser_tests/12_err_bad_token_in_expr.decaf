@@ -1,0 +1,6 @@
+// Should FAIL to parse: invalid token '@' in expression
+def int main() {
+  int a;
+  a = 1 @ 2;
+  return 0;
+}

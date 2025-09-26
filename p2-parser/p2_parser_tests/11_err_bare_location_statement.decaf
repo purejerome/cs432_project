@@ -1,0 +1,7 @@
+// Should FAIL to parse: 'a;' is not a valid statement (must be assignment or func call)
+def int main() {
+  int a;
+  a = 1;
+  a;       // invalid
+  return 0;
+}

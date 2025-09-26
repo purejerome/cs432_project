@@ -1,0 +1,12 @@
+// Should parse
+int g;
+int arr[4];
+
+def int main() {
+  int x;
+  x = 0x2A;              // hex literal 42
+  x = (1 + (2 + 3));
+  x = g;
+  x = arr[2];
+  return x;
+}

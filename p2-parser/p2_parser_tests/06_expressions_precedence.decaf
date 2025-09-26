@@ -1,0 +1,12 @@
+// Should parse; AST should reflect precedence and left-associativity for binary ops
+def int main() {
+  int x;
+  x = 1 + 2 * 3;         // '*' binds tighter than '+'
+  x = (1 + 2) * 3;       // explicit parens
+  x = 10 - 3 - 2;        // should be (10 - 3) - 2 (left-assoc)
+  x = 10 / 2 / 5;        // (10/2)/5
+  // boolean precedence: ! > && > ||
+  bool b;
+  b = !false || false && true; // '!' > '&&' > '||'
+  return 0;
+}

@@ -1,0 +1,9 @@
+// Should parse
+def int f() { return 1; }
+def void g() { return; }
+def int main() {
+  int x;
+  x = f();
+  g();
+  return x;
+}

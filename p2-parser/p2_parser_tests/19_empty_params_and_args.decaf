@@ -1,0 +1,7 @@
+// Should parse (empty parameter list and empty call args)
+def int z() { return 0; }
+def int main() {
+  int k;
+  k = z();
+  return k;
+}

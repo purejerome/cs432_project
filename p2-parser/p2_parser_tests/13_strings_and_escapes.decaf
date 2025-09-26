@@ -1,0 +1,8 @@
+// Should parse; tests handling of \" \\ \n \t
+def void print_str(string v) { return; } // placeholder for syntax only (semantics later)
+def int main() {
+  print_str("Hello\nWorld");
+  print_str("Quote: \" and backslash: \\");
+  print_str("\tTabbed");
+  return 0;
+}

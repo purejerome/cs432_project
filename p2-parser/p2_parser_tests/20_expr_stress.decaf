@@ -1,0 +1,8 @@
+// Should parse
+def int main() {
+  int x;
+  bool b;
+  x = ((1+2)*3) % (4 + 5 * (6 - 7 + 8));
+  b = 1 < 2 && 3 == 3 || !(4 >= 2);
+  return x;
+}

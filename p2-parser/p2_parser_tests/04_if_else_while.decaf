@@ -1,0 +1,13 @@
+// Should parse
+def int main() {
+  int a;
+  a = 0;
+  while (a < 3) {
+    if (a == 1) {
+      a = a + 1;
+    } else {
+      a = a + 2;
+    }
+  }
+  return a;
+}

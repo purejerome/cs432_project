@@ -1,0 +1,4 @@
+// Should parse
+def int main() {
+  return 0;
+}

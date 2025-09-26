@@ -1,0 +1,8 @@
+// Should parse
+def int main() {
+  int a;
+  bool b;
+  a = 3;
+  b = true;
+  return a;
+}
