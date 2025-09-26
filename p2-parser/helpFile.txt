@@ -4,6 +4,7 @@ chmod +x compare_ast.sh
 make clean && make
 ./compare_ast.sh ./decaf /cs/students/cs432/f25/decaf
 
+
 //Tree png
 //Instructor Implementation:
 boycedal@stu:~/cs432/cs432_project/p2-parser$ /cs/students/cs432/f25/decaf p2_parser_tests/01_minimal_main.decaf
