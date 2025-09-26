@@ -662,6 +662,12 @@ parse_params (TokenQueue *input)
     }
   ParameterList *params = ParameterList_new ();
   DecafType type = parse_type (input);
+  if (type == VOID)
+    {
+      Error_throw_printf (
+          "Function parameters cannot use type 'void' on line %d\n",
+          get_next_token_line (input));
+    }
   char id[MAX_TOKEN_LEN];
   parse_id (input, id);
   ParameterList_add_new (params, id, type);
@@ -673,6 +679,12 @@ parse_params (TokenQueue *input)
           discard_next_token (input);
         }
       DecafType type = parse_type (input);
+      if (type == VOID)
+        {
+          Error_throw_printf (
+              "Function parameters cannot use type 'void' on line %d\n",
+              get_next_token_line (input));
+        }
       char id[MAX_TOKEN_LEN];
       parse_id (input, id);
       ParameterList_add_new (params, id, type);
