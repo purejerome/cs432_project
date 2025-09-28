@@ -36,6 +36,15 @@ void parse_id (TokenQueue *input, char *buffer);
 /*
  * helper functions
  */
+bool check_next_token (TokenQueue *input, TokenType type, const char *text);
+bool check_next_token_type (TokenQueue *input, TokenType type);
+
+static inline bool
+is_type_start (TokenQueue *input)
+{
+  return check_next_token (input, KEY, "int")
+         || check_next_token (input, KEY, "bool");
+}
 
 /**
  * @brief Look up the source line of the next token in the queue.
@@ -544,7 +553,15 @@ parse_statement (TokenQueue *input)
       else
         {
           match_and_discard_next_token (input, SYM, ";");
-          return loc_or_func;
+          if (loc_or_func->type == FUNCCALL)
+            {
+              return loc_or_func; // standalone function call statement
+            }
+          else
+            {
+              Error_throw_printf ("Expected '=' after location on line %d\n",
+                                  source_line);
+            }
         }
     }
   Error_throw_printf ("Error with this token %s on line %d\n",
@@ -563,22 +580,15 @@ parse_block (TokenQueue *input)
 
   int source_line = get_next_token_line (input);
   match_and_discard_next_token (input, SYM, "{");
+
   NodeList *vars = NodeList_new ();
   NodeList *stmts = NodeList_new ();
-  while (!check_next_token (input, SYM, "}"))
+
+  /* Phase 1: VarDecl* (no 'void' here) */
+  while (is_type_start (input))
     {
-      if (check_next_token (input, KEY, "int")
-          || check_next_token (input, KEY, "bool")
-          || check_next_token (input, KEY, "void"))
-        {
-          ASTNode *var = parse_vardecl (input);
-          NodeList_add (vars, var);
-        }
-      else
-        {
-          ASTNode *stmt = parse_statement (input);
-          NodeList_add (stmts, stmt);
-        }
+      ASTNode *var = parse_vardecl (input);
+      NodeList_add (vars, var);
       if (TokenQueue_is_empty (input))
         {
           Error_throw_printf ("Unexpected end of input (expected '}' to close "
@@ -586,6 +596,29 @@ parse_block (TokenQueue *input)
                               source_line);
         }
     }
+
+  /* Phase 2: Stmt*; if we see a type now, it's a late decl => error */
+  while (!check_next_token (input, SYM, "}"))
+    {
+      if (check_next_token (input, KEY, "int")
+          || check_next_token (input, KEY, "bool")
+          || check_next_token (input, KEY, "void"))
+        {
+          Error_throw_printf (
+              "Local declarations must precede statements on line %d\n",
+              get_next_token_line (input));
+        }
+      ASTNode *stmt = parse_statement (input);
+      NodeList_add (stmts, stmt);
+
+      if (TokenQueue_is_empty (input))
+        {
+          Error_throw_printf ("Unexpected end of input (expected '}' to close "
+                              "block started on line %d)\n",
+                              source_line);
+        }
+    }
+
   match_and_discard_next_token (input, SYM, "}");
   return BlockNode_new (vars, stmts, source_line);
 }
