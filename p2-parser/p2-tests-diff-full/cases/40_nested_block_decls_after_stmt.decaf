@@ -1,0 +1,7 @@
+def int main() {
+  {
+    x = 0;
+    bool b;   // illegal after statement in inner block
+  }
+  return 0;
+}

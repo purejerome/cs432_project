@@ -1,0 +1,5 @@
+Program [line 1]
+  FuncDecl name="main" return_type=int parameters={} [line 1]
+    Block [line 1]
+      Return [line 1]
+        Literal type=int value=0 [line 1]

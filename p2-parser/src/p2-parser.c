@@ -583,32 +583,35 @@ parse_block (TokenQueue *input)
 
   NodeList *vars = NodeList_new ();
   NodeList *stmts = NodeList_new ();
+  int seen_stmt = 0;
 
-  /* Phase 1: VarDecl* (no 'void' here) */
-  while (is_type_start (input))
-    {
-      ASTNode *var = parse_vardecl (input);
-      NodeList_add (vars, var);
-      if (TokenQueue_is_empty (input))
-        {
-          Error_throw_printf ("Unexpected end of input (expected '}' to close "
-                              "block started on line %d)\n",
-                              source_line);
-        }
-    }
+  /* NEW: once we parse any statement, no more declarations are allowed */
+  int seen_stmt = 0;
 
-  /* Phase 2: Stmt*; if we see a type now, it's a late decl => error */
   while (!check_next_token (input, SYM, "}"))
     {
+      /* Is the next thing a (type) start of a VarDecl? */
       if (check_next_token (input, KEY, "int")
           || check_next_token (input, KEY, "bool")
           || check_next_token (input, KEY, "void"))
         {
-          Error_throw_printf ("Invalid statement on line %d\n",
-                              get_next_token_line (input));
+          if (seen_stmt)
+            {
+              Error_throw_printf (
+                  "Variable declarations must precede statements in a block "
+                  "(block started on line %d)\n",
+                  source_line);
+            }
+          ASTNode *var = parse_vardecl (input);
+          NodeList_add (vars, var);
         }
-      ASTNode *stmt = parse_statement (input);
-      NodeList_add (stmts, stmt);
+      else
+        {
+          /* Otherwise it must be a statement */
+          ASTNode *stmt = parse_statement (input);
+          NodeList_add (stmts, stmt);
+          seen_stmt = 1; /* from now on, declarations are forbidden */
+        }
 
       if (TokenQueue_is_empty (input))
         {
@@ -703,12 +706,6 @@ parse_params (TokenQueue *input)
     }
   ParameterList *params = ParameterList_new ();
   DecafType type = parse_type (input);
-  if (type == VOID)
-    {
-      Error_throw_printf (
-          "Function parameters cannot use type 'void' on line %d\n",
-          get_next_token_line (input));
-    }
   char id[MAX_TOKEN_LEN];
   parse_id (input, id);
   ParameterList_add_new (params, id, type);
@@ -720,12 +717,6 @@ parse_params (TokenQueue *input)
           discard_next_token (input);
         }
       DecafType type = parse_type (input);
-      if (type == VOID)
-        {
-          Error_throw_printf (
-              "Function parameters cannot use type 'void' on line %d\n",
-              get_next_token_line (input));
-        }
       char id[MAX_TOKEN_LEN];
       parse_id (input, id);
       ParameterList_add_new (params, id, type);
@@ -817,12 +808,6 @@ parse_vardecl (TokenQueue *input)
   int array_length = 1;
   bool is_array = false;
   DecafType type = parse_type (input);
-  if (type == VOID)
-    {
-      Error_throw_printf (
-          "Variable declarations cannot use type 'void' on line %d\n",
-          get_next_token_line (input));
-    }
   char id[MAX_TOKEN_LEN];
   parse_id (input, id);
   if (check_next_token (input, SYM, "["))

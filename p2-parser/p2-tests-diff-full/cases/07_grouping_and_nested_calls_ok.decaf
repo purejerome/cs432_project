@@ -1,0 +1,5 @@
+def int f(int x, int y){ return x + y; }
+def int g(int z){ return z; }
+def int main(){
+  return g(f(1, 2));
+}

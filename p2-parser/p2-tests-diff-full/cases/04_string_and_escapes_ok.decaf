@@ -1,0 +1,4 @@
+def int main() {
+  "hi\n\t\\\"";
+  return 0;
+}

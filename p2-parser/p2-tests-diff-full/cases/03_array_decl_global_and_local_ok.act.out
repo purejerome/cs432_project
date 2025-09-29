@@ -1,0 +1,7 @@
+Program [line 1]
+  VarDecl name="A" type=int is_array=yes array_length=10 [line 1]
+  FuncDecl name="main" return_type=int parameters={} [line 2]
+    Block [line 2]
+      VarDecl name="B" type=int is_array=yes array_length=5 [line 3]
+      Return [line 4]
+        Literal type=int value=0 [line 4]

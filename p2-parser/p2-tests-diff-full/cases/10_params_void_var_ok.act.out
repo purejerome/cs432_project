@@ -1,0 +1,8 @@
+Program [line 1]
+  FuncDecl name="f" return_type=void parameters={x:void} [line 1]
+    Block [line 1]
+      Return [line 1]
+  FuncDecl name="main" return_type=int parameters={} [line 2]
+    Block [line 2]
+      Return [line 2]
+        Literal type=int value=0 [line 2]

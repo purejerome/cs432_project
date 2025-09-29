@@ -1,0 +1,8 @@
+int a;
+def int foo(int x){ return x; }
+def int main(){
+  a = foo(3);
+  a;
+  foo(4);
+  return a;
+}

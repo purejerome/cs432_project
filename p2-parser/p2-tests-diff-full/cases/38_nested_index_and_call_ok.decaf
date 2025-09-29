@@ -1,0 +1,6 @@
+int A[10];
+def int id(int x){ return x; }
+def int main(){
+  A[id(1+2)] = id(3);
+  return A[3];
+}

@@ -1,0 +1,4 @@
+def int id(int x){ return x; }
+def int main() {
+  return id( /*start*/  4 /*mid*/ );
+}

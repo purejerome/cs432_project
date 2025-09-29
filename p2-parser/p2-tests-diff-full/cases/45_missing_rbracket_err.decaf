@@ -1,0 +1,4 @@
+int A[5];
+def int main() {
+  return A[3;
+}

@@ -1,0 +1,7 @@
+def int main() {
+  int a;
+  bool b;
+  a = 1;
+  if (a) { b = 0; }
+  return a;
+}
