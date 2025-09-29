@@ -604,9 +604,8 @@ parse_block (TokenQueue *input)
           || check_next_token (input, KEY, "bool")
           || check_next_token (input, KEY, "void"))
         {
-          Error_throw_printf (
-              "Local declarations must precede statements on line %d\n",
-              get_next_token_line (input));
+          Error_throw_printf ("Invalid statement on line %d\n",
+                              get_next_token_line (input));
         }
       ASTNode *stmt = parse_statement (input);
       NodeList_add (stmts, stmt);
@@ -674,6 +673,7 @@ parse_args (TokenQueue *input)
   NodeList *args = NodeList_new ();
   ASTNode *expr = parse_expression_lvl0 (input);
   NodeList_add (args, expr);
+
   while (check_next_token (input, SYM, ","))
     {
       if (check_next_token (input, SYM, ","))
@@ -683,6 +683,14 @@ parse_args (TokenQueue *input)
       ASTNode *expr = parse_expression_lvl0 (input);
       NodeList_add (args, expr);
     }
+
+  if (!check_next_token (input, SYM, ")"))
+    {
+      Token *t = TokenQueue_peek (input);
+      Error_throw_printf ("Expected ',' but found '%s' on line %d\n", t->text,
+                          t->line);
+    }
+
   return args;
 }
 
