@@ -218,7 +218,7 @@ parse_literal (TokenQueue *input)
       return LiteralNode_new_bool (false, source_line);
     }
 
-  Error_throw_printf ("Error in literal layer.\n");
+  Error_throw_printf ("Invalid base expression '%s' on line %d.\n", TokenQueue_peek(input)->text, source_line);
   return NULL;
 }
 
@@ -227,7 +227,7 @@ parse_expression_lvl0 (TokenQueue *input)
 {
   if (TokenQueue_is_empty (input))
     {
-      Error_throw_printf ("Unexpected end of input (expected expression)\n");
+      Error_throw_printf ("Unexpected end of input (expected level 0expression)\n");
     }
   ASTNode *root = parse_expression_lvl1 (input);
 
@@ -249,7 +249,7 @@ parse_expression_lvl1 (TokenQueue *input)
 {
   if (TokenQueue_is_empty (input))
     {
-      Error_throw_printf ("Unexpected end of input (expected expression)\n");
+      Error_throw_printf ("Unexpected end of input (expected level 1 expression)\n");
     }
   ASTNode *root = parse_expression_lvl2 (input);
 
@@ -271,7 +271,7 @@ parse_expression_lvl2 (TokenQueue *input)
 {
   if (TokenQueue_is_empty (input))
     {
-      Error_throw_printf ("Unexpected end of input (expected expression)\n");
+      Error_throw_printf ("Unexpected end of input (expected level 2 expression)\n");
     }
   ASTNode *root = parse_expression_lvl3 (input);
   char *discard_token;
@@ -305,7 +305,7 @@ parse_expression_lvl3 (TokenQueue *input)
 {
   if (TokenQueue_is_empty (input))
     {
-      Error_throw_printf ("Unexpected end of input (expected expression)\n");
+      Error_throw_printf ("Unexpected end of input (expected level 3 expression)\n");
     }
   ASTNode *root = parse_expression_lvl4 (input);
   char *discard_token;
@@ -351,7 +351,7 @@ parse_expression_lvl4 (TokenQueue *input)
 {
   if (TokenQueue_is_empty (input))
     {
-      Error_throw_printf ("Unexpected end of input (expected expression)\n");
+      Error_throw_printf ("Unexpected end of input (expected level 4 expression)\n");
     }
   ASTNode *root = parse_expression_lvl5 (input);
   char *discard_token;
@@ -385,7 +385,7 @@ parse_expression_lvl5 (TokenQueue *input)
 {
   if (TokenQueue_is_empty (input))
     {
-      Error_throw_printf ("Unexpected end of input (expected expression)\n");
+      Error_throw_printf ("Unexpected end of input (expected level 5 expression)\n");
     }
   ASTNode *root = parse_expression_lvl6 (input);
   char *discard_token;
@@ -425,7 +425,7 @@ parse_expression_lvl6 (TokenQueue *input)
 {
   if (TokenQueue_is_empty (input))
     {
-      Error_throw_printf ("Unexpected end of input (expected expression)\n");
+      Error_throw_printf ("Unexpected end of input (expected level 6 expression)\n");
     }
   if (check_next_token (input, SYM, "-") || check_next_token (input, SYM, "!"))
     {
@@ -458,7 +458,7 @@ parse_base_expression (TokenQueue *input)
   // change this later to allow for more than just literals
   if (TokenQueue_is_empty (input))
     {
-      Error_throw_printf ("Unexpected end of input (expected statement)\n");
+      Error_throw_printf ("Unexpected end of input (expected base expression)\n");
     }
   if (check_next_token (input, SYM, "("))
     {
@@ -630,7 +630,7 @@ parse_var_or_func (TokenQueue *input)
   if (TokenQueue_is_empty (input))
     {
       Error_throw_printf (
-          "Unexpected end of input (expected variable declaration)\n");
+          "Unexpected end of input (expected variable declaration or function declaration)\n");
     }
 
   bool is_func_decl = check_next_token (input, KEY, "def");
@@ -650,7 +650,7 @@ parse_loc_or_func_call (TokenQueue *input)
 {
   if (TokenQueue_is_empty (input))
     {
-      Error_throw_printf ("Unexpected end of input (parameters)\n");
+      Error_throw_printf ("Unexpected end of input (function arguments or location)\n");
     }
   char id[MAX_TOKEN_LEN];
   parse_id (input, id);
@@ -670,7 +670,7 @@ parse_args (TokenQueue *input)
 {
   if (TokenQueue_is_empty (input))
     {
-      Error_throw_printf ("Unexpected end of input (arguments)\n");
+      Error_throw_printf ("Unexpected end of input (expected arguments)\n");
     }
   NodeList *args = NodeList_new ();
   ASTNode *expr = parse_expression_lvl0 (input);
@@ -701,7 +701,7 @@ parse_params (TokenQueue *input)
 {
   if (TokenQueue_is_empty (input))
     {
-      Error_throw_printf ("Unexpected end of input (parameters)\n");
+      Error_throw_printf ("Unexpected end of input (expected parameters)\n");
     }
   ParameterList *params = ParameterList_new ();
   DecafType type = parse_type (input);
@@ -753,7 +753,7 @@ parse_funcdecl (TokenQueue *input)
 {
   if (TokenQueue_is_empty (input))
     {
-      Error_throw_printf ("Unexpected end of input (expected type)\n");
+      Error_throw_printf ("Unexpected end of input (expected function declaration)\n");
     }
 
   int source_line = get_next_token_line (input);
@@ -799,7 +799,7 @@ parse_vardecl (TokenQueue *input)
 {
   if (TokenQueue_is_empty (input))
     {
-      Error_throw_printf ("Unexpected end of input (expected type)\n");
+      Error_throw_printf ("Unexpected end of input (expected variable declaration)\n");
     }
 
   int source_line = get_next_token_line (input);
