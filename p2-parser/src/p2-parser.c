@@ -583,7 +583,6 @@ parse_block (TokenQueue *input)
 
   NodeList *vars = NodeList_new ();
   NodeList *stmts = NodeList_new ();
-  int seen_stmt = 0;
 
   /* NEW: once we parse any statement, no more declarations are allowed */
   int seen_stmt = 0;

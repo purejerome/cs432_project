@@ -1,1 +1,1 @@
-def int main() { return "abc\n\n\"" ; }
+def int main() { void love; return "abc\n\n\"" ; }
