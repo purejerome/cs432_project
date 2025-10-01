@@ -7,9 +7,9 @@
 
 ASTNode *parse (TokenQueue *input);
 ASTNode *parse_program (TokenQueue *input);
-ASTNode *parse_vardecl (TokenQueue *input);
+ASTNode *parse_vardecl (TokenQueue *input, int source_line);
 ASTNode *parse_var_or_func (TokenQueue *input);
-ASTNode *parse_funcdecl (TokenQueue *input);
+ASTNode *parse_funcdecl (TokenQueue *input, int source_line);
 ASTNode *parse_block (TokenQueue *input);
 ASTNode *parse_statement (TokenQueue *input);
 ASTNode *parse_literal (TokenQueue *input);
@@ -21,8 +21,8 @@ ASTNode *parse_expression_lvl4 (TokenQueue *input);
 ASTNode *parse_expression_lvl5 (TokenQueue *input);
 ASTNode *parse_expression_lvl6 (TokenQueue *input);
 ASTNode *parse_base_expression (TokenQueue *input);
-ASTNode *parse_function_call (TokenQueue *input, char *id);
-ASTNode *parse_location (TokenQueue *input, char *id);
+ASTNode *parse_function_call (TokenQueue *input, char *id, int source_line);
+ASTNode *parse_location (TokenQueue *input, char *id, int source_line);
 ASTNode *parse_loc_or_func_call (TokenQueue *input);
 NodeList *parse_args (TokenQueue *input);
 ParameterList *parse_params (TokenQueue *input);
@@ -601,7 +601,8 @@ parse_block (TokenQueue *input)
                   "(block started on line %d)\n",
                   source_line);
             }
-          ASTNode *var = parse_vardecl (input);
+          int source_line = get_next_token_line (input);
+          ASTNode *var = parse_vardecl (input, source_line);
           NodeList_add (vars, var);
         }
       else
@@ -632,16 +633,17 @@ parse_var_or_func (TokenQueue *input)
       Error_throw_printf (
           "Unexpected end of input (expected variable declaration or function declaration)\n");
     }
+  int source_line = get_next_token_line (input);
 
   bool is_func_decl = check_next_token (input, KEY, "def");
 
   if (is_func_decl)
     {
-      return parse_funcdecl (input);
+      return parse_funcdecl (input, source_line);
     }
   else
     {
-      return parse_vardecl (input);
+      return parse_vardecl (input, source_line);
     }
 }
 
@@ -652,16 +654,17 @@ parse_loc_or_func_call (TokenQueue *input)
     {
       Error_throw_printf ("Unexpected end of input (function arguments or location)\n");
     }
+  int source_line = get_next_token_line (input);
   char id[MAX_TOKEN_LEN];
   parse_id (input, id);
 
   if (check_next_token (input, SYM, "("))
     {
-      return parse_function_call (input, id);
+      return parse_function_call (input, id, source_line);
     }
   else
     {
-      return parse_location (input, id);
+      return parse_location (input, id, source_line);
     }
 }
 
@@ -724,16 +727,14 @@ parse_params (TokenQueue *input)
 }
 
 ASTNode *
-parse_function_call (TokenQueue *input, char *id)
+parse_function_call (TokenQueue *input, char *id, int source_line)
 {
   if (TokenQueue_is_empty (input))
     {
       Error_throw_printf (
           "Unexpected end of input (expected function call)\n");
     }
-  int source_line = get_next_token_line (input);
-  // char id[MAX_TOKEN_LEN];
-  // parse_id(input, id);
+
   match_and_discard_next_token (input, SYM, "(");
   NodeList *args;
   if (check_next_token (input, SYM, ")"))
@@ -749,14 +750,14 @@ parse_function_call (TokenQueue *input, char *id)
 }
 
 ASTNode *
-parse_funcdecl (TokenQueue *input)
+parse_funcdecl (TokenQueue *input, int source_line)
 {
   if (TokenQueue_is_empty (input))
     {
       Error_throw_printf ("Unexpected end of input (expected function declaration)\n");
     }
 
-  int source_line = get_next_token_line (input);
+
   match_and_discard_next_token (input, KEY, "def");
   DecafType type = parse_type (input);
   char id[MAX_TOKEN_LEN];
@@ -777,13 +778,13 @@ parse_funcdecl (TokenQueue *input)
 }
 
 ASTNode *
-parse_location (TokenQueue *input, char *id)
+parse_location (TokenQueue *input, char *id, int source_line)
 {
   if (TokenQueue_is_empty (input))
     {
       Error_throw_printf ("Unexpected end of input (expected location)\n");
     }
-  int source_line = get_next_token_line (input);
+
   ASTNode *index = NULL;
   if (check_next_token (input, SYM, "["))
     {
@@ -795,14 +796,12 @@ parse_location (TokenQueue *input, char *id)
 }
 
 ASTNode *
-parse_vardecl (TokenQueue *input)
+parse_vardecl (TokenQueue *input, int source_line)
 {
   if (TokenQueue_is_empty (input))
     {
       Error_throw_printf ("Unexpected end of input (expected variable declaration)\n");
     }
-
-  int source_line = get_next_token_line (input);
 
   int array_length = 1;
   bool is_array = false;
