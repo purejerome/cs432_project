@@ -227,7 +227,7 @@ parse_expression_lvl0 (TokenQueue *input)
 {
   if (TokenQueue_is_empty (input))
     {
-      Error_throw_printf ("Unexpected end of input (expected level 0expression)\n");
+      Error_throw_printf ("Unexpected end of input (expected level 0 expression)\n");
     }
   ASTNode *root = parse_expression_lvl1 (input);
 
@@ -258,7 +258,6 @@ parse_expression_lvl1 (TokenQueue *input)
     {
       ASTNode *left = root;
       match_and_discard_next_token (input, SYM, "&&");
-      // Changed && to left associative
       ASTNode *right = parse_expression_lvl2 (input);
       ASTNode *new_root = BinaryOpNode_new (ANDOP, left, right, source_line);
       root = new_root;
