@@ -86,25 +86,25 @@ Symbol* lookup_symbol_with_reporting(NodeVisitor* visitor, ASTNode* node, const 
 #define GET_INFERRED_TYPE(N) (DecafType)(long)ASTNode_get_attribute(N, "type")
 
 typedef struct {
- 
+ int block_depth;
 } ListVisitorsData;
  
-#define DATA ((ListVisitorsData*)(visitor->data))
+#define DATA2 ((ListVisitorsData*)(visitor->data))
  
 void ListVariablesVisitor_previsit_program (NodeVisitor* visitor, ASTNode* node) {
- 
+ DATA2->block_depth = 0;
 }
  
 void ListVariablesVisitor_previsit_block (NodeVisitor* visitor, ASTNode* node) {
- 
+ DATA2->block_depth += 1;
 }
  
 void ListVariablesVisitor_postvisit_block (NodeVisitor* visitor, ASTNode* node) {
- 
+ DATA2->block_depth -= 1;
 }
  
 void ListVariablesVisitor_visit_vardecl (NodeVisitor* visitor, ASTNode* node) {
- 
+ printf("%d %s\n", DATA2->block_depth, node->vardecl.name);
 }
  
 NodeVisitor* ListVariablesVisitor_new () {
@@ -126,7 +126,7 @@ ErrorList* analyze (ASTNode* tree)
     v->dtor = (Destructor)AnalysisData_free;
 
     /* BOILERPLATE: TODO: register analysis callbacks */
-
+    NodeVisitor_traverse_and_free(ListVariablesVisitor_new(), tree);
     /* perform analysis, save error list, clean up, and return errors */
     NodeVisitor_traverse(v, tree);
     ErrorList* errors = ((AnalysisData*)v->data)->errors;
