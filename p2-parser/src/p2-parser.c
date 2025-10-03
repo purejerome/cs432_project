@@ -3,6 +3,10 @@
  * @brief Compiler phase 2: parser
  */
 
+/* AI ASSIST: We used AI for helping discover and cover some edge cases as well
+ * as line count.
+ */
+
 #include "p2-parser.h"
 
 ASTNode *parse (TokenQueue *input);
@@ -78,13 +82,14 @@ match_and_discard_next_token (TokenQueue *input, TokenType type,
 {
   if (TokenQueue_is_empty (input))
     {
-      Error_throw_printf ("Unexpected end of input (expected \'%s\')\n", text);
+      Error_throw_printf ("Unexpected end of input (expected '%s')\n", text);
     }
   Token *token = TokenQueue_remove (input);
+  int line = token->line; // <- keep the actual offending token’s line
   if (token->type != type || !token_str_eq (token->text, text))
     {
-      Error_throw_printf ("Expected \'%s\' but found '%s' on line %d\n", text,
-                          token->text, get_next_token_line (input));
+      Error_throw_printf ("Expected '%s' but found '%s' on line %d\n", text,
+                          token->text, line);
     }
   Token_free (token);
 }
@@ -558,18 +563,28 @@ parse_statement (TokenQueue *input)
           match_and_discard_next_token (input, SYM, ";");
           return AssignmentNode_new (loc_or_func, value, source_line);
         }
-      else
+      else if (check_next_token (input, SYM, ";"))
         {
-          match_and_discard_next_token (input, SYM, ";");
           if (loc_or_func->type == FUNCCALL)
             {
-              return loc_or_func; // standalone function call statement
+              match_and_discard_next_token (input, SYM, ";");
+              return loc_or_func;
             }
           else
             {
-              Error_throw_printf ("Expected '=' after location on line %d\n",
-                                  source_line);
+              match_and_discard_next_token (input, SYM, ";");
+              int line = get_next_token_line (input);
+              Error_throw_printf ("Expected '=' but found ';' on line %d\n",
+                                  line);
             }
+        }
+      else
+        {
+          Token *t = TokenQueue_peek (input);
+          Error_throw_printf (
+              "Expected '=' or ';' but found '%s' on line %d\n",
+              t ? t->text : "<eof>",
+              t ? t->line : get_next_token_line (input));
         }
     }
   Error_throw_printf ("Error with this token %s on line %d\n",
