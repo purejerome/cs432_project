@@ -4,7 +4,9 @@
  */
 
 /* AI ASSIST: We used AI for helping discover and cover some edge cases as well
- * as line count.
+ * as line count, used Copilot for coding autocompletion, code suggestions, and streamlining comment creation.
+  Used ChatGPT to help debug any code, create test case, as well as
+  clean up the extra slashes in the string literals.
  */
 
 #include "p2-parser.h"
@@ -149,6 +151,12 @@ check_next_token (TokenQueue *input, TokenType type, const char *text)
   return (token->type == type) && (token_str_eq (token->text, text));
 }
 
+/**
+ * @brief Parse and return a Decaf literal (integer, boolean, or string).
+ * 
+ * @param input Token queue to parse from.
+ * @returns A node representing a literal.
+ */
 ASTNode *
 parse_literal (TokenQueue *input)
 {
@@ -228,6 +236,13 @@ parse_literal (TokenQueue *input)
   return NULL;
 }
 
+/**
+ * @brief Parse and return an expression starting at level 0 (lowest precedence).
+ * This level handles the logical OR operator (||).
+ * 
+ * @param input Token queue to parse from.
+ * @returns A node representing the expression at level 0.
+ */
 ASTNode *
 parse_expression_lvl0 (TokenQueue *input)
 {
@@ -251,6 +266,13 @@ parse_expression_lvl0 (TokenQueue *input)
   return root;
 }
 
+/**
+ * @brief Parse and return an expression starting at level 1.
+ * This level handles the logical AND operator (&&).
+ * 
+ * @param input Token queue to parse from.
+ * @returns A node representing the expression at level 1.
+ */
 ASTNode *
 parse_expression_lvl1 (TokenQueue *input)
 {
@@ -273,6 +295,13 @@ parse_expression_lvl1 (TokenQueue *input)
   return root;
 }
 
+/**
+ * @brief Parse and return an expression starting at level 2.
+ * This level handles the equality (==) and inequality (!=) operators.
+ * 
+ * @param input Token queue to parse from.
+ * @returns A node representing the expression at level 2.
+ */
 ASTNode *
 parse_expression_lvl2 (TokenQueue *input)
 {
@@ -308,6 +337,14 @@ parse_expression_lvl2 (TokenQueue *input)
   return root;
 }
 
+
+/**
+ * @brief Parse and return an expression starting at level 3.
+ * This level handles the relational operators (<, <=, >, >=).
+ * 
+ * @param input Token queue to parse from.
+ * @returns A node representing the expression at level 3.
+ */
 ASTNode *
 parse_expression_lvl3 (TokenQueue *input)
 {
@@ -355,6 +392,14 @@ parse_expression_lvl3 (TokenQueue *input)
   return root;
 }
 
+
+/**
+ * @brief Parse and return an expression starting at level 4.
+ * This level handles the addition (+) and subtraction (-) operators.
+ * 
+ * @param input Token queue to parse from.
+ * @returns A node representing the expression at level 4.
+ */
 ASTNode *
 parse_expression_lvl4 (TokenQueue *input)
 {
@@ -390,6 +435,14 @@ parse_expression_lvl4 (TokenQueue *input)
   return root;
 }
 
+
+/**
+ * @brief Parse and return an expression starting at level 5.
+ * This level handles the multiplication (*), division (/), and modulus (%) operators.
+ * 
+ * @param input Token queue to parse from.
+ * @returns A node representing the expression at level 5.
+ */
 ASTNode *
 parse_expression_lvl5 (TokenQueue *input)
 {
@@ -431,6 +484,12 @@ parse_expression_lvl5 (TokenQueue *input)
   return root;
 }
 
+/**
+ * @brief Parse and return an expression starting at level 6 (highest precedence).
+ *
+ * This level handles unary operators negation (-) and logical NOT (!).
+ * @param input Token queue to parse from.
+ */
 ASTNode *
 parse_expression_lvl6 (TokenQueue *input)
 {
@@ -464,6 +523,13 @@ parse_expression_lvl6 (TokenQueue *input)
     }
 }
 
+/**
+ * @brief Parse and return a base expression.
+ * This can be a literal, a location (variable or array access), a function call, or a grouped expression.
+ * 
+ * @param input Token queue to parse from.
+ * @returns A node representing a base expression.
+ */
 ASTNode *
 parse_base_expression (TokenQueue *input)
 {
@@ -490,6 +556,14 @@ parse_base_expression (TokenQueue *input)
     }
 }
 
+/**
+ * @brief Parse and return a statement.
+ * This can be a function call, assignment,
+ * return statement, break statement, continue statement, or conditional statement.
+ * 
+ * @param input Token queue to parse from.
+ * @returns A node representing a statement.
+ */
 ASTNode *
 parse_statement (TokenQueue *input)
 {
@@ -563,29 +637,45 @@ parse_statement (TokenQueue *input)
           match_and_discard_next_token (input, SYM, ";");
           return AssignmentNode_new (loc_or_func, value, source_line);
         }
-      else if (check_next_token (input, SYM, ";"))
+        else
         {
+          match_and_discard_next_token (input, SYM, ";");
           if (loc_or_func->type == FUNCCALL)
             {
-              match_and_discard_next_token (input, SYM, ";");
-              return loc_or_func;
+              return loc_or_func; // standalone function call statement
+
             }
           else
             {
-              match_and_discard_next_token (input, SYM, ";");
-              int line = get_next_token_line (input);
-              Error_throw_printf ("Expected '=' but found ';' on line %d\n",
-                                  line);
+              Error_throw_printf ("Expected '=' after location on line %d\n",
+                                  source_line);
+
+
             }
         }
-      else
-        {
-          Token *t = TokenQueue_peek (input);
-          Error_throw_printf (
-              "Expected '=' or ';' but found '%s' on line %d\n",
-              t ? t->text : "<eof>",
-              t ? t->line : get_next_token_line (input));
-        }
+      // else if (check_next_token (input, SYM, ";"))
+      //   {
+      //     if (loc_or_func->type == FUNCCALL)
+      //       {
+      //         match_and_discard_next_token (input, SYM, ";");
+      //         return loc_or_func;
+      //       }
+      //     else
+      //       {
+      //         match_and_discard_next_token (input, SYM, ";");
+      //         int line = get_next_token_line (input);
+      //         Error_throw_printf ("Expected '=' but found ';' on line %d\n",
+      //                             line);
+      //       }
+      //   }
+      // else
+      //   {
+      //     Token *t = TokenQueue_peek (input);
+      //     Error_throw_printf (
+      //         "Expected '=' or ';' but found '%s' on line %d\n",
+      //         t ? t->text : "<eof>",
+      //         t ? t->line : get_next_token_line (input));
+      //   }
     }
   Error_throw_printf ("Error with this token %s on line %d\n",
                       TokenQueue_peek (input)->text,
@@ -593,6 +683,12 @@ parse_statement (TokenQueue *input)
   return NULL;
 }
 
+/**
+ * @brief Parse and return a block of code, including variable declarations and statements.
+ * 
+ * @param input Token queue to parse from.
+ * @returns A node representing the block of code.
+ */
 ASTNode *
 parse_block (TokenQueue *input)
 {
@@ -648,6 +744,12 @@ parse_block (TokenQueue *input)
   return BlockNode_new (vars, stmts, source_line);
 }
 
+/**
+ * @brief Wrapper to handle whether or not parse a variable declaration or function declaration.
+ * 
+ * @param input Token queue to parse from.
+ * @returns A node representing either a variable declaration or a function declaration.
+ */
 ASTNode *
 parse_var_or_func (TokenQueue *input)
 {
@@ -670,6 +772,12 @@ parse_var_or_func (TokenQueue *input)
     }
 }
 
+/**
+ * @brief Wrapper to handle whether to parse a location (variable or array access) or a function call.
+ * 
+ * @param input Token queue to parse from.
+ * @returns A node representing either a location or a function call.
+ */
 ASTNode *
 parse_loc_or_func_call (TokenQueue *input)
 {
@@ -692,6 +800,12 @@ parse_loc_or_func_call (TokenQueue *input)
     }
 }
 
+/**
+ * @brief Parse and return a list of arguments for a function call.
+ * 
+ * @param input Token queue to parse from.
+ * @returns A list of nodes representing the arguments.
+ */
 NodeList *
 parse_args (TokenQueue *input)
 {
@@ -723,6 +837,12 @@ parse_args (TokenQueue *input)
   return args;
 }
 
+/**
+ * @brief Parse and return a list of parameters for a function declaration.
+ * 
+ * @param input Token queue to parse from.
+ * @returns A list of parameters.
+ */
 ParameterList *
 parse_params (TokenQueue *input)
 {
@@ -750,6 +870,14 @@ parse_params (TokenQueue *input)
   return params;
 }
 
+/**
+ * @brief Parse and return a function call.
+ * 
+ * @param input Token queue to parse from.
+ * @param id Identifier of the function being called.
+ * @param source_line Source line number of the function call.
+ * @returns A node representing the function call.
+ */
 ASTNode *
 parse_function_call (TokenQueue *input, char *id, int source_line)
 {
@@ -773,6 +901,13 @@ parse_function_call (TokenQueue *input, char *id, int source_line)
   return FuncCallNode_new (id, args, source_line);
 }
 
+/**
+ * @brief Parse and return a function declaration.
+ * 
+ * @param input Token queue to parse from.
+ * @param source_line Source line number of the function declaration.
+ * @returns A node representing the function declaration.
+ */
 ASTNode *
 parse_funcdecl (TokenQueue *input, int source_line)
 {
@@ -801,6 +936,14 @@ parse_funcdecl (TokenQueue *input, int source_line)
   return FuncDeclNode_new (id, type, params, block, source_line);
 }
 
+/**
+ * @brief Parse and return a location (variable or array access).
+ * 
+ * @param input Token queue to parse from.
+ * @param id Identifier of the variable.
+ * @param source_line Source line number of the location.
+ * @returns A node representing the location.
+ */
 ASTNode *
 parse_location (TokenQueue *input, char *id, int source_line)
 {
@@ -819,6 +962,13 @@ parse_location (TokenQueue *input, char *id, int source_line)
   return LocationNode_new (id, index, source_line);
 }
 
+/**
+ * @brief Parse and return a variable declaration.
+ * 
+ * @param input Token queue to parse from.
+ * @param source_line Source line number of the variable declaration.
+ * @returns A node representing the variable declaration.
+ */
 ASTNode *
 parse_vardecl (TokenQueue *input, int source_line)
 {

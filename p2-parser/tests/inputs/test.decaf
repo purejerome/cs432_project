@@ -1,7 +1,6 @@
 def int main() 
 { 
-    loc 
-    =
-    3;
+    loc = 3;
+    funccall()
     return;
 }
