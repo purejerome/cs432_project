@@ -1,6 +1,6 @@
-def int main() 
-{ 
-    loc = 3;
-    funccall()
-    return;
+// cpmment
+def int e5(){
+    int x;
+    x;
+    return 0;
 }

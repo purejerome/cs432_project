@@ -647,35 +647,10 @@ parse_statement (TokenQueue *input)
             }
           else
             {
-              Error_throw_printf ("Expected '=' after location on line %d\n",
-                                  source_line);
-
-
+                Error_throw_printf ("Expected '=' after location on line %d\n",
+                                  get_next_token_line (input));
             }
         }
-      // else if (check_next_token (input, SYM, ";"))
-      //   {
-      //     if (loc_or_func->type == FUNCCALL)
-      //       {
-      //         match_and_discard_next_token (input, SYM, ";");
-      //         return loc_or_func;
-      //       }
-      //     else
-      //       {
-      //         match_and_discard_next_token (input, SYM, ";");
-      //         int line = get_next_token_line (input);
-      //         Error_throw_printf ("Expected '=' but found ';' on line %d\n",
-      //                             line);
-      //       }
-      //   }
-      // else
-      //   {
-      //     Token *t = TokenQueue_peek (input);
-      //     Error_throw_printf (
-      //         "Expected '=' or ';' but found '%s' on line %d\n",
-      //         t ? t->text : "<eof>",
-      //         t ? t->line : get_next_token_line (input));
-      //   }
     }
   Error_throw_printf ("Error with this token %s on line %d\n",
                       TokenQueue_peek (input)->text,
