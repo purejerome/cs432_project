@@ -1,13 +1,23 @@
 digraph AST {
-4 [shape=box, label="Location name='loc'"];
-5 [shape=box, label="Literal value=3"];
+4 [shape=box, label="Location name='love'"];
+7 [shape=box, label="Literal value=1"];
+9 [shape=box, label="Literal value=2"];
+10 [shape=box, label="Literal value=3"];
+8 [shape=box, label="BinaryOp op='*'"];
+8 -> 9;
+8 -> 10;
+6 [shape=box, label="BinaryOp op='+'"];
+6 -> 7;
+6 -> 8;
+11 [shape=box, label="Literal value=3"];
+5 [shape=box, label="BinaryOp op='+'"];
+5 -> 6;
+5 -> 11;
 3 [shape=box, label="Assignment"];
 3 -> 4;
 3 -> 5;
-6 [shape=box, label="Return"];
 2 [shape=box, label="Block"];
 2 -> 3;
-2 -> 6;
 1 [shape=box, label="FuncDecl name='main'"];
 1 -> 2;
 0 [shape=box, label="Program"];

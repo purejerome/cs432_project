@@ -79,11 +79,24 @@ Symbol* lookup_symbol_with_reporting(NodeVisitor* visitor, ASTNode* node, const 
  */
 #define SET_INFERRED_TYPE(T) ASTNode_set_printable_attribute(node, "type", (void*)(T), \
                                  type_attr_print, dummy_free)
+                                 
 
 /**
  * @brief Macro for shorter retrieval of the inferred @c type attribute
  */
 #define GET_INFERRED_TYPE(N) (DecafType)(long)ASTNode_get_attribute(N, "type")
+
+void NodeVisitor_previsit_program (NodeVisitor* visitor, ASTNode* node) {
+    // SET_INFERRED_TYPE(VOID);
+    // FOR_EACH(ASTNode*, var, node->program.variables) {
+    //     Symbol* symbol = NULL;
+    //     if(var->vardecl.is_array){
+    //         symbol = Symbol_new_array(var->vardecl.name, var->vardecl.type, var->vardecl.array_length);
+    //     } else {
+    //         symbol = Symbol_new(var->vardecl.name, var->vardecl.type);
+    //     }
+    // }
+}
 
 typedef struct {
  int block_depth;
@@ -124,13 +137,19 @@ ErrorList* analyze (ASTNode* tree)
     NodeVisitor* v = NodeVisitor_new();
     v->data = (void*)AnalysisData_new();
     v->dtor = (Destructor)AnalysisData_free;
+    
+    // NodeVisitor* symbolTable = BuildSymbolTablesVisitor_new();
+    // symbolTable->dtor = (Destructor)SymbolTable_free;
+    // NodeVisitor_traverse_and_free(symbolTable, tree);
 
     /* BOILERPLATE: TODO: register analysis callbacks */
-    NodeVisitor_traverse_and_free(ListVariablesVisitor_new(), tree);
+    NodeVisitor_traverse_and_free(BuildSymbolTablesVisitor_new(), tree);
+    // NodeVisitor_traverse_and_free(ListVariablesVisitor_new(), tree);
     /* perform analysis, save error list, clean up, and return errors */
     NodeVisitor_traverse(v, tree);
     ErrorList* errors = ((AnalysisData*)v->data)->errors;
     NodeVisitor_free(v);
+    // NodeVisitor_free(symbolTable);
     return errors;
 }
 
