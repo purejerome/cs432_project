@@ -86,16 +86,54 @@ Symbol* lookup_symbol_with_reporting(NodeVisitor* visitor, ASTNode* node, const 
  */
 #define GET_INFERRED_TYPE(N) (DecafType)(long)ASTNode_get_attribute(N, "type")
 
-void NodeVisitor_previsit_program (NodeVisitor* visitor, ASTNode* node) {
-    // SET_INFERRED_TYPE(VOID);
-    // FOR_EACH(ASTNode*, var, node->program.variables) {
-    //     Symbol* symbol = NULL;
-    //     if(var->vardecl.is_array){
-    //         symbol = Symbol_new_array(var->vardecl.name, var->vardecl.type, var->vardecl.array_length);
-    //     } else {
-    //         symbol = Symbol_new(var->vardecl.name, var->vardecl.type);
-    //     }
-    // }
+void AnalysisVisitor_infer_literal (NodeVisitor* visitor, ASTNode* node)
+{
+    SET_INFERRED_TYPE(node->literal.type);
+}
+
+void AnalysisVisitor_infer_binaryop (NodeVisitor* visitor, ASTNode* node)
+{
+    switch(node->binaryop.operator) {
+        case ADDOP: case SUBOP: case MULOP: case DIVOP: case MODOP:
+            SET_INFERRED_TYPE(INT);
+            break;
+        case OROP: case ANDOP: case LTOP: case LEOP: case GEOP: case GTOP:
+        case EQOP: case NEQOP:
+            SET_INFERRED_TYPE(BOOL);
+            break;
+        default:
+            ErrorList_printf(ERROR_LIST, "Internal error: unhandled binary operator on line %d", node->source_line);
+            SET_INFERRED_TYPE(UNKNOWN);
+    }
+    return;
+}
+
+void AnalysisVisitor_check_binaryop (NodeVisitor* visitor, ASTNode* node)
+{
+    DecafType left_type = GET_INFERRED_TYPE(node->binaryop.left);
+    DecafType right_type = GET_INFERRED_TYPE(node->binaryop.right);
+    
+    switch(node->binaryop.operator) {
+        case ADDOP: case SUBOP: case MULOP: case DIVOP: case MODOP:
+        case LTOP: case LEOP: case GEOP: case GTOP:
+            if(left_type != INT || right_type != INT) {
+                ErrorList_printf(ERROR_LIST, "Type error on line %d: binary operator applied to non-integer operands", node->source_line);
+            } 
+            break;
+        case OROP: case ANDOP:
+            if(left_type != BOOL || right_type != BOOL) {
+                ErrorList_printf(ERROR_LIST, "Type error on line %d: binary operator applied to non-boolean operands", node->source_line);
+            }
+            break;
+        case EQOP: case NEQOP:
+            if(left_type != right_type) {
+                ErrorList_printf(ERROR_LIST, "Type error on line %d: binary operator applied to incompatible operands", node->source_line);
+            }
+            break;
+        default:
+            ErrorList_printf(ERROR_LIST, "Internal error: unhandled binary operator on line %d", node->source_line);
+    }
+    return;
 }
 
 typedef struct {
@@ -137,19 +175,15 @@ ErrorList* analyze (ASTNode* tree)
     NodeVisitor* v = NodeVisitor_new();
     v->data = (void*)AnalysisData_new();
     v->dtor = (Destructor)AnalysisData_free;
-    
-    // NodeVisitor* symbolTable = BuildSymbolTablesVisitor_new();
-    // symbolTable->dtor = (Destructor)SymbolTable_free;
-    // NodeVisitor_traverse_and_free(symbolTable, tree);
 
     /* BOILERPLATE: TODO: register analysis callbacks */
-    NodeVisitor_traverse_and_free(BuildSymbolTablesVisitor_new(), tree);
-    // NodeVisitor_traverse_and_free(ListVariablesVisitor_new(), tree);
+    v->previsit_literal = AnalysisVisitor_infer_literal;
+    v->previsit_binaryop = AnalysisVisitor_infer_binaryop;
+    v->postvisit_binaryop = AnalysisVisitor_check_binaryop;
     /* perform analysis, save error list, clean up, and return errors */
     NodeVisitor_traverse(v, tree);
     ErrorList* errors = ((AnalysisData*)v->data)->errors;
     NodeVisitor_free(v);
-    // NodeVisitor_free(symbolTable);
     return errors;
 }
 

@@ -1,13 +1,2 @@
-int a;
-def int main() {
-    int b;
-    if (true) {
-        int c;
-        while (true) {
-            int d;
-        }
-    } else {
-        int e;
-        int f;
-    }
-}
+def int main()
+{ return true || true; }
