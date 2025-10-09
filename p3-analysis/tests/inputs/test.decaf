@@ -1,2 +1,13 @@
+int a;
 def int main()
-{ return true || true; }
+{ 
+    int a;
+    return 1;
+}
+
+def void test(){
+    return;
+}
+
+
+// note, only the program can have arrays, the functions cannot
