@@ -95,9 +95,9 @@ void AnalysisVisitor_check_main_function (NodeVisitor* visitor, ASTNode* node) {
     if (symbol == NULL) {
         ErrorList_printf(ERROR_LIST, "Undefined function 'main' on line %d", node->source_line);
     } else{
-        // if (symbol->symbol_type != FUNCTION_SYMBOL) {
-        // ErrorList_printf(ERROR_LIST, "Symbol 'main' is not a function on line %d", node->source_line);
-        // } 
+        if (symbol->symbol_type != FUNCTION_SYMBOL) {
+        ErrorList_printf(ERROR_LIST, "Symbol 'main' is not a function on line %d", node->source_line);
+        } 
         if (symbol->type != INT) {
             ErrorList_printf(ERROR_LIST, "Function 'main' does not have return type int on line %d", node->source_line);
         } 
@@ -111,6 +111,16 @@ void AnalysisVisitor_check_main_function (NodeVisitor* visitor, ASTNode* node) {
 void AnalysisVisitor_infer_literal (NodeVisitor* visitor, ASTNode* node)
 {
     SET_INFERRED_TYPE(node->literal.type);
+}
+
+void AnalysisVisitor_check_assignment (NodeVisitor* visitor, ASTNode* node)
+{
+    DecafType location_type = GET_INFERRED_TYPE(node->assignment.location);
+    DecafType value_type = GET_INFERRED_TYPE(node->assignment.value);
+    if (location_type != value_type) {
+        ErrorList_printf(ERROR_LIST, "Type error on line %d: assignment types do not match", node->source_line);
+    }
+    return;
 }
 
 void AnalysisVisitor_screen_vardecl (NodeVisitor* visitor, ASTNode* node)
@@ -361,6 +371,7 @@ ErrorList* analyze (ASTNode* tree)
     /* BOILERPLATE: TODO: register analysis callbacks */
     v->previsit_program = AnalysisVisitor_check_main_function;
     v->previsit_literal = AnalysisVisitor_infer_literal;
+    v->postvisit_assignment = AnalysisVisitor_check_assignment;
     v->previsit_vardecl = AnalysisVisitor_screen_vardecl;
     v->previsit_funcdecl = AnalysisVisitor_set_current_function_type;
     v->postvisit_funcdecl = AnalysisVisitor_reset_current_function_type;

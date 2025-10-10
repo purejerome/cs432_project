@@ -6,8 +6,8 @@ def int main()
 }
 
 def bool test(){
-    int b;
-    a[0] = 2;
+    bool b;
+    b = true;
     while(true){
         continue;
         break;
