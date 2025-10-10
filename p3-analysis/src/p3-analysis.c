@@ -29,7 +29,7 @@ AnalysisData* AnalysisData_new (void)
     AnalysisData* data = (AnalysisData*)calloc(1, sizeof(AnalysisData));
     CHECK_MALLOC_PTR(data);
     data->errors = ErrorList_new();
-    data->current_function_type = VOID;
+    data->current_function_type = UNKNOWN;
     return data;
 }
 
@@ -108,6 +108,12 @@ void AnalysisVisitor_screen_funcdecl (NodeVisitor* visitor, ASTNode* node)
 {
     DecafType return_type = node->funcdecl.return_type;
     DATA->current_function_type = return_type;
+    return;
+}
+
+void AnalysisVisitor_leave_funcdecl (NodeVisitor* visitor, ASTNode* node)
+{
+    DATA->current_function_type = UNKNOWN;
     return;
 }
 
@@ -299,6 +305,7 @@ ErrorList* analyze (ASTNode* tree)
     v->previsit_literal = AnalysisVisitor_infer_literal;
     v->previsit_vardecl = AnalysisVisitor_screen_vardecl;
     v->previsit_funcdecl = AnalysisVisitor_screen_funcdecl;
+    v->postvisit_funcdecl = AnalysisVisitor_leave_funcdecl;
     v->postvisit_return = AnalysisVisitor_check_return;
     v->previsit_location = AnalysisVisitor_infer_location;
     v->postvisit_location = AnalysisVisitor_check_location;

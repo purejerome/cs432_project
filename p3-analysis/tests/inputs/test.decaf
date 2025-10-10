@@ -5,8 +5,8 @@ def int main()
     return 1;
 }
 
-def void test(){
-    return;
+def bool test(){
+    return 3 > 2;
 }
 
 

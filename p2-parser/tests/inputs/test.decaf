@@ -1,3 +1,4 @@
-def int main(int[] name){
-    love = 1 + 2 * 3 + 3;
+def int main(int name){
+    int a[0];
+    return 2;
 }
