@@ -87,6 +87,24 @@ Symbol* lookup_symbol_with_reporting(NodeVisitor* visitor, ASTNode* node, const 
  */
 #define GET_INFERRED_TYPE(N) (DecafType)(long)ASTNode_get_attribute(N, "type")
 
+void AnalysisVisitor_check_main_function (NodeVisitor* visitor, ASTNode* node) {
+    Symbol* symbol = lookup_symbol(node, "main");
+    if (symbol == NULL) {
+        ErrorList_printf(ERROR_LIST, "Undefined function 'main' on line %d", node->source_line);
+    } else{
+        // if (symbol->symbol_type != FUNCTION_SYMBOL) {
+        // ErrorList_printf(ERROR_LIST, "Symbol 'main' is not a function on line %d", node->source_line);
+        // } 
+        if (symbol->type != INT) {
+            ErrorList_printf(ERROR_LIST, "Function 'main' does not have return type int on line %d", node->source_line);
+        } 
+        if (symbol->parameters != NULL && ParameterList_size(symbol->parameters) != 0) {
+            ErrorList_printf(ERROR_LIST, "Function 'main' should not have parameters on line %d", node->source_line);
+        }
+    }
+    return;
+}
+
 void AnalysisVisitor_infer_literal (NodeVisitor* visitor, ASTNode* node)
 {
     SET_INFERRED_TYPE(node->literal.type);
@@ -104,14 +122,14 @@ void AnalysisVisitor_screen_vardecl (NodeVisitor* visitor, ASTNode* node)
     return;
 }
 
-void AnalysisVisitor_screen_funcdecl (NodeVisitor* visitor, ASTNode* node)
+void AnalysisVisitor_set_current_function_type (NodeVisitor* visitor, ASTNode* node)
 {
     DecafType return_type = node->funcdecl.return_type;
     DATA->current_function_type = return_type;
     return;
 }
 
-void AnalysisVisitor_leave_funcdecl (NodeVisitor* visitor, ASTNode* node)
+void AnalysisVisitor_reset_current_function_type (NodeVisitor* visitor, ASTNode* node)
 {
     DATA->current_function_type = UNKNOWN;
     return;
@@ -302,10 +320,11 @@ ErrorList* analyze (ASTNode* tree)
     v->dtor = (Destructor)AnalysisData_free;
 
     /* BOILERPLATE: TODO: register analysis callbacks */
+    v->previsit_program = AnalysisVisitor_check_main_function;
     v->previsit_literal = AnalysisVisitor_infer_literal;
     v->previsit_vardecl = AnalysisVisitor_screen_vardecl;
-    v->previsit_funcdecl = AnalysisVisitor_screen_funcdecl;
-    v->postvisit_funcdecl = AnalysisVisitor_leave_funcdecl;
+    v->previsit_funcdecl = AnalysisVisitor_set_current_function_type;
+    v->postvisit_funcdecl = AnalysisVisitor_reset_current_function_type;
     v->postvisit_return = AnalysisVisitor_check_return;
     v->previsit_location = AnalysisVisitor_infer_location;
     v->postvisit_location = AnalysisVisitor_check_location;

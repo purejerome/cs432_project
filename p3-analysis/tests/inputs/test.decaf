@@ -6,6 +6,7 @@ def int main()
 }
 
 def bool test(){
+    int main;
     return 3 > 2;
 }
 
