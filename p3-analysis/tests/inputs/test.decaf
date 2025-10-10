@@ -6,11 +6,10 @@ def int main()
 }
 
 def bool test(){
-    bool b;
-    b = true;
-    while(true){
-        continue;
-        break;
+    if(true){
+        int b;
+    } else {
+        int c;
     }
     return true;
 }

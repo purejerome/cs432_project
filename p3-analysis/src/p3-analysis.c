@@ -123,7 +123,7 @@ void AnalysisVisitor_check_assignment (NodeVisitor* visitor, ASTNode* node)
     return;
 }
 
-void AnalysisVisitor_screen_vardecl (NodeVisitor* visitor, ASTNode* node)
+void AnalysisVisitor_check_vardecl (NodeVisitor* visitor, ASTNode* node)
 {
     DecafType var_type = node->vardecl.type;
     if (var_type == VOID) {
@@ -154,7 +154,7 @@ void AnalysisVisitor_check_return (NodeVisitor* visitor, ASTNode* node)
 {
     DecafType return_type = (node->funcreturn.value == NULL) ? VOID : GET_INFERRED_TYPE(node->funcreturn.value);
     FuncDeclNode* current_function = DATA->current_function;
-    if (current_function != NULL) {
+    if (current_function != NULL && return_type != UNKNOWN) {
         if (return_type != current_function->return_type) {
             ErrorList_printf(ERROR_LIST, "Type error on line %d: return type does not match function return type", node->source_line);
         }
@@ -176,13 +176,12 @@ void AnalysisVisitor_infer_location (NodeVisitor* visitor, ASTNode* node)
 
 void AnalysisVisitor_check_location (NodeVisitor* visitor, ASTNode* node)
 {
-    Symbol* symbol = lookup_symbol_with_reporting(visitor, node, node->location.name);
-    if(symbol == NULL){
-        Error_throw_printf("Symbol '%s' undefined on line %d\n", node->location.name, node->source_line);
-        return;
-    }
+    Symbol* symbol = lookup_symbol(node, node->location.name);
+    // if(symbol == NULL){
+    //     Error_throw_printf("Symbol '%s' undefined on line %d\n", node->location.name, node->source_line);
+    // }
     if(node->location.index != NULL) {
-        if(symbol->symbol_type != ARRAY_SYMBOL) {
+        if(symbol != NULL && symbol->symbol_type != ARRAY_SYMBOL) {
             ErrorList_printf(ERROR_LIST, "Type error on line %d: non-array variable used with index", node->source_line);
         }
         
@@ -199,7 +198,7 @@ void AnalysisVisitor_check_location (NodeVisitor* visitor, ASTNode* node)
             ErrorList_printf(ERROR_LIST, "Type error on line %d: array index is not an integer", node->source_line);
         }
     } else {
-        if(symbol->symbol_type != SCALAR_SYMBOL) {
+        if(symbol != NULL && symbol->symbol_type != SCALAR_SYMBOL) {
             ErrorList_printf(ERROR_LIST, "Type error on line %d: array variable used without index", node->source_line);
         }
         // if(symbol != NULL && symbol->symbol_type == SCALAR_SYMBOL){
@@ -372,7 +371,7 @@ ErrorList* analyze (ASTNode* tree)
     v->previsit_program = AnalysisVisitor_check_main_function;
     v->previsit_literal = AnalysisVisitor_infer_literal;
     v->postvisit_assignment = AnalysisVisitor_check_assignment;
-    v->previsit_vardecl = AnalysisVisitor_screen_vardecl;
+    v->previsit_vardecl = AnalysisVisitor_check_vardecl;
     v->previsit_funcdecl = AnalysisVisitor_set_current_function_type;
     v->postvisit_funcdecl = AnalysisVisitor_reset_current_function_type;
     v->postvisit_return = AnalysisVisitor_check_return;
