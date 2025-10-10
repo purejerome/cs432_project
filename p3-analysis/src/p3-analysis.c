@@ -15,7 +15,7 @@ typedef struct AnalysisData
     ErrorList* errors;
 
     /* BOILERPLATE: TODO: add any new desired state information (and clean it up in AnalysisData_free) */
-    DecafType current_function_type;
+    FuncDeclNode* current_function;
 
 } AnalysisData;
 
@@ -29,7 +29,7 @@ AnalysisData* AnalysisData_new (void)
     AnalysisData* data = (AnalysisData*)calloc(1, sizeof(AnalysisData));
     CHECK_MALLOC_PTR(data);
     data->errors = ErrorList_new();
-    data->current_function_type = UNKNOWN;
+    data->current_function = NULL;
     return data;
 }
 
@@ -124,22 +124,24 @@ void AnalysisVisitor_screen_vardecl (NodeVisitor* visitor, ASTNode* node)
 
 void AnalysisVisitor_set_current_function_type (NodeVisitor* visitor, ASTNode* node)
 {
-    DecafType return_type = node->funcdecl.return_type;
-    DATA->current_function_type = return_type;
+    DATA->current_function = &node->funcdecl;
     return;
 }
 
 void AnalysisVisitor_reset_current_function_type (NodeVisitor* visitor, ASTNode* node)
 {
-    DATA->current_function_type = UNKNOWN;
+    DATA->current_function = NULL;
     return;
 }
 
 void AnalysisVisitor_check_return (NodeVisitor* visitor, ASTNode* node)
 {
     DecafType return_type = (node->funcreturn.value == NULL) ? VOID : GET_INFERRED_TYPE(node->funcreturn.value);
-    if (return_type != DATA->current_function_type) {
-        ErrorList_printf(ERROR_LIST, "Type error on line %d: return type does not match function return type", node->source_line);
+    FuncDeclNode* current_function = DATA->current_function;
+    if (current_function != NULL) {
+        if (return_type != current_function->return_type) {
+            ErrorList_printf(ERROR_LIST, "Type error on line %d: return type does not match function return type", node->source_line);
+        }
     }
     return;
 }
@@ -158,9 +160,13 @@ void AnalysisVisitor_infer_location (NodeVisitor* visitor, ASTNode* node)
 
 void AnalysisVisitor_check_location (NodeVisitor* visitor, ASTNode* node)
 {
+    Symbol* symbol = lookup_symbol_with_reporting(visitor, node, node->location.name);
+    if(symbol == NULL){
+        Error_throw_printf("Symbol '%s' undefined on line %d\n", node->location.name, node->source_line);
+        return;
+    }
     if(node->location.index != NULL) {
-        Symbol* symbol = lookup_symbol_with_reporting(visitor, node, node->location.name);
-        if(symbol != NULL && symbol->symbol_type != ARRAY_SYMBOL) {
+        if(symbol->symbol_type != ARRAY_SYMBOL) {
             ErrorList_printf(ERROR_LIST, "Type error on line %d: non-array variable used with index", node->source_line);
         }
         
@@ -177,8 +183,7 @@ void AnalysisVisitor_check_location (NodeVisitor* visitor, ASTNode* node)
             ErrorList_printf(ERROR_LIST, "Type error on line %d: array index is not an integer", node->source_line);
         }
     } else {
-        Symbol* symbol = lookup_symbol_with_reporting(visitor, node, node->location.name);
-        if(symbol != NULL && symbol->symbol_type != SCALAR_SYMBOL) {
+        if(symbol->symbol_type != SCALAR_SYMBOL) {
             ErrorList_printf(ERROR_LIST, "Type error on line %d: array variable used without index", node->source_line);
         }
         // if(symbol != NULL && symbol->symbol_type == SCALAR_SYMBOL){

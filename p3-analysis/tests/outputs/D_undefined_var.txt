@@ -1,2 +1,3 @@
 Symbol 'a' undefined on line 3
 Symbol 'a' undefined on line 3
+Type error on line 3: return type does not match function return type
