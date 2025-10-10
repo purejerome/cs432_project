@@ -1,3 +1,4 @@
+int a[32];
 def int main()
 { 
     int a;
@@ -5,8 +6,12 @@ def int main()
 }
 
 def bool test(){
-    int a[32];
+    int b;
     a[0] = 2;
+    while(true){
+        continue;
+        break;
+    }
     return true;
 }
 

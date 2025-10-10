@@ -16,6 +16,8 @@ typedef struct AnalysisData
 
     /* BOILERPLATE: TODO: add any new desired state information (and clean it up in AnalysisData_free) */
     FuncDeclNode* current_function;
+    bool in_loop;
+    
 
 } AnalysisData;
 
@@ -30,6 +32,7 @@ AnalysisData* AnalysisData_new (void)
     CHECK_MALLOC_PTR(data);
     data->errors = ErrorList_new();
     data->current_function = NULL;
+    data->in_loop = false;
     return data;
 }
 
@@ -118,6 +121,9 @@ void AnalysisVisitor_screen_vardecl (NodeVisitor* visitor, ASTNode* node)
     }
     if (node->vardecl.is_array && node->vardecl.array_length <= 0) {
         ErrorList_printf(ERROR_LIST, "Type error on line %d: array variable declared with non-positive length", node->source_line);
+    }
+    if (node->vardecl.is_array && DATA->current_function != NULL) {
+        ErrorList_printf(ERROR_LIST, "Type error on line %d: array variable declared inside function", node->source_line);
     }
     return;
 }
@@ -280,6 +286,34 @@ void AnalysisVisitor_check_binaryop (NodeVisitor* visitor, ASTNode* node)
     return;
 }
 
+void AnalysisVisitor_set_in_loop (NodeVisitor* visitor, ASTNode* node)
+{
+    DATA->in_loop = true;
+    return;
+}
+
+void AnalysisVisitor_reset_in_loop (NodeVisitor* visitor, ASTNode* node)
+{
+    DATA->in_loop = false;
+    return;
+}
+
+void AnalysisVisitor_check_break (NodeVisitor* visitor, ASTNode* node)
+{
+    if (!DATA->in_loop) {
+        ErrorList_printf(ERROR_LIST, "Semantic error on line %d: break statement not within a loop", node->source_line);
+    }
+    return;
+}
+
+void AnalysisVisitor_check_continue (NodeVisitor* visitor, ASTNode* node)
+{
+    if (!DATA->in_loop) {
+        ErrorList_printf(ERROR_LIST, "Semantic error on line %d: continue statement not within a loop", node->source_line);
+    }
+    return;
+}
+
 typedef struct {
  int block_depth;
 } ListVisitorsData;
@@ -337,6 +371,10 @@ ErrorList* analyze (ASTNode* tree)
     v->postvisit_unaryop = AnalysisVisitor_check_unaryop;
     v->previsit_binaryop = AnalysisVisitor_infer_binaryop;
     v->postvisit_binaryop = AnalysisVisitor_check_binaryop;
+    v->previsit_whileloop = AnalysisVisitor_set_in_loop;
+    v->postvisit_whileloop = AnalysisVisitor_reset_in_loop;
+    v->postvisit_break = AnalysisVisitor_check_break;
+    v->postvisit_continue = AnalysisVisitor_check_continue;
     /* perform analysis, save error list, clean up, and return errors */
     NodeVisitor_traverse(v, tree);
     ErrorList* errors = ((AnalysisData*)v->data)->errors;
