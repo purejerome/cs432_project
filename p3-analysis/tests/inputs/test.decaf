@@ -2,8 +2,11 @@ def int main()
 { 
     return test(1, true);
 }
+bool a;
 
 def int test(int a, bool b){
+    bool a;
+    bool a;
     return 1;
 }
 

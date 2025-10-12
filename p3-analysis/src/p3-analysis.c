@@ -272,21 +272,11 @@ void AnalysisVisitor_infer_location (NodeVisitor* visitor, ASTNode* node)
 void AnalysisVisitor_check_location (NodeVisitor* visitor, ASTNode* node)
 {
     Symbol* symbol = lookup_symbol(node, node->location.name);
-    // if(symbol == NULL){
-    //     Error_throw_printf("Symbol '%s' undefined on line %d\n", node->location.name, node->source_line);
-    // }
+
     if(node->location.index != NULL) {
         if(symbol != NULL && symbol->symbol_type != ARRAY_SYMBOL) {
             ErrorList_printf(ERROR_LIST, "Type error on line %d: non-array variable used with index", node->source_line);
         }
-        
-        // if(symbol != NULL && symbol->symbol_type == SCALAR_SYMBOL){
-        //     printf("SCALAR SYMBOL\n");
-        // } else if(symbol != NULL && symbol->symbol_type == ARRAY_SYMBOL){
-        //     printf("ARRAY SYMBOL\n");
-        // } else if(symbol != NULL && symbol->symbol_type == FUNCTION_SYMBOL){
-        //     printf("FUNCTION SYMBOL\n");
-        // }
         
         DecafType index_type = GET_INFERRED_TYPE(node->location.index);
         if(index_type != INT) {
@@ -296,15 +286,6 @@ void AnalysisVisitor_check_location (NodeVisitor* visitor, ASTNode* node)
         if(symbol != NULL && symbol->symbol_type != SCALAR_SYMBOL) {
             ErrorList_printf(ERROR_LIST, "Type error on line %d: array variable used without index", node->source_line);
         }
-        // if(symbol != NULL && symbol->symbol_type == SCALAR_SYMBOL){
-        //     printf("SCALAR SYMBOL\n");
-        // } else if(symbol != NULL && symbol->symbol_type == ARRAY_SYMBOL){
-        //     printf("ARRAY SYMBOL\n");
-        // } else if(symbol != NULL && symbol->symbol_type == FUNCTION_SYMBOL){
-        //     printf("FUNCTION SYMBOL\n");
-        // }
-        // Symbol_print(symbol, stdout);
-        // printf("\n");
     }
     return;
 }
