@@ -84,11 +84,42 @@ Symbol* lookup_symbol_with_reporting(NodeVisitor* visitor, ASTNode* node, const 
 #define SET_INFERRED_TYPE(T) ASTNode_set_printable_attribute(node, "type", (void*)(T), \
                                  type_attr_print, dummy_free)
                                  
+bool contains_element_string(char** arr, int size, char* val) {
+    for (int i = 0; i < size; i++) {
+        if (strncmp(arr[i], val, MAX_ID_LEN) == 0) {
+            return true;
+        }
+    }
+    return false;
+}
+                                 
 
 /**
  * @brief Macro for shorter retrieval of the inferred @c type attribute
  */
 #define GET_INFERRED_TYPE(N) (DecafType)(long)ASTNode_get_attribute(N, "type")
+
+void AnalysisVisitor_check_duplicate_symbols (NodeVisitor* visitor, ASTNode* node)
+{
+    if(node->type == PROGRAM || node->type == FUNCDECL || node->type == BLOCK) {
+        SymbolTable* table = (SymbolTable*)ASTNode_get_attribute(node, "symbolTable");
+        if(table != NULL) {
+            int count = SymbolList_size(table->local_symbols);
+            char **names = malloc(count * sizeof(char*));
+            int index = 0;
+            FOR_EACH (Symbol*, sym, table->local_symbols) {
+                Symbol* other = SymbolTable_lookup(table, sym->name);
+                if(other != NULL && other != sym && !contains_element_string(names, index, sym->name)) {
+                    names[index] = sym->name;
+                    index++;
+                    ErrorList_printf(ERROR_LIST, "Duplicate symbol '%s' on line %d", sym->name, node->source_line);
+                }
+            }
+            free(names);
+        }
+    }
+    return;
+}
 
 void AnalysisVisitor_check_main_function (NodeVisitor* visitor, ASTNode* node) {
     Symbol* symbol = lookup_symbol(node, "main");
@@ -104,6 +135,24 @@ void AnalysisVisitor_check_main_function (NodeVisitor* visitor, ASTNode* node) {
         if (symbol->parameters != NULL && ParameterList_size(symbol->parameters) != 0) {
             ErrorList_printf(ERROR_LIST, "Function 'main' should not have parameters on line %d", node->source_line);
         }
+    }
+    return;
+}
+
+void AnalysisVisitor_check_conditional (NodeVisitor* visitor, ASTNode* node)
+{
+    DecafType conidtion_type = GET_INFERRED_TYPE(node->conditional.condition);
+    if (conidtion_type != BOOL) {
+        ErrorList_printf(ERROR_LIST, "Type error on line %d: conditional expression is not boolean", node->source_line);
+    }
+    return;
+}
+
+void AnalysisVisitor_check_while (NodeVisitor* visitor, ASTNode* node)
+{
+    DecafType condition_type = GET_INFERRED_TYPE(node->whileloop.condition);
+    if (condition_type != BOOL) {
+        ErrorList_printf(ERROR_LIST, "Type error on line %d: while loop condition is not boolean", node->source_line);
     }
     return;
 }
@@ -368,7 +417,10 @@ ErrorList* analyze (ASTNode* tree)
     v->dtor = (Destructor)AnalysisData_free;
 
     /* BOILERPLATE: TODO: register analysis callbacks */
+    v->previsit_default = AnalysisVisitor_check_duplicate_symbols;
     v->previsit_program = AnalysisVisitor_check_main_function;
+    v->postvisit_conditional = AnalysisVisitor_check_conditional;
+    v->postvisit_whileloop = AnalysisVisitor_check_while;
     v->previsit_literal = AnalysisVisitor_infer_literal;
     v->postvisit_assignment = AnalysisVisitor_check_assignment;
     v->previsit_vardecl = AnalysisVisitor_check_vardecl;

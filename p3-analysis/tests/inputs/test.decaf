@@ -1,17 +1,11 @@
-int a[32];
-def int main()
+def int main() 
 { 
     int a;
-    return 1;
-}
-
-def bool test(){
-    if(true){
-        int b;
-    } else {
-        int c;
-    }
-    return true;
+    int a;
+    int a;
+    int b;
+    int b;
+    int b;
 }
 
 
