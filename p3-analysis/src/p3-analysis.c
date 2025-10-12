@@ -211,6 +211,52 @@ void AnalysisVisitor_check_return (NodeVisitor* visitor, ASTNode* node)
     return;
 }
 
+void AnalysisVisitor_infer_funccall (NodeVisitor* visitor, ASTNode* node)
+{
+    Symbol* symbol = lookup_symbol_with_reporting(visitor, node, node->funccall.name);
+    if (symbol != NULL) {
+        SET_INFERRED_TYPE(symbol->type);
+    } else {
+        SET_INFERRED_TYPE(UNKNOWN);
+    }
+    return;
+}
+
+void AnalysisVisitor_check_funccall (NodeVisitor* visitor, ASTNode* node)
+{
+    Symbol* func_symbol = lookup_symbol(node, node->funccall.name);
+    if(func_symbol != NULL) {
+        if(func_symbol->symbol_type != FUNCTION_SYMBOL){
+            ErrorList_printf(ERROR_LIST, "Type error on line %d: symbol '%s' is not a function", node->source_line, node->funccall.name);
+            return;
+        }
+
+        ParameterList* formal_params = func_symbol->parameters;
+        int formal_count = (formal_params == NULL) ? 0 : ParameterList_size(formal_params);
+        NodeList* arguments = node->funccall.arguments;
+        int argument_count = (arguments == NULL) ? 0 : NodeList_size(arguments);
+        if(formal_count != argument_count) {
+            ErrorList_printf(ERROR_LIST, "Type error on line %d: function '%s' called with wrong number of arguments", node->source_line, node->funccall.name);
+            return;
+        }
+        
+        if(formal_count > 0 && argument_count > 0) {
+            Parameter* formal = formal_params->head;
+            ASTNode* argument = arguments->head;
+            while(formal != NULL && argument != NULL) {
+                DecafType formal_type = formal->type;
+                DecafType argument_type = GET_INFERRED_TYPE(argument);
+                if(formal_type != argument_type) {
+                    ErrorList_printf(ERROR_LIST, "Type error on line %d: function '%s' called with wrong argument types", node->source_line, node->funccall.name);
+                    return;
+                }
+                formal = formal->next;
+                argument = argument->next;
+            }
+        }
+    }
+}
+
 
 void AnalysisVisitor_infer_location (NodeVisitor* visitor, ASTNode* node)
 {
@@ -427,6 +473,8 @@ ErrorList* analyze (ASTNode* tree)
     v->previsit_funcdecl = AnalysisVisitor_set_current_function_type;
     v->postvisit_funcdecl = AnalysisVisitor_reset_current_function_type;
     v->postvisit_return = AnalysisVisitor_check_return;
+    v->previsit_funccall = AnalysisVisitor_infer_funccall;
+    v->postvisit_funccall = AnalysisVisitor_check_funccall;
     v->previsit_location = AnalysisVisitor_infer_location;
     v->postvisit_location = AnalysisVisitor_check_location;
     v->previsit_unaryop = AnalysisVisitor_infer_unaryop;
