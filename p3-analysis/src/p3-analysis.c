@@ -2,6 +2,10 @@
  * @file p3-analysis.c
  * @brief Compiler phase 3: static analysis
  */
+/*
+AI assist: AI was used to help pinpoint and correct some edge cases.
+*/
+
 #include "p3-analysis.h"
 
 /**
@@ -9,467 +13,666 @@
  */
 typedef struct AnalysisData
 {
-    /**
-     * @brief List of errors detected
-     */
-    ErrorList* errors;
+  /**
+   * @brief List of errors detected
+   */
+  ErrorList *errors;
 
-    /* BOILERPLATE: TODO: add any new desired state information (and clean it up in AnalysisData_free) */
-    FuncDeclNode* current_function;
-    bool in_loop;
-    
+  /* BOILERPLATE: TODO: add any new desired state information (and clean it up
+   * in AnalysisData_free) */
+  FuncDeclNode *current_function;
+  bool in_loop;
 
 } AnalysisData;
 
 /**
  * @brief Allocate memory for analysis data
- * 
+ *
  * @returns Pointer to allocated structure
  */
-AnalysisData* AnalysisData_new (void)
+AnalysisData *
+AnalysisData_new (void)
 {
-    AnalysisData* data = (AnalysisData*)calloc(1, sizeof(AnalysisData));
-    CHECK_MALLOC_PTR(data);
-    data->errors = ErrorList_new();
-    data->current_function = NULL;
-    data->in_loop = false;
-    return data;
+  AnalysisData *data = (AnalysisData *)calloc (1, sizeof (AnalysisData));
+  CHECK_MALLOC_PTR (data);
+  data->errors = ErrorList_new ();
+  data->current_function = NULL;
+  data->in_loop = false;
+  return data;
 }
 
 /**
  * @brief Deallocate memory for analysis data
- * 
+ *
  * @param data Pointer to the structure to be deallocated
  */
-void AnalysisData_free (AnalysisData* data)
+void
+AnalysisData_free (AnalysisData *data)
 {
-    /* free everything in data that is allocated on the heap except the error
-     * list; it needs to be returned after the analysis is complete */
-    /* free "data" itself */
-    free(data);
+  /* free everything in data that is allocated on the heap except the error
+   * list; it needs to be returned after the analysis is complete */
+  /* free "data" itself */
+  free (data);
 }
 
 /**
- * @brief Macro for more convenient access to the data inside a @ref AnalysisVisitor
- * data structure
+ * @brief Macro for more convenient access to the data inside a @ref
+ * AnalysisVisitor data structure
  */
-#define DATA ((AnalysisData*)visitor->data)
+#define DATA ((AnalysisData *)visitor->data)
 
 /**
  * @brief Macro for more convenient access to the error list inside a
  * @ref AnalysisVisitor data structure
  */
-#define ERROR_LIST (((AnalysisData*)visitor->data)->errors)
+#define ERROR_LIST (((AnalysisData *)visitor->data)->errors)
 
 /**
- * @brief Wrapper for @ref lookup_symbol that reports an error if the symbol isn't found
- * 
+ * @brief Wrapper for @ref lookup_symbol that reports an error if the symbol
+ * isn't found
+ *
  * @param visitor Visitor with the error list for reporting
  * @param node AST node to begin the search at
  * @param name Name of symbol to find
  * @returns The @ref Symbol if found, otherwise @c NULL
  */
-Symbol* lookup_symbol_with_reporting(NodeVisitor* visitor, ASTNode* node, const char* name)
+Symbol *
+lookup_symbol_with_reporting (NodeVisitor *visitor, ASTNode *node,
+                              const char *name)
 {
-    Symbol* symbol = lookup_symbol(node, name);
-    if (symbol == NULL) {
-        ErrorList_printf(ERROR_LIST, "Symbol '%s' undefined on line %d", name, node->source_line);
+  Symbol *symbol = lookup_symbol (node, name);
+  if (symbol == NULL)
+    {
+      ErrorList_printf (ERROR_LIST, "Symbol '%s' undefined on line %d", name,
+                        node->source_line);
     }
-    return symbol;
+  return symbol;
 }
 
 /**
  * @brief Macro for shorter storing of the inferred @c type attribute
  */
-#define SET_INFERRED_TYPE(T) ASTNode_set_printable_attribute(node, "type", (void*)(T), \
-                                 type_attr_print, dummy_free)
-                                 
-bool contains_element_string(char** arr, int size, char* val) {
-    for (int i = 0; i < size; i++) {
-        if (strncmp(arr[i], val, MAX_ID_LEN) == 0) {
-            return true;
+#define SET_INFERRED_TYPE(T)                                                  \
+  ASTNode_set_printable_attribute (node, "type", (void *)(T),                 \
+                                   type_attr_print, dummy_free)
+
+bool
+contains_element_string (char **arr, int size, char *val)
+{
+  for (int i = 0; i < size; i++)
+    {
+      if (strncmp (arr[i], val, MAX_ID_LEN) == 0)
+        {
+          return true;
         }
     }
-    return false;
+  return false;
 }
-                                 
 
 /**
  * @brief Macro for shorter retrieval of the inferred @c type attribute
  */
-#define GET_INFERRED_TYPE(N) (DecafType)(long)ASTNode_get_attribute(N, "type")
+#define GET_INFERRED_TYPE(N)                                                  \
+  (DecafType) (long) ASTNode_get_attribute (N, "type")
 
-void AnalysisVisitor_check_duplicate_symbols (NodeVisitor* visitor, ASTNode* node)
+void
+AnalysisVisitor_check_duplicate_symbols (NodeVisitor *visitor, ASTNode *node)
 {
-    if(node->type == PROGRAM || node->type == FUNCDECL || node->type == BLOCK) {
-        SymbolTable* table = (SymbolTable*)ASTNode_get_attribute(node, "symbolTable");
-        if(table != NULL) {
-            int count = SymbolList_size(table->local_symbols);
-            char **names = malloc(count * sizeof(char*));
-            int index = 0;
-            FOR_EACH (Symbol*, sym, table->local_symbols) {
-                Symbol* other = SymbolTable_lookup(table, sym->name);
-                if(other != NULL && other != sym && !contains_element_string(names, index, sym->name)) {
-                    names[index] = sym->name;
-                    index++;
-                    ErrorList_printf(ERROR_LIST, "Duplicate symbol '%s' on line %d", sym->name, node->source_line);
+  if (node->type == PROGRAM || node->type == FUNCDECL || node->type == BLOCK)
+    {
+      SymbolTable *table
+          = (SymbolTable *)ASTNode_get_attribute (node, "symbolTable");
+      if (table != NULL)
+        {
+          int count = SymbolList_size (table->local_symbols);
+          char **names = malloc (count * sizeof (char *));
+          int index = 0;
+          FOR_EACH (Symbol *, sym, table->local_symbols)
+          {
+            Symbol *other = SymbolTable_lookup (table, sym->name);
+            if (other != NULL && other != sym
+                && !contains_element_string (names, index, sym->name))
+              {
+                names[index] = sym->name;
+                index++;
+                ErrorList_printf (ERROR_LIST,
+                                  "Duplicate symbol '%s' on line %d",
+                                  sym->name, node->source_line);
+              }
+          }
+          free (names);
+        }
+    }
+  return;
+}
+
+void
+AnalysisVisitor_check_main_function (NodeVisitor *visitor, ASTNode *node)
+{
+  Symbol *symbol = lookup_symbol (node, "main");
+  if (symbol == NULL)
+    {
+      ErrorList_printf (ERROR_LIST, "Undefined function 'main' on line %d",
+                        node->source_line);
+    }
+  else
+    {
+      if (symbol->symbol_type != FUNCTION_SYMBOL)
+        {
+          ErrorList_printf (ERROR_LIST,
+                            "Symbol 'main' is not a function on line %d",
+                            node->source_line);
+        }
+      if (symbol->type != INT)
+        {
+          ErrorList_printf (
+              ERROR_LIST,
+              "Function 'main' does not have return type int on line %d",
+              node->source_line);
+        }
+      if (symbol->parameters != NULL
+          && ParameterList_size (symbol->parameters) != 0)
+        {
+          ErrorList_printf (
+              ERROR_LIST,
+              "Function 'main' should not have parameters on line %d",
+              node->source_line);
+        }
+    }
+  return;
+}
+
+void
+AnalysisVisitor_check_conditional (NodeVisitor *visitor, ASTNode *node)
+{
+  DecafType conidtion_type = GET_INFERRED_TYPE (node->conditional.condition);
+  if (conidtion_type != BOOL)
+    {
+      ErrorList_printf (
+          ERROR_LIST,
+          "Type error on line %d: conditional expression is not boolean",
+          node->source_line);
+    }
+  return;
+}
+
+void
+AnalysisVisitor_check_while (NodeVisitor *visitor, ASTNode *node)
+{
+  DecafType condition_type = GET_INFERRED_TYPE (node->whileloop.condition);
+  if (condition_type != BOOL)
+    {
+      ErrorList_printf (
+          ERROR_LIST,
+          "Type error on line %d: while loop condition is not boolean",
+          node->source_line);
+    }
+  return;
+}
+
+void
+AnalysisVisitor_infer_literal (NodeVisitor *visitor, ASTNode *node)
+{
+  SET_INFERRED_TYPE (node->literal.type);
+}
+
+void
+AnalysisVisitor_check_assignment (NodeVisitor *visitor, ASTNode *node)
+{
+  DecafType location_type = GET_INFERRED_TYPE (node->assignment.location);
+  DecafType value_type = GET_INFERRED_TYPE (node->assignment.value);
+  if (location_type != value_type)
+    {
+      ErrorList_printf (ERROR_LIST,
+                        "Type error on line %d: assignment types do not match",
+                        node->source_line);
+    }
+  return;
+}
+
+void
+AnalysisVisitor_check_vardecl (NodeVisitor *visitor, ASTNode *node)
+{
+  DecafType var_type = node->vardecl.type;
+  if (var_type == VOID)
+    {
+      ErrorList_printf (
+          ERROR_LIST,
+          "Type error on line %d: variable declared with void type",
+          node->source_line);
+    }
+  if (node->vardecl.is_array && node->vardecl.array_length <= 0)
+    {
+      ErrorList_printf (ERROR_LIST,
+                        "Type error on line %d: array variable declared with "
+                        "non-positive length",
+                        node->source_line);
+    }
+  if (node->vardecl.is_array && DATA->current_function != NULL)
+    {
+      ErrorList_printf (
+          ERROR_LIST,
+          "Type error on line %d: array variable declared inside function",
+          node->source_line);
+    }
+  return;
+}
+
+void
+AnalysisVisitor_set_current_function_type (NodeVisitor *visitor, ASTNode *node)
+{
+  DATA->current_function = &node->funcdecl;
+  return;
+}
+
+void
+AnalysisVisitor_reset_current_function_type (NodeVisitor *visitor,
+                                             ASTNode *node)
+{
+  DATA->current_function = NULL;
+  return;
+}
+
+void
+AnalysisVisitor_check_return (NodeVisitor *visitor, ASTNode *node)
+{
+  DecafType return_type = (node->funcreturn.value == NULL)
+                              ? VOID
+                              : GET_INFERRED_TYPE (node->funcreturn.value);
+  FuncDeclNode *current_function = DATA->current_function;
+  if (current_function != NULL && return_type != UNKNOWN)
+    {
+      if (return_type != current_function->return_type)
+        {
+          ErrorList_printf (ERROR_LIST,
+                            "Type error on line %d: return type does not "
+                            "match function return type",
+                            node->source_line);
+        }
+    }
+  return;
+}
+
+void
+AnalysisVisitor_infer_funccall (NodeVisitor *visitor, ASTNode *node)
+{
+  Symbol *symbol
+      = lookup_symbol_with_reporting (visitor, node, node->funccall.name);
+  if (symbol != NULL)
+    {
+      SET_INFERRED_TYPE (symbol->type);
+    }
+  else
+    {
+      SET_INFERRED_TYPE (UNKNOWN);
+    }
+  return;
+}
+
+void
+AnalysisVisitor_check_funccall (NodeVisitor *visitor, ASTNode *node)
+{
+  Symbol *func_symbol = lookup_symbol (node, node->funccall.name);
+  if (func_symbol != NULL)
+    {
+      if (func_symbol->symbol_type != FUNCTION_SYMBOL)
+        {
+          ErrorList_printf (
+              ERROR_LIST,
+              "Type error on line %d: symbol '%s' is not a function",
+              node->source_line, node->funccall.name);
+          return;
+        }
+
+      ParameterList *formal_params = func_symbol->parameters;
+      int formal_count
+          = (formal_params == NULL) ? 0 : ParameterList_size (formal_params);
+      NodeList *arguments = node->funccall.arguments;
+      int argument_count = (arguments == NULL) ? 0 : NodeList_size (arguments);
+      if (formal_count != argument_count)
+        {
+          ErrorList_printf (ERROR_LIST,
+                            "Type error on line %d: function '%s' called with "
+                            "wrong number of arguments",
+                            node->source_line, node->funccall.name);
+          return;
+        }
+
+      if (formal_count > 0 && argument_count > 0)
+        {
+          Parameter *formal = formal_params->head;
+          ASTNode *argument = arguments->head;
+          while (formal != NULL && argument != NULL)
+            {
+              DecafType formal_type = formal->type;
+              DecafType argument_type = GET_INFERRED_TYPE (argument);
+              if (formal_type != argument_type)
+                {
+                  ErrorList_printf (ERROR_LIST,
+                                    "Type error on line %d: function '%s' "
+                                    "called with wrong argument types",
+                                    node->source_line, node->funccall.name);
+                  return;
                 }
-            }
-            free(names);
-        }
-    }
-    return;
-}
-
-void AnalysisVisitor_check_main_function (NodeVisitor* visitor, ASTNode* node) {
-    Symbol* symbol = lookup_symbol(node, "main");
-    if (symbol == NULL) {
-        ErrorList_printf(ERROR_LIST, "Undefined function 'main' on line %d", node->source_line);
-    } else{
-        if (symbol->symbol_type != FUNCTION_SYMBOL) {
-        ErrorList_printf(ERROR_LIST, "Symbol 'main' is not a function on line %d", node->source_line);
-        } 
-        if (symbol->type != INT) {
-            ErrorList_printf(ERROR_LIST, "Function 'main' does not have return type int on line %d", node->source_line);
-        } 
-        if (symbol->parameters != NULL && ParameterList_size(symbol->parameters) != 0) {
-            ErrorList_printf(ERROR_LIST, "Function 'main' should not have parameters on line %d", node->source_line);
-        }
-    }
-    return;
-}
-
-void AnalysisVisitor_check_conditional (NodeVisitor* visitor, ASTNode* node)
-{
-    DecafType conidtion_type = GET_INFERRED_TYPE(node->conditional.condition);
-    if (conidtion_type != BOOL) {
-        ErrorList_printf(ERROR_LIST, "Type error on line %d: conditional expression is not boolean", node->source_line);
-    }
-    return;
-}
-
-void AnalysisVisitor_check_while (NodeVisitor* visitor, ASTNode* node)
-{
-    DecafType condition_type = GET_INFERRED_TYPE(node->whileloop.condition);
-    if (condition_type != BOOL) {
-        ErrorList_printf(ERROR_LIST, "Type error on line %d: while loop condition is not boolean", node->source_line);
-    }
-    return;
-}
-
-void AnalysisVisitor_infer_literal (NodeVisitor* visitor, ASTNode* node)
-{
-    SET_INFERRED_TYPE(node->literal.type);
-}
-
-void AnalysisVisitor_check_assignment (NodeVisitor* visitor, ASTNode* node)
-{
-    DecafType location_type = GET_INFERRED_TYPE(node->assignment.location);
-    DecafType value_type = GET_INFERRED_TYPE(node->assignment.value);
-    if (location_type != value_type) {
-        ErrorList_printf(ERROR_LIST, "Type error on line %d: assignment types do not match", node->source_line);
-    }
-    return;
-}
-
-void AnalysisVisitor_check_vardecl (NodeVisitor* visitor, ASTNode* node)
-{
-    DecafType var_type = node->vardecl.type;
-    if (var_type == VOID) {
-        ErrorList_printf(ERROR_LIST, "Type error on line %d: variable declared with void type", node->source_line);
-    }
-    if (node->vardecl.is_array && node->vardecl.array_length <= 0) {
-        ErrorList_printf(ERROR_LIST, "Type error on line %d: array variable declared with non-positive length", node->source_line);
-    }
-    if (node->vardecl.is_array && DATA->current_function != NULL) {
-        ErrorList_printf(ERROR_LIST, "Type error on line %d: array variable declared inside function", node->source_line);
-    }
-    return;
-}
-
-void AnalysisVisitor_set_current_function_type (NodeVisitor* visitor, ASTNode* node)
-{
-    DATA->current_function = &node->funcdecl;
-    return;
-}
-
-void AnalysisVisitor_reset_current_function_type (NodeVisitor* visitor, ASTNode* node)
-{
-    DATA->current_function = NULL;
-    return;
-}
-
-void AnalysisVisitor_check_return (NodeVisitor* visitor, ASTNode* node)
-{
-    DecafType return_type = (node->funcreturn.value == NULL) ? VOID : GET_INFERRED_TYPE(node->funcreturn.value);
-    FuncDeclNode* current_function = DATA->current_function;
-    if (current_function != NULL && return_type != UNKNOWN) {
-        if (return_type != current_function->return_type) {
-            ErrorList_printf(ERROR_LIST, "Type error on line %d: return type does not match function return type", node->source_line);
-        }
-    }
-    return;
-}
-
-void AnalysisVisitor_infer_funccall (NodeVisitor* visitor, ASTNode* node)
-{
-    Symbol* symbol = lookup_symbol_with_reporting(visitor, node, node->funccall.name);
-    if (symbol != NULL) {
-        SET_INFERRED_TYPE(symbol->type);
-    } else {
-        SET_INFERRED_TYPE(UNKNOWN);
-    }
-    return;
-}
-
-void AnalysisVisitor_check_funccall (NodeVisitor* visitor, ASTNode* node)
-{
-    Symbol* func_symbol = lookup_symbol(node, node->funccall.name);
-    if(func_symbol != NULL) {
-        if(func_symbol->symbol_type != FUNCTION_SYMBOL){
-            ErrorList_printf(ERROR_LIST, "Type error on line %d: symbol '%s' is not a function", node->source_line, node->funccall.name);
-            return;
-        }
-
-        ParameterList* formal_params = func_symbol->parameters;
-        int formal_count = (formal_params == NULL) ? 0 : ParameterList_size(formal_params);
-        NodeList* arguments = node->funccall.arguments;
-        int argument_count = (arguments == NULL) ? 0 : NodeList_size(arguments);
-        if(formal_count != argument_count) {
-            ErrorList_printf(ERROR_LIST, "Type error on line %d: function '%s' called with wrong number of arguments", node->source_line, node->funccall.name);
-            return;
-        }
-        
-        if(formal_count > 0 && argument_count > 0) {
-            Parameter* formal = formal_params->head;
-            ASTNode* argument = arguments->head;
-            while(formal != NULL && argument != NULL) {
-                DecafType formal_type = formal->type;
-                DecafType argument_type = GET_INFERRED_TYPE(argument);
-                if(formal_type != argument_type) {
-                    ErrorList_printf(ERROR_LIST, "Type error on line %d: function '%s' called with wrong argument types", node->source_line, node->funccall.name);
-                    return;
-                }
-                formal = formal->next;
-                argument = argument->next;
+              formal = formal->next;
+              argument = argument->next;
             }
         }
     }
 }
 
-
-void AnalysisVisitor_infer_location (NodeVisitor* visitor, ASTNode* node)
+void
+AnalysisVisitor_infer_location (NodeVisitor *visitor, ASTNode *node)
 {
-    Symbol* symbol = lookup_symbol_with_reporting(visitor, node, node->location.name);
-    if (symbol != NULL) {
-        SET_INFERRED_TYPE(symbol->type);
-    } else {
-        SET_INFERRED_TYPE(UNKNOWN);
+  Symbol *symbol
+      = lookup_symbol_with_reporting (visitor, node, node->location.name);
+  if (symbol != NULL)
+    {
+      SET_INFERRED_TYPE (symbol->type);
     }
-    return;
+  else
+    {
+      SET_INFERRED_TYPE (UNKNOWN);
+    }
+  return;
 }
 
-void AnalysisVisitor_check_location (NodeVisitor* visitor, ASTNode* node)
+void
+AnalysisVisitor_check_location (NodeVisitor *visitor, ASTNode *node)
 {
-    Symbol* symbol = lookup_symbol(node, node->location.name);
+  Symbol *symbol = lookup_symbol (node, node->location.name);
 
-    if(node->location.index != NULL) {
-        if(symbol != NULL && symbol->symbol_type != ARRAY_SYMBOL) {
-            ErrorList_printf(ERROR_LIST, "Type error on line %d: non-array variable used with index", node->source_line);
+  if (node->location.index != NULL)
+    {
+      if (symbol != NULL && symbol->symbol_type != ARRAY_SYMBOL)
+        {
+          ErrorList_printf (
+              ERROR_LIST,
+              "Type error on line %d: non-array variable used with index",
+              node->source_line);
         }
-        
-        DecafType index_type = GET_INFERRED_TYPE(node->location.index);
-        if(index_type != INT) {
-            ErrorList_printf(ERROR_LIST, "Type error on line %d: array index is not an integer", node->source_line);
+
+      DecafType index_type = GET_INFERRED_TYPE (node->location.index);
+      if (index_type != INT)
+        {
+          ErrorList_printf (
+              ERROR_LIST,
+              "Type error on line %d: array index is not an integer",
+              node->source_line);
         }
-    } else {
-        if(symbol != NULL && symbol->symbol_type != SCALAR_SYMBOL) {
-            ErrorList_printf(ERROR_LIST, "Type error on line %d: array variable used without index", node->source_line);
+    }
+  else
+    {
+      if (symbol != NULL && symbol->symbol_type != SCALAR_SYMBOL)
+        {
+          ErrorList_printf (
+              ERROR_LIST,
+              "Type error on line %d: array variable used without index",
+              node->source_line);
         }
     }
-    return;
+  return;
 }
-void AnalysisVisitor_infer_unaryop (NodeVisitor* visitor, ASTNode* node)
+void
+AnalysisVisitor_infer_unaryop (NodeVisitor *visitor, ASTNode *node)
 {
-    switch(node->unaryop.operator) {
-        case NEGOP:
-            SET_INFERRED_TYPE(INT);
-            break;
-        case NOTOP:
-            SET_INFERRED_TYPE(BOOL);
-            break;
-        default:
-            ErrorList_printf(ERROR_LIST, "Internal error: unhandled unary operator on line %d", node->source_line);
-            SET_INFERRED_TYPE(UNKNOWN);
+  switch (node->unaryop.operator)
+    {
+    case NEGOP:
+      SET_INFERRED_TYPE (INT);
+      break;
+    case NOTOP:
+      SET_INFERRED_TYPE (BOOL);
+      break;
+    default:
+      ErrorList_printf (ERROR_LIST,
+                        "Internal error: unhandled unary operator on line %d",
+                        node->source_line);
+      SET_INFERRED_TYPE (UNKNOWN);
     }
-    return;
+  return;
 }
 
-void AnalysisVisitor_check_unaryop (NodeVisitor* visitor, ASTNode* node)
+void
+AnalysisVisitor_check_unaryop (NodeVisitor *visitor, ASTNode *node)
 {
-    DecafType child_type = GET_INFERRED_TYPE(node->unaryop.child);
-    
-    switch(node->unaryop.operator) {
-        case NEGOP:
-            if(child_type != INT) {
-                ErrorList_printf(ERROR_LIST, "Type error on line %d: unary - applied to non-integer operand", node->source_line);
-            }
-            break;
-        case NOTOP:
-            if(child_type != BOOL) {
-                ErrorList_printf(ERROR_LIST, "Type error on line %d: unary ! applied to non-boolean operand", node->source_line);
-            }
-            break;
-        default:
-            ErrorList_printf(ERROR_LIST, "Internal error: unhandled unary operator on line %d", node->source_line);
+  DecafType child_type = GET_INFERRED_TYPE (node->unaryop.child);
+
+  switch (node->unaryop.operator)
+    {
+    case NEGOP:
+      if (child_type != INT)
+        {
+          ErrorList_printf (
+              ERROR_LIST,
+              "Type error on line %d: unary - applied to non-integer operand",
+              node->source_line);
+        }
+      break;
+    case NOTOP:
+      if (child_type != BOOL)
+        {
+          ErrorList_printf (
+              ERROR_LIST,
+              "Type error on line %d: unary ! applied to non-boolean operand",
+              node->source_line);
+        }
+      break;
+    default:
+      ErrorList_printf (ERROR_LIST,
+                        "Internal error: unhandled unary operator on line %d",
+                        node->source_line);
     }
-    return;
+  return;
 }
 
-void AnalysisVisitor_infer_binaryop (NodeVisitor* visitor, ASTNode* node)
+void
+AnalysisVisitor_infer_binaryop (NodeVisitor *visitor, ASTNode *node)
 {
-    switch(node->binaryop.operator) {
-        case ADDOP: case SUBOP: case MULOP: case DIVOP: case MODOP:
-            SET_INFERRED_TYPE(INT);
-            break;
-        case OROP: case ANDOP: case LTOP: case LEOP: case GEOP: case GTOP:
-        case EQOP: case NEQOP:
-            SET_INFERRED_TYPE(BOOL);
-            break;
-        default:
-            ErrorList_printf(ERROR_LIST, "Internal error: unhandled binary operator on line %d", node->source_line);
-            SET_INFERRED_TYPE(UNKNOWN);
+  switch (node->binaryop.operator)
+    {
+    case ADDOP:
+    case SUBOP:
+    case MULOP:
+    case DIVOP:
+    case MODOP:
+      SET_INFERRED_TYPE (INT);
+      break;
+    case OROP:
+    case ANDOP:
+    case LTOP:
+    case LEOP:
+    case GEOP:
+    case GTOP:
+    case EQOP:
+    case NEQOP:
+      SET_INFERRED_TYPE (BOOL);
+      break;
+    default:
+      ErrorList_printf (ERROR_LIST,
+                        "Internal error: unhandled binary operator on line %d",
+                        node->source_line);
+      SET_INFERRED_TYPE (UNKNOWN);
     }
-    return;
+  return;
 }
 
-void AnalysisVisitor_check_binaryop (NodeVisitor* visitor, ASTNode* node)
+void
+AnalysisVisitor_check_binaryop (NodeVisitor *visitor, ASTNode *node)
 {
-    DecafType left_type = GET_INFERRED_TYPE(node->binaryop.left);
-    DecafType right_type = GET_INFERRED_TYPE(node->binaryop.right);
-    
-    switch(node->binaryop.operator) {
-        case ADDOP: case SUBOP: case MULOP: case DIVOP: case MODOP:
-        case LTOP: case LEOP: case GEOP: case GTOP:
-            if(left_type != INT || right_type != INT) {
-                ErrorList_printf(ERROR_LIST, "Type error on line %d: binary operator applied to non-integer operands", node->source_line);
-            } 
-            break;
-        case OROP: case ANDOP:
-            if(left_type != BOOL || right_type != BOOL) {
-                ErrorList_printf(ERROR_LIST, "Type error on line %d: binary operator applied to non-boolean operands", node->source_line);
-            }
-            break;
-        case EQOP: case NEQOP:
-            if(left_type != right_type) {
-                ErrorList_printf(ERROR_LIST, "Type error on line %d: binary operator applied to incompatible operands", node->source_line);
-            }
-            break;
-        default:
-            ErrorList_printf(ERROR_LIST, "Internal error: unhandled binary operator on line %d", node->source_line);
+  DecafType left_type = GET_INFERRED_TYPE (node->binaryop.left);
+  DecafType right_type = GET_INFERRED_TYPE (node->binaryop.right);
+
+  switch (node->binaryop.operator)
+    {
+    case ADDOP:
+    case SUBOP:
+    case MULOP:
+    case DIVOP:
+    case MODOP:
+    case LTOP:
+    case LEOP:
+    case GEOP:
+    case GTOP:
+      if (left_type != INT || right_type != INT)
+        {
+          ErrorList_printf (ERROR_LIST,
+                            "Type error on line %d: binary operator applied "
+                            "to non-integer operands",
+                            node->source_line);
+        }
+      break;
+    case OROP:
+    case ANDOP:
+      if (left_type != BOOL || right_type != BOOL)
+        {
+          ErrorList_printf (ERROR_LIST,
+                            "Type error on line %d: binary operator applied "
+                            "to non-boolean operands",
+                            node->source_line);
+        }
+      break;
+    case EQOP:
+    case NEQOP:
+      if (left_type != right_type)
+        {
+          ErrorList_printf (ERROR_LIST,
+                            "Type error on line %d: binary operator applied "
+                            "to incompatible operands",
+                            node->source_line);
+        }
+      break;
+    default:
+      ErrorList_printf (ERROR_LIST,
+                        "Internal error: unhandled binary operator on line %d",
+                        node->source_line);
     }
-    return;
+  return;
 }
 
-void AnalysisVisitor_set_in_loop (NodeVisitor* visitor, ASTNode* node)
+void
+AnalysisVisitor_set_in_loop (NodeVisitor *visitor, ASTNode *node)
 {
-    DATA->in_loop = true;
-    return;
+  DATA->in_loop = true;
+  return;
 }
 
-void AnalysisVisitor_reset_in_loop (NodeVisitor* visitor, ASTNode* node)
+void
+AnalysisVisitor_reset_in_loop (NodeVisitor *visitor, ASTNode *node)
 {
-    DATA->in_loop = false;
-    return;
+  DATA->in_loop = false;
+  return;
 }
 
-void AnalysisVisitor_check_break (NodeVisitor* visitor, ASTNode* node)
+void
+AnalysisVisitor_check_break (NodeVisitor *visitor, ASTNode *node)
 {
-    if (!DATA->in_loop) {
-        ErrorList_printf(ERROR_LIST, "Semantic error on line %d: break statement not within a loop", node->source_line);
+  if (!DATA->in_loop)
+    {
+      ErrorList_printf (
+          ERROR_LIST,
+          "Semantic error on line %d: break statement not within a loop",
+          node->source_line);
     }
-    return;
+  return;
 }
 
-void AnalysisVisitor_check_continue (NodeVisitor* visitor, ASTNode* node)
+void
+AnalysisVisitor_check_continue (NodeVisitor *visitor, ASTNode *node)
 {
-    if (!DATA->in_loop) {
-        ErrorList_printf(ERROR_LIST, "Semantic error on line %d: continue statement not within a loop", node->source_line);
+  if (!DATA->in_loop)
+    {
+      ErrorList_printf (
+          ERROR_LIST,
+          "Semantic error on line %d: continue statement not within a loop",
+          node->source_line);
     }
-    return;
+  return;
 }
 
-typedef struct {
- int block_depth;
+typedef struct
+{
+  int block_depth;
 } ListVisitorsData;
- 
-#define DATA2 ((ListVisitorsData*)(visitor->data))
- 
-void ListVariablesVisitor_previsit_program (NodeVisitor* visitor, ASTNode* node) {
- DATA2->block_depth = 0;
-}
- 
-void ListVariablesVisitor_previsit_block (NodeVisitor* visitor, ASTNode* node) {
- DATA2->block_depth += 1;
-}
- 
-void ListVariablesVisitor_postvisit_block (NodeVisitor* visitor, ASTNode* node) {
- DATA2->block_depth -= 1;
-}
- 
-void ListVariablesVisitor_visit_vardecl (NodeVisitor* visitor, ASTNode* node) {
- printf("%d %s\n", DATA2->block_depth, node->vardecl.name);
-}
- 
-NodeVisitor* ListVariablesVisitor_new () {
-    NodeVisitor* v = NodeVisitor_new();
-    v->data = malloc(sizeof(ListVisitorsData));
-    v->dtor = free;
-    v->previsit_program = ListVariablesVisitor_previsit_program;
-    v->previsit_block = ListVariablesVisitor_previsit_block;
-    v->postvisit_block = ListVariablesVisitor_postvisit_block;
-    v->previsit_vardecl = ListVariablesVisitor_visit_vardecl;
-    return v;
-}
 
-ErrorList* analyze (ASTNode* tree)
+#define DATA2 ((ListVisitorsData *)(visitor->data))
+
+void
+ListVariablesVisitor_previsit_program (NodeVisitor *visitor, ASTNode *node)
 {
-    if(tree == NULL) {
-        ErrorList* errors = ErrorList_new();
-        return errors;
-    }
-    /* allocate analysis structures */
-    NodeVisitor* v = NodeVisitor_new();
-    v->data = (void*)AnalysisData_new();
-    v->dtor = (Destructor)AnalysisData_free;
-
-    /* BOILERPLATE: TODO: register analysis callbacks */
-    v->previsit_default = AnalysisVisitor_check_duplicate_symbols;
-    v->previsit_program = AnalysisVisitor_check_main_function;
-    v->postvisit_conditional = AnalysisVisitor_check_conditional;
-    v->postvisit_whileloop = AnalysisVisitor_check_while;
-    v->previsit_literal = AnalysisVisitor_infer_literal;
-    v->postvisit_assignment = AnalysisVisitor_check_assignment;
-    v->previsit_vardecl = AnalysisVisitor_check_vardecl;
-    v->previsit_funcdecl = AnalysisVisitor_set_current_function_type;
-    v->postvisit_funcdecl = AnalysisVisitor_reset_current_function_type;
-    v->postvisit_return = AnalysisVisitor_check_return;
-    v->previsit_funccall = AnalysisVisitor_infer_funccall;
-    v->postvisit_funccall = AnalysisVisitor_check_funccall;
-    v->previsit_location = AnalysisVisitor_infer_location;
-    v->postvisit_location = AnalysisVisitor_check_location;
-    v->previsit_unaryop = AnalysisVisitor_infer_unaryop;
-    v->postvisit_unaryop = AnalysisVisitor_check_unaryop;
-    v->previsit_binaryop = AnalysisVisitor_infer_binaryop;
-    v->postvisit_binaryop = AnalysisVisitor_check_binaryop;
-    v->previsit_whileloop = AnalysisVisitor_set_in_loop;
-    v->postvisit_whileloop = AnalysisVisitor_reset_in_loop;
-    v->postvisit_break = AnalysisVisitor_check_break;
-    v->postvisit_continue = AnalysisVisitor_check_continue;
-    /* perform analysis, save error list, clean up, and return errors */
-    NodeVisitor_traverse(v, tree);
-    ErrorList* errors = ((AnalysisData*)v->data)->errors;
-    NodeVisitor_free(v);
-    return errors;
+  DATA2->block_depth = 0;
 }
 
+void
+ListVariablesVisitor_previsit_block (NodeVisitor *visitor, ASTNode *node)
+{
+  DATA2->block_depth += 1;
+}
+
+void
+ListVariablesVisitor_postvisit_block (NodeVisitor *visitor, ASTNode *node)
+{
+  DATA2->block_depth -= 1;
+}
+
+void
+ListVariablesVisitor_visit_vardecl (NodeVisitor *visitor, ASTNode *node)
+{
+  printf ("%d %s\n", DATA2->block_depth, node->vardecl.name);
+}
+
+NodeVisitor *
+ListVariablesVisitor_new ()
+{
+  NodeVisitor *v = NodeVisitor_new ();
+  v->data = malloc (sizeof (ListVisitorsData));
+  v->dtor = free;
+  v->previsit_program = ListVariablesVisitor_previsit_program;
+  v->previsit_block = ListVariablesVisitor_previsit_block;
+  v->postvisit_block = ListVariablesVisitor_postvisit_block;
+  v->previsit_vardecl = ListVariablesVisitor_visit_vardecl;
+  return v;
+}
+
+ErrorList *
+analyze (ASTNode *tree)
+{
+  if (tree == NULL)
+    {
+      ErrorList *errors = ErrorList_new ();
+      return errors;
+    }
+  /* allocate analysis structures */
+  NodeVisitor *v = NodeVisitor_new ();
+  v->data = (void *)AnalysisData_new ();
+  v->dtor = (Destructor)AnalysisData_free;
+
+  /* BOILERPLATE: TODO: register analysis callbacks */
+  v->previsit_default = AnalysisVisitor_check_duplicate_symbols;
+  v->previsit_program = AnalysisVisitor_check_main_function;
+  v->postvisit_conditional = AnalysisVisitor_check_conditional;
+  v->postvisit_whileloop = AnalysisVisitor_check_while;
+  v->previsit_literal = AnalysisVisitor_infer_literal;
+  v->postvisit_assignment = AnalysisVisitor_check_assignment;
+  v->previsit_vardecl = AnalysisVisitor_check_vardecl;
+  v->previsit_funcdecl = AnalysisVisitor_set_current_function_type;
+  v->postvisit_funcdecl = AnalysisVisitor_reset_current_function_type;
+  v->postvisit_return = AnalysisVisitor_check_return;
+  v->previsit_funccall = AnalysisVisitor_infer_funccall;
+  v->postvisit_funccall = AnalysisVisitor_check_funccall;
+  v->previsit_location = AnalysisVisitor_infer_location;
+  v->postvisit_location = AnalysisVisitor_check_location;
+  v->previsit_unaryop = AnalysisVisitor_infer_unaryop;
+  v->postvisit_unaryop = AnalysisVisitor_check_unaryop;
+  v->previsit_binaryop = AnalysisVisitor_infer_binaryop;
+  v->postvisit_binaryop = AnalysisVisitor_check_binaryop;
+  v->previsit_whileloop = AnalysisVisitor_set_in_loop;
+  v->postvisit_whileloop = AnalysisVisitor_reset_in_loop;
+  v->postvisit_break = AnalysisVisitor_check_break;
+  v->postvisit_continue = AnalysisVisitor_check_continue;
+  /* perform analysis, save error list, clean up, and return errors */
+  NodeVisitor_traverse (v, tree);
+  ErrorList *errors = ((AnalysisData *)v->data)->errors;
+  NodeVisitor_free (v);
+  return errors;
+}
