@@ -152,8 +152,8 @@ AnalysisVisitor_check_main_function (NodeVisitor *visitor, ASTNode *node)
   Symbol *symbol = lookup_symbol (node, "main");
   if (symbol == NULL)
     {
-      ErrorList_printf (ERROR_LIST, "Undefined function 'main' on line %d",
-                        node->source_line);
+      ErrorList_printf (ERROR_LIST,
+                        "Program does not contain a 'main' function");
     }
   else
     {
@@ -165,18 +165,12 @@ AnalysisVisitor_check_main_function (NodeVisitor *visitor, ASTNode *node)
         }
       if (symbol->type != INT)
         {
-          ErrorList_printf (
-              ERROR_LIST,
-              "Function 'main' does not have return type int on line %d",
-              node->source_line);
+          ErrorList_printf (ERROR_LIST, "'main' must return an integer");
         }
       if (symbol->parameters != NULL
           && ParameterList_size (symbol->parameters) != 0)
         {
-          ErrorList_printf (
-              ERROR_LIST,
-              "Function 'main' should not have parameters on line %d",
-              node->source_line);
+          ErrorList_printf (ERROR_LIST, "'main' must take no parameters");
         }
     }
   return;
@@ -221,6 +215,13 @@ AnalysisVisitor_check_assignment (NodeVisitor *visitor, ASTNode *node)
 {
   DecafType location_type = GET_INFERRED_TYPE (node->assignment.location);
   DecafType value_type = GET_INFERRED_TYPE (node->assignment.value);
+
+  // If either side is UNKNOWN (e.g., undefined variable), skip mismatch check.
+  if (location_type == UNKNOWN || value_type == UNKNOWN)
+    {
+      return;
+    }
+
   if (location_type != value_type)
     {
       ErrorList_printf (ERROR_LIST,
@@ -236,10 +237,8 @@ AnalysisVisitor_check_vardecl (NodeVisitor *visitor, ASTNode *node)
   DecafType var_type = node->vardecl.type;
   if (var_type == VOID)
     {
-      ErrorList_printf (
-          ERROR_LIST,
-          "Type error on line %d: variable declared with void type",
-          node->source_line);
+      ErrorList_printf (ERROR_LIST, "Void variable '%s' on line %d",
+                        node->vardecl.name, node->source_line);
     }
   if (node->vardecl.is_array && node->vardecl.array_length <= 0)
     {
@@ -364,17 +363,16 @@ AnalysisVisitor_check_funccall (NodeVisitor *visitor, ASTNode *node)
 void
 AnalysisVisitor_infer_location (NodeVisitor *visitor, ASTNode *node)
 {
-  Symbol *symbol
+  Symbol *sym
       = lookup_symbol_with_reporting (visitor, node, node->location.name);
-  if (symbol != NULL)
-    {
-      SET_INFERRED_TYPE (symbol->type);
-    }
-  else
+
+  if (!sym)
     {
       SET_INFERRED_TYPE (UNKNOWN);
+      return;
     }
-  return;
+
+  SET_INFERRED_TYPE (sym->type);
 }
 
 void
@@ -393,6 +391,13 @@ AnalysisVisitor_check_location (NodeVisitor *visitor, ASTNode *node)
         }
 
       DecafType index_type = GET_INFERRED_TYPE (node->location.index);
+
+      if (index_type == UNKNOWN)
+        {
+          SET_INFERRED_TYPE (UNKNOWN);
+          return;
+        }
+
       if (index_type != INT)
         {
           ErrorList_printf (
@@ -502,6 +507,12 @@ AnalysisVisitor_check_binaryop (NodeVisitor *visitor, ASTNode *node)
 {
   DecafType left_type = GET_INFERRED_TYPE (node->binaryop.left);
   DecafType right_type = GET_INFERRED_TYPE (node->binaryop.right);
+
+  if (left_type == UNKNOWN || right_type == UNKNOWN)
+    {
+      SET_INFERRED_TYPE (UNKNOWN);
+      return;
+    }
 
   switch (node->binaryop.operator)
     {
