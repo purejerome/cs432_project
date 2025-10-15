@@ -40,7 +40,7 @@ typedef struct AnalysisData
   /* BOILERPLATE: TODO: add any new desired state information (and clean it up
    * in AnalysisData_free) */
   FuncDeclNode *current_function;
-  bool in_loop;
+  int loop_depth;
 
 } AnalysisData;
 
@@ -56,7 +56,7 @@ AnalysisData_new (void)
   CHECK_MALLOC_PTR (data);
   data->errors = ErrorList_new ();
   data->current_function = NULL;
-  data->in_loop = false;
+  data->loop_depth = false;
   return data;
 }
 
@@ -137,35 +137,112 @@ contains_element_string (char **arr, int size, char *val)
 void
 AnalysisVisitor_check_duplicate_symbols (NodeVisitor *visitor, ASTNode *node)
 {
+  /* Only run on scope-bearing nodes */
+  if (node->type != PROGRAM && node->type != BLOCK)
+    return;
+
+  /* Determine the “scope start” line for the message.
+     - PROGRAM: use its own line (usually 1)
+     - BLOCK:   use the block’s line (this is the function body’s line for the
+                top-level block inside a function) */
+  int scope_line = node->source_line;
+
+  /* Grab this scope’s symbol table (attribute key may vary in codebases) */
   SymbolTable *table
-          = (SymbolTable *)ASTNode_get_attribute (node, "symbolTable");
-    if (table != NULL)
+      = (SymbolTable *)ASTNode_get_attribute (node, "symbolTable");
+  if (table == NULL)
+    table = (SymbolTable *)ASTNode_get_attribute (node, "symbols");
+
+  /* 1) Check duplicates among local symbols in this scope */
+  if (table && table->local_symbols)
     {
-        int count = SymbolList_size (table->local_symbols);
-        char **names = malloc (count * sizeof (char *));
-        int size = 0;
-        FOR_EACH (Symbol *, sym, table->local_symbols)
+      for (Symbol *s1 = table->local_symbols->head; s1; s1 = s1->next)
         {
-        Symbol *other = SymbolTable_lookup (table, sym->name);
-        if (other != NULL && other != sym
-            && !contains_element_string (names, size, sym->name))
+
+          /* skip names we’ve already reported earlier in this scope */
+          bool seen_before = false;
+          for (Symbol *p = table->local_symbols->head; p != s1; p = p->next)
             {
-            names[size] = sym->name;
-            size++;
-            ErrorList_printf (ERROR_LIST,
-                                "Duplicate symbol '%s' on line %d",
-                                sym->name, node->source_line);
+              if (strncmp (p->name, s1->name, MAX_ID_LEN) == 0)
+                {
+                  seen_before = true;
+                  break;
+                }
+            }
+          if (seen_before)
+            continue;
+
+          /* look ahead for a second occurrence of the same name */
+          bool dup = false;
+          for (Symbol *s2 = s1->next; s2; s2 = s2->next)
+            {
+              if (strncmp (s1->name, s2->name, MAX_ID_LEN) == 0)
+                {
+                  dup = true;
+                  break;
+                }
+            }
+
+          if (dup)
+            {
+              ErrorList_printf (
+                  ERROR_LIST,
+                  "Duplicate symbols named '%s' in scope started on line %d",
+                  s1->name, scope_line);
             }
         }
-        free (names);
     }
-  return;
+
+  /* 2) If this is the *function body* block, also check parameter names.
+        (We can detect the function body by comparing the current block node to
+         DATA->current_function->body.) */
+  if (node->type == BLOCK && DATA->current_function != NULL
+      && DATA->current_function->body == node
+      && DATA->current_function->parameters != NULL)
+    {
+      ParameterList *plist = DATA->current_function->parameters;
+
+      for (Parameter *p1 = plist->head; p1; p1 = p1->next)
+        {
+
+          /* skip names already seen earlier in the parameter list */
+          bool seen_before = false;
+          for (Parameter *q = plist->head; q != p1; q = q->next)
+            {
+              if (strncmp (q->name, p1->name, MAX_ID_LEN) == 0)
+                {
+                  seen_before = true;
+                  break;
+                }
+            }
+          if (seen_before)
+            continue;
+
+          /* look ahead for a second occurrence */
+          bool dup = false;
+          for (Parameter *p2 = p1->next; p2; p2 = p2->next)
+            {
+              if (strncmp (p1->name, p2->name, MAX_ID_LEN) == 0)
+                {
+                  dup = true;
+                  break;
+                }
+            }
+
+          if (dup)
+            {
+              ErrorList_printf (
+                  ERROR_LIST,
+                  "Duplicate symbols named '%s' in scope started on line %d",
+                  p1->name, scope_line);
+            }
+        }
+    }
 }
 
 void
 AnalysisVisitor_check_main_function (NodeVisitor *visitor, ASTNode *node)
 {
-  AnalysisVisitor_check_duplicate_symbols (visitor, node);
   Symbol *symbol = lookup_symbol (node, "main");
   if (symbol == NULL)
     {
@@ -194,24 +271,18 @@ AnalysisVisitor_check_main_function (NodeVisitor *visitor, ASTNode *node)
 }
 
 void
-AnalysisVisitor_check_duplicate_symbols_block (NodeVisitor *visitor, ASTNode *node)
-{
-  AnalysisVisitor_check_duplicate_symbols (visitor, node);
-  return;
-}
-
-void
 AnalysisVisitor_check_conditional (NodeVisitor *visitor, ASTNode *node)
 {
-  DecafType conidtion_type = GET_INFERRED_TYPE (node->conditional.condition);
-  if (conidtion_type != BOOL)
+  DecafType cond_type = GET_INFERRED_TYPE (node->conditional.condition);
+  if (cond_type == UNKNOWN)
+    return;
+
+  if (cond_type != BOOL)
     {
-      ErrorList_printf (
-          ERROR_LIST,
-          "Type error on line %d: conditional expression is not boolean",
-          node->source_line);
+      ErrorList_printf (ERROR_LIST,
+                        "Type mismatch: bool expected but %s found on line %d",
+                        type_name (cond_type), node->source_line);
     }
-  return;
 }
 
 void
@@ -225,6 +296,8 @@ AnalysisVisitor_check_while (NodeVisitor *visitor, ASTNode *node)
           "Type error on line %d: while loop condition is not boolean",
           node->source_line);
     }
+  if (DATA->loop_depth > 0)
+    DATA->loop_depth--;
   return;
 }
 
@@ -269,10 +342,9 @@ AnalysisVisitor_check_vardecl (NodeVisitor *visitor, ASTNode *node)
     }
   if (node->vardecl.is_array && DATA->current_function != NULL)
     {
-      ErrorList_printf (
-          ERROR_LIST,
-          "Type error on line %d: array variable declared inside function",
-          node->source_line);
+      ErrorList_printf (ERROR_LIST,
+                        "Local variable '%s' on line %d cannot be an array",
+                        node->vardecl.name, node->source_line);
     }
   return;
 }
@@ -288,7 +360,6 @@ void
 AnalysisVisitor_reset_current_function_type (NodeVisitor *visitor,
                                              ASTNode *node)
 {
-  AnalysisVisitor_check_duplicate_symbols (visitor, node);
   DATA->current_function = NULL;
   return;
 }
@@ -378,9 +449,8 @@ AnalysisVisitor_check_funccall (NodeVisitor *visitor, ASTNode *node)
   if (formal_count != argument_count)
     {
       ErrorList_printf (ERROR_LIST,
-                        "Type error on line %d: function '%s' called with "
-                        "wrong number of arguments",
-                        node->source_line, node->funccall.name);
+                        "Invalid number of function arguments on line %d",
+                        node->source_line);
       return;
     }
 
@@ -457,18 +527,19 @@ AnalysisVisitor_check_location (NodeVisitor *visitor, ASTNode *node)
         {
           ErrorList_printf (
               ERROR_LIST,
-              "Type error on line %d: array index is not an integer",
-              node->source_line);
+              "Type mismatch: int expected but %s found on line %d",
+              type_name (index_type), node->source_line);
+          SET_INFERRED_TYPE (UNKNOWN);
+          return;
         }
     }
   else
     {
       if (symbol != NULL && symbol->symbol_type != SCALAR_SYMBOL)
         {
-          ErrorList_printf (
-              ERROR_LIST,
-              "Type error on line %d: array variable used without index",
-              node->source_line);
+          ErrorList_printf (ERROR_LIST,
+                            "Array '%s' accessed without index on line %d",
+                            node->location.name, node->source_line);
         }
     }
   return;
@@ -505,8 +576,8 @@ AnalysisVisitor_check_unaryop (NodeVisitor *visitor, ASTNode *node)
         {
           ErrorList_printf (
               ERROR_LIST,
-              "Type error on line %d: unary - applied to non-integer operand",
-              node->source_line);
+              "Type mismatch: int expected but %s found on line %d",
+              type_name (child_type), node->source_line);
         }
       break;
     case NOTOP:
@@ -514,8 +585,8 @@ AnalysisVisitor_check_unaryop (NodeVisitor *visitor, ASTNode *node)
         {
           ErrorList_printf (
               ERROR_LIST,
-              "Type error on line %d: unary ! applied to non-boolean operand",
-              node->source_line);
+              "Type mismatch: bool expected but %s found on line %d",
+              type_name (child_type), node->source_line);
         }
       break;
     default:
@@ -632,23 +703,23 @@ AnalysisVisitor_check_binaryop (NodeVisitor *visitor, ASTNode *node)
 }
 
 void
-AnalysisVisitor_set_in_loop (NodeVisitor *visitor, ASTNode *node)
+AnalysisVisitor_set_loop_depth (NodeVisitor *visitor, ASTNode *node)
 {
-  DATA->in_loop = true;
+  DATA->loop_depth++;
   return;
 }
 
 void
-AnalysisVisitor_reset_in_loop (NodeVisitor *visitor, ASTNode *node)
+AnalysisVisitor_reset_loop_depth (NodeVisitor *visitor, ASTNode *node)
 {
-  DATA->in_loop = false;
+  DATA->loop_depth = false;
   return;
 }
 
 void
 AnalysisVisitor_check_break (NodeVisitor *visitor, ASTNode *node)
 {
-  if (!DATA->in_loop)
+  if (DATA->loop_depth <= 0)
     {
       ErrorList_printf (ERROR_LIST, "Invalid 'break' outside loop on line %d",
                         node->source_line);
@@ -659,7 +730,7 @@ AnalysisVisitor_check_break (NodeVisitor *visitor, ASTNode *node)
 void
 AnalysisVisitor_check_continue (NodeVisitor *visitor, ASTNode *node)
 {
-  if (!DATA->in_loop)
+  if (DATA->loop_depth <= 0)
     {
       ErrorList_printf (ERROR_LIST,
                         "Invalid 'continue' outside loop on line %d",
@@ -720,35 +791,63 @@ analyze (ASTNode *tree)
       ErrorList *errors = ErrorList_new ();
       return errors;
     }
-  /* allocate analysis structures */
+
   NodeVisitor *v = NodeVisitor_new ();
   v->data = (void *)AnalysisData_new ();
   v->dtor = (Destructor)AnalysisData_free;
 
-  /* BOILERPLATE: TODO: register analysis callbacks */
-  v->postvisit_program = AnalysisVisitor_check_main_function;
-  v->postvisit_block = AnalysisVisitor_check_duplicate_symbols_block;
-  v->postvisit_conditional = AnalysisVisitor_check_conditional;
+  /* ---- Visitor wiring ---- */
+
+  // Scope duplicate checks AFTER scopes are populated
+  v->postvisit_program = AnalysisVisitor_check_duplicate_symbols;
+  v->postvisit_block = AnalysisVisitor_check_duplicate_symbols;
+  // (No need to also attach on funcdecl; running on the body BLOCK covers it.)
+
+  // Main function checks
+  v->previsit_program = AnalysisVisitor_check_main_function;
+
+  // While-loop context + checks
+  v->previsit_whileloop = AnalysisVisitor_set_loop_depth;
   v->postvisit_whileloop = AnalysisVisitor_check_while;
-  v->previsit_literal = AnalysisVisitor_infer_literal;
-  v->postvisit_assignment = AnalysisVisitor_check_assignment;
-  v->previsit_vardecl = AnalysisVisitor_check_vardecl;
-  v->previsit_funcdecl = AnalysisVisitor_set_current_function_type;
-  v->postvisit_funcdecl = AnalysisVisitor_reset_current_function_type;
-  v->postvisit_return = AnalysisVisitor_check_return;
-  v->previsit_funccall = AnalysisVisitor_infer_funccall;
-  v->postvisit_funccall = AnalysisVisitor_check_funccall;
-  v->previsit_location = AnalysisVisitor_infer_location;
-  v->postvisit_location = AnalysisVisitor_check_location;
-  v->previsit_unaryop = AnalysisVisitor_infer_unaryop;
-  v->postvisit_unaryop = AnalysisVisitor_check_unaryop;
-  v->previsit_binaryop = AnalysisVisitor_infer_binaryop;
-  v->postvisit_binaryop = AnalysisVisitor_check_binaryop;
-  v->previsit_whileloop = AnalysisVisitor_set_in_loop;
-  v->postvisit_whileloop = AnalysisVisitor_reset_in_loop;
+
+  // Conditionals (if-statements)
+  v->postvisit_conditional = AnalysisVisitor_check_conditional;
+
+  // Break/continue
   v->postvisit_break = AnalysisVisitor_check_break;
   v->postvisit_continue = AnalysisVisitor_check_continue;
-  /* perform analysis, save error list, clean up, and return errors */
+
+  // Literals and expressions
+  v->previsit_literal = AnalysisVisitor_infer_literal;
+
+  v->previsit_unaryop = AnalysisVisitor_infer_unaryop;
+  v->postvisit_unaryop = AnalysisVisitor_check_unaryop;
+
+  v->previsit_binaryop = AnalysisVisitor_infer_binaryop;
+  v->postvisit_binaryop = AnalysisVisitor_check_binaryop;
+
+  // Locations (variables / array refs)
+  v->previsit_location = AnalysisVisitor_infer_location;
+  v->postvisit_location = AnalysisVisitor_check_location;
+
+  // Assignments
+  v->postvisit_assignment = AnalysisVisitor_check_assignment;
+
+  // Variable declarations
+  v->previsit_vardecl = AnalysisVisitor_check_vardecl;
+
+  // Function context
+  v->previsit_funcdecl = AnalysisVisitor_set_current_function_type;
+  v->postvisit_funcdecl = AnalysisVisitor_reset_current_function_type;
+
+  // Function calls
+  v->previsit_funccall = AnalysisVisitor_infer_funccall;
+  v->postvisit_funccall = AnalysisVisitor_check_funccall;
+
+  // Returns
+  v->postvisit_return = AnalysisVisitor_check_return;
+
+  /* ---- Traverse, collect, return ---- */
   NodeVisitor_traverse (v, tree);
   ErrorList *errors = ((AnalysisData *)v->data)->errors;
   NodeVisitor_free (v);
