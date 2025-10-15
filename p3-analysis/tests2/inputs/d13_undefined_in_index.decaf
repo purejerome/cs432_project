@@ -1,0 +1,8 @@
+// D13: undefined variable used in an expression (array index position) (should be rejected)
+// Note: arrays are global-only; this is still invalid due to 'i' undefined, even if array semantics are out of D scope.
+int a[2];
+def int main() {
+    int x;
+    x = a[i];   // 'i' is undefined
+    return x;
+}

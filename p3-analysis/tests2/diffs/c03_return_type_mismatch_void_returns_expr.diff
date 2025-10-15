@@ -1,0 +1,2 @@
++Invalid non-void return from void function on line 3
+-Type error on line 3: return type does not match function return type

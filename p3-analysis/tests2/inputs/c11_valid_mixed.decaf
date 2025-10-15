@@ -1,0 +1,16 @@
+// C11: valid program mixing constructs (should be accepted)
+def void noop() { return; }
+
+def int main() {
+    int a;
+    bool b;
+    a = 3 + 4 - 2;
+    b = (1 < 2) && (false || true);
+    noop();
+    while (a > 0) {
+        a = a - 1;
+        if (a == 2) { continue; }
+        if (a == 1) { break; }
+    }
+    return 0;
+}

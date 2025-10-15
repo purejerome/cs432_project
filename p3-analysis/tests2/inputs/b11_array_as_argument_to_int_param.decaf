@@ -1,0 +1,7 @@
+// B11: passing array to a function expecting int -> reject
+int a[3];
+def void h(int v) { return; }
+def int main() {
+    h(a);   // invalid: array value used where int expected
+    return 0;
+}

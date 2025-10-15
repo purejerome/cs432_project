@@ -1,0 +1,5 @@
+// A11: function call arity mismatch -> reject
+def int f(int x, bool y) { return x; }
+def int main() {
+    return f(1);   // missing second arg
+}

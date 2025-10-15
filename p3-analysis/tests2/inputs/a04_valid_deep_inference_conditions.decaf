@@ -1,0 +1,15 @@
+// A04: valid deep inference in if/while
+def int main() {
+    int a;
+    bool b;
+    a = 5;
+    b = (1 < 2) && !(3 == 4) || (a > 0);
+    if (b && (a - 3 < 10)) {
+        while ((a > 0) && (b || (1 < 2))) {
+            a = a - 1;
+            if (a == 2) { continue; }
+            if (a == 1) { break; }
+        }
+    }
+    return 0;
+}

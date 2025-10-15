@@ -1,0 +1,7 @@
+// B07: assignment target is an array name (not scalar) -> reject
+int a[2];
+def int main() {
+    int x;
+    a = x;   // invalid: cannot assign to array variable (no index)
+    return 0;
+}

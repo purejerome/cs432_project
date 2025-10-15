@@ -1,0 +1,5 @@
+// A05: local array declaration -> reject (arrays are global-only)
+def int main() {
+    int a[2];
+    return 0;
+}

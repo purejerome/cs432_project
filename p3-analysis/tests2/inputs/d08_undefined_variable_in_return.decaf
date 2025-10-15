@@ -1,0 +1,4 @@
+// D08: undefined variable in expression (should be rejected)
+def int main() {
+    return z;   // 'z' is undefined
+}

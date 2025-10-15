@@ -1,0 +1,4 @@
+// D06: main has a parameter (should be rejected)
+def int main(int x) {
+    return 0;
+}

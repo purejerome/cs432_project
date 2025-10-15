@@ -1,0 +1,6 @@
+// C01: zero-length array (should be rejected)
+int a[0];
+
+def int main() {
+    return 0;
+}

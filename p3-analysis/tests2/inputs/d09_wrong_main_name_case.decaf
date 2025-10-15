@@ -1,0 +1,4 @@
+// D09: wrong main name casing (should be rejected; 'Main' != 'main')
+def int Main() {
+    return 0;
+}

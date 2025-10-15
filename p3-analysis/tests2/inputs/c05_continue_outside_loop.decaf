@@ -1,0 +1,5 @@
+// C05: continue outside of a loop (should be rejected)
+def int main() {
+    continue;  // invalid placement
+    return 0;
+}

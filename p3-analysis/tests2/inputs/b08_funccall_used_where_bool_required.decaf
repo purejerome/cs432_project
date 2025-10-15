@@ -1,0 +1,6 @@
+// B08: int-return function used as condition -> reject (requires inferring call type)
+def int f() { return 1; }
+def int main() {
+    if (f()) { }   // invalid: if requires bool
+    return 0;
+}

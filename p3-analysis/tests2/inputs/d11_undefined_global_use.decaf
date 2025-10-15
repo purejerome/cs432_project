@@ -1,0 +1,6 @@
+// D11: undefined global used in main (should be rejected)
+def int main() {
+    int a;
+    a = g + 1; // 'g' is undefined
+    return a;
+}

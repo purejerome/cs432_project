@@ -1,0 +1,10 @@
+// B12: valid program with parameter shadowed by local, complex inference should pass
+def int f(int x) { return x + 1; }
+def int main() {
+    int x;
+    x = 2;
+    { int x; x = 5; }          // inner shadowing
+    bool b;
+    b = (f(x) > 0) && !(1 == 2);
+    return 0;
+}

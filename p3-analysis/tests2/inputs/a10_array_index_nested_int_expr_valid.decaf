@@ -1,0 +1,7 @@
+// A10: valid nested int expr as array index
+int a[20];
+def int main() {
+    int x;
+    x = a[(1 + 2) * 3];
+    return 0;
+}

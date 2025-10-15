@@ -1,0 +1,4 @@
+// D07: minimal valid program (should be accepted)
+def int main() {
+    return 0;
+}

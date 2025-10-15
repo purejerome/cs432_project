@@ -1,0 +1,6 @@
+// D03: undefined variable used in assignment (should be rejected)
+def int main() {
+    int a;
+    b = 1;          // 'b' is undefined
+    return 0;
+}

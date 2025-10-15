@@ -1,0 +1,6 @@
+// B03: duplicate local variables in the same block -> reject
+def int main() {
+    int a;
+    int a;   // duplicate
+    return 0;
+}

@@ -1,0 +1,4 @@
+// D05: main with void return type (should be rejected)
+def void main() {
+    return;
+}

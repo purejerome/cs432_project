@@ -1,0 +1,7 @@
+// C10: function call argument type mismatch (should be rejected)
+def void h(int x, bool y) { return; }
+
+def int main() {
+    h(true, 0);   // invalid: true not int; 0 not bool
+    return 0;
+}

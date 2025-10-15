@@ -1,0 +1,5 @@
+// D02: void variable at local scope (should be rejected)
+def int main() {
+    void y;
+    return 0;
+}

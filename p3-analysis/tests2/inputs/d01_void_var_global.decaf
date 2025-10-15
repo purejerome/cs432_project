@@ -1,0 +1,6 @@
+// D01: void variable at global scope (should be rejected)
+void x;
+
+def int main() {
+    return 0;
+}

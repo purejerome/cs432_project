@@ -1,0 +1,7 @@
+// B09: void-return function used in expression -> reject
+def void g() { return; }
+def int main() {
+    int x;
+    x = g();    // invalid: void cannot be used in expr
+    return 0;
+}

@@ -1,0 +1,8 @@
+// C02: function declared int but returns bool (should be rejected)
+def int f() {
+    return true;   // mismatch
+}
+
+def int main() {
+    return f();
+}

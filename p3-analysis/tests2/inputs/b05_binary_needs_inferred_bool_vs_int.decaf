@@ -1,0 +1,6 @@
+// B05: '+' on a relational result (bool) -> reject (requires inferring (1<2):bool)
+def int main() {
+    int x;
+    x = (1 < 2) + 3;   // invalid: left is bool
+    return x;
+}

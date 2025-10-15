@@ -1,0 +1,9 @@
+// C03: void function returning an expression (should be rejected)
+def void g() {
+    return 1;      // invalid: return value in void
+}
+
+def int main() {
+    g();
+    return 0;
+}

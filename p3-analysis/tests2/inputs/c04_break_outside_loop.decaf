@@ -1,0 +1,5 @@
+// C04: break outside of a loop (should be rejected)
+def int main() {
+    break;     // invalid placement
+    return 0;
+}

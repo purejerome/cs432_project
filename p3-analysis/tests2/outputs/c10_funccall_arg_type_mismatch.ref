@@ -1,0 +1,2 @@
+Type mismatch in parameter 0 of call to 'h': expected int but found bool on line 5
+Type mismatch in parameter 1 of call to 'h': expected bool but found int on line 5

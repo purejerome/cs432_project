@@ -1,0 +1,6 @@
+// A03: (bool) == (int) via nested expr -> reject
+def int main() {
+    bool b;
+    b = (1 < 2) == (3 - 1);  // left bool, right int
+    return 0;
+}

@@ -1,0 +1,6 @@
+// C08: equality with mismatched types (should be rejected)
+def int main() {
+    bool b;
+    b = (1 == true);  // invalid: operands must have same type
+    return 0;
+}

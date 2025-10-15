@@ -1,0 +1,6 @@
+// A01: unary minus on bool -> reject
+def int main() {
+    int x;
+    x = -true;
+    return x;
+}

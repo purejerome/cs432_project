@@ -1,0 +1,6 @@
+// C07: logical AND with int operands (should be rejected)
+def int main() {
+    bool b;
+    b = 5 && 0;     // invalid: '&&' requires bool,bool
+    return 0;
+}

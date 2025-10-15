@@ -1,0 +1,7 @@
+// B10: array index is a bool (via relational) -> reject
+int a[4];
+def int main() {
+    int x;
+    x = a[1 < 2];  // index must be int, not bool
+    return x;
+}

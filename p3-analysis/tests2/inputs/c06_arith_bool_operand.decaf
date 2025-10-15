@@ -1,0 +1,6 @@
+// C06: arithmetic operand is bool (should be rejected)
+def int main() {
+    int x;
+    x = true + 1;   // invalid: '+' requires int,int
+    return x;
+}

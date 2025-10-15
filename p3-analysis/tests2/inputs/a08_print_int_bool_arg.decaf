@@ -1,0 +1,5 @@
+// A08: print_int called with bool -> reject
+def int main() {
+    print_int(true);
+    return 0;
+}

@@ -1,0 +1,4 @@
+// A06: duplicate function names -> reject
+def int f() { return 0; }
+def int f() { return 1; }
+def int main() { return f(); }

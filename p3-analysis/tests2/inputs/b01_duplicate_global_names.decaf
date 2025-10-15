@@ -1,0 +1,4 @@
+// B01: duplicate names in global scope (var and func share name) -> reject
+int x;
+def int x() { return 0; }
+def int main() { return 0; }

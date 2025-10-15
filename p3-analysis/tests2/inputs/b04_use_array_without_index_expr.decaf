@@ -1,0 +1,7 @@
+// B04: use array value as scalar (missing index) -> reject
+int arr[3];
+def int main() {
+    int x;
+    x = arr;       // invalid: arrays require an index
+    return 0;
+}

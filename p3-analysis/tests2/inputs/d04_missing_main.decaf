@@ -1,0 +1,4 @@
+// D04: program with no main (should be rejected)
+def int add(int x, int y) {
+    return x + y;
+}

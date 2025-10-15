@@ -1,0 +1,4 @@
+// D10: main returns bool (should be rejected; must return int)
+def bool main() {
+    return true;
+}

@@ -1,0 +1,6 @@
+// C09: assignment type mismatch (should be rejected)
+def int main() {
+    bool b;
+    b = 1;    // invalid: bool = int
+    return 0;
+}
