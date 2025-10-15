@@ -8,6 +8,25 @@ AI assist: AI was used to help pinpoint and correct some edge cases.
 
 #include "p3-analysis.h"
 
+// Function to make it easier to print
+static const char *
+type_name (DecafType t)
+{
+  switch (t)
+    {
+    case INT:
+      return "int";
+    case BOOL:
+      return "bool";
+    case STR:
+      return "str";
+    case VOID:
+      return "void";
+    default:
+      return "unknown";
+    }
+}
+
 /**
  * @brief State/data for static analysis visitor
  */
@@ -213,22 +232,18 @@ AnalysisVisitor_infer_literal (NodeVisitor *visitor, ASTNode *node)
 void
 AnalysisVisitor_check_assignment (NodeVisitor *visitor, ASTNode *node)
 {
-  DecafType location_type = GET_INFERRED_TYPE (node->assignment.location);
-  DecafType value_type = GET_INFERRED_TYPE (node->assignment.value);
+  DecafType left_type = GET_INFERRED_TYPE (node->assignment.location);
+  DecafType right_type = GET_INFERRED_TYPE (node->assignment.value);
 
-  // If either side is UNKNOWN (e.g., undefined variable), skip mismatch check.
-  if (location_type == UNKNOWN || value_type == UNKNOWN)
-    {
-      return;
-    }
+  if (left_type == UNKNOWN || right_type == UNKNOWN)
+    return;
 
-  if (location_type != value_type)
+  if (left_type != right_type)
     {
-      ErrorList_printf (ERROR_LIST,
-                        "Type error on line %d: assignment types do not match",
-                        node->source_line);
+      ErrorList_printf (
+          ERROR_LIST, "Type mismatch: %s is incompatible with %s on line %d",
+          type_name (left_type), type_name (right_type), node->source_line);
     }
-  return;
 }
 
 void
@@ -242,10 +257,10 @@ AnalysisVisitor_check_vardecl (NodeVisitor *visitor, ASTNode *node)
     }
   if (node->vardecl.is_array && node->vardecl.array_length <= 0)
     {
-      ErrorList_printf (ERROR_LIST,
-                        "Type error on line %d: array variable declared with "
-                        "non-positive length",
-                        node->source_line);
+      ErrorList_printf (
+          ERROR_LIST,
+          "Array '%s' on line %d must have positive non-zero length",
+          node->vardecl.name, node->source_line);
     }
   if (node->vardecl.is_array && DATA->current_function != NULL)
     {
@@ -275,21 +290,43 @@ AnalysisVisitor_reset_current_function_type (NodeVisitor *visitor,
 void
 AnalysisVisitor_check_return (NodeVisitor *visitor, ASTNode *node)
 {
-  DecafType return_type = (node->funcreturn.value == NULL)
-                              ? VOID
-                              : GET_INFERRED_TYPE (node->funcreturn.value);
-  FuncDeclNode *current_function = DATA->current_function;
-  if (current_function != NULL && return_type != UNKNOWN)
+  DecafType expr_type = (node->funcreturn.value == NULL)
+                            ? VOID
+                            : GET_INFERRED_TYPE (node->funcreturn.value);
+
+  FuncDeclNode *fn = DATA->current_function;
+  if (fn == NULL)
+    return;
+
+  if (node->funcreturn.value != NULL && expr_type == UNKNOWN)
+    return;
+
+  // 1) Special case: void function returning a value
+  if (fn->return_type == VOID && node->funcreturn.value != NULL)
     {
-      if (return_type != current_function->return_type)
-        {
-          ErrorList_printf (ERROR_LIST,
-                            "Type error on line %d: return type does not "
-                            "match function return type",
-                            node->source_line);
-        }
+      ErrorList_printf (
+          ERROR_LIST, "Invalid non-void return from void function on line %d",
+          node->source_line);
+      return;
     }
-  return;
+
+  // 2) Non-void function: returning no value?
+  if (fn->return_type != VOID && node->funcreturn.value == NULL)
+    {
+      ErrorList_printf (
+          ERROR_LIST, "Missing return value for non-void function on line %d",
+          node->source_line);
+      return;
+    }
+
+  // 3) Regular mismatch (both sides present)
+  if (expr_type != fn->return_type)
+    {
+      ErrorList_printf (ERROR_LIST,
+                        "Type mismatch: %s expected but %s found on line %d",
+                        type_name (fn->return_type), type_name (expr_type),
+                        node->source_line);
+    }
 }
 
 void
@@ -311,51 +348,63 @@ AnalysisVisitor_infer_funccall (NodeVisitor *visitor, ASTNode *node)
 void
 AnalysisVisitor_check_funccall (NodeVisitor *visitor, ASTNode *node)
 {
-  Symbol *func_symbol = lookup_symbol (node, node->funccall.name);
-  if (func_symbol != NULL)
+  Symbol *func_symbol
+      = lookup_symbol_with_reporting (visitor, node, node->funccall.name);
+  if (func_symbol == NULL)
     {
-      if (func_symbol->symbol_type != FUNCTION_SYMBOL)
-        {
-          ErrorList_printf (
-              ERROR_LIST,
-              "Type error on line %d: symbol '%s' is not a function",
-              node->source_line, node->funccall.name);
-          return;
-        }
+      return;
+    }
 
-      ParameterList *formal_params = func_symbol->parameters;
-      int formal_count
-          = (formal_params == NULL) ? 0 : ParameterList_size (formal_params);
-      NodeList *arguments = node->funccall.arguments;
-      int argument_count = (arguments == NULL) ? 0 : NodeList_size (arguments);
-      if (formal_count != argument_count)
-        {
-          ErrorList_printf (ERROR_LIST,
-                            "Type error on line %d: function '%s' called with "
-                            "wrong number of arguments",
-                            node->source_line, node->funccall.name);
-          return;
-        }
+  if (func_symbol->symbol_type != FUNCTION_SYMBOL)
+    {
+      ErrorList_printf (ERROR_LIST,
+                        "Type error on line %d: symbol '%s' is not a function",
+                        node->source_line, node->funccall.name);
+      return;
+    }
 
-      if (formal_count > 0 && argument_count > 0)
+  ParameterList *formal_params = func_symbol->parameters;
+  int formal_count
+      = (formal_params == NULL) ? 0 : ParameterList_size (formal_params);
+  NodeList *arguments = node->funccall.arguments;
+  int argument_count = (arguments == NULL) ? 0 : NodeList_size (arguments);
+
+  if (formal_count != argument_count)
+    {
+      ErrorList_printf (ERROR_LIST,
+                        "Type error on line %d: function '%s' called with "
+                        "wrong number of arguments",
+                        node->source_line, node->funccall.name);
+      return;
+    }
+
+  /* Per-argument type checking: emit one line per mismatch (no early return).
+   */
+  if (formal_count > 0 && argument_count > 0)
+    {
+      Parameter *formal = formal_params->head;
+      ASTNode *argument = arguments->head;
+      int idx = 0;
+
+      while (formal != NULL && argument != NULL)
         {
-          Parameter *formal = formal_params->head;
-          ASTNode *argument = arguments->head;
-          while (formal != NULL && argument != NULL)
+          DecafType expected = formal->type;
+          DecafType actual = GET_INFERRED_TYPE (argument);
+
+          /* Avoid cascades: if child's type is unknown, skip emitting a
+           * mismatch. */
+          if (expected != UNKNOWN && actual != UNKNOWN && expected != actual)
             {
-              DecafType formal_type = formal->type;
-              DecafType argument_type = GET_INFERRED_TYPE (argument);
-              if (formal_type != argument_type)
-                {
-                  ErrorList_printf (ERROR_LIST,
-                                    "Type error on line %d: function '%s' "
-                                    "called with wrong argument types",
-                                    node->source_line, node->funccall.name);
-                  return;
-                }
-              formal = formal->next;
-              argument = argument->next;
+              ErrorList_printf (ERROR_LIST,
+                                "Type mismatch in parameter %d of call to "
+                                "'%s': expected %s but found %s on line %d",
+                                idx, node->funccall.name, type_name (expected),
+                                type_name (actual), node->source_line);
             }
+
+          formal = formal->next;
+          argument = argument->next;
+          idx++;
         }
     }
 }
@@ -525,32 +574,47 @@ AnalysisVisitor_check_binaryop (NodeVisitor *visitor, ASTNode *node)
     case LEOP:
     case GEOP:
     case GTOP:
-      if (left_type != INT || right_type != INT)
+      if (left_type != INT)
         {
-          ErrorList_printf (ERROR_LIST,
-                            "Type error on line %d: binary operator applied "
-                            "to non-integer operands",
-                            node->source_line);
+          ErrorList_printf (
+              ERROR_LIST,
+              "Type mismatch: int expected but %s found on line %d",
+              type_name (left_type), node->source_line);
+        }
+      if (right_type != INT)
+        {
+          ErrorList_printf (
+              ERROR_LIST,
+              "Type mismatch: int expected but %s found on line %d",
+              type_name (right_type), node->source_line);
         }
       break;
     case OROP:
     case ANDOP:
-      if (left_type != BOOL || right_type != BOOL)
+      if (left_type != BOOL)
         {
-          ErrorList_printf (ERROR_LIST,
-                            "Type error on line %d: binary operator applied "
-                            "to non-boolean operands",
-                            node->source_line);
+          ErrorList_printf (
+              ERROR_LIST,
+              "Type mismatch: bool expected but %s found on line %d",
+              type_name (left_type), node->source_line);
+        }
+      if (right_type != BOOL)
+        {
+          ErrorList_printf (
+              ERROR_LIST,
+              "Type mismatch: bool expected but %s found on line %d",
+              type_name (right_type), node->source_line);
         }
       break;
     case EQOP:
     case NEQOP:
       if (left_type != right_type)
         {
-          ErrorList_printf (ERROR_LIST,
-                            "Type error on line %d: binary operator applied "
-                            "to incompatible operands",
-                            node->source_line);
+          ErrorList_printf (
+              ERROR_LIST,
+              "Type mismatch: %s is incompatible with %s on line %d",
+              type_name (left_type), type_name (right_type),
+              node->source_line);
         }
       break;
     default:
@@ -580,10 +644,8 @@ AnalysisVisitor_check_break (NodeVisitor *visitor, ASTNode *node)
 {
   if (!DATA->in_loop)
     {
-      ErrorList_printf (
-          ERROR_LIST,
-          "Semantic error on line %d: break statement not within a loop",
-          node->source_line);
+      ErrorList_printf (ERROR_LIST, "Invalid 'break' outside loop on line %d",
+                        node->source_line);
     }
   return;
 }
@@ -593,10 +655,9 @@ AnalysisVisitor_check_continue (NodeVisitor *visitor, ASTNode *node)
 {
   if (!DATA->in_loop)
     {
-      ErrorList_printf (
-          ERROR_LIST,
-          "Semantic error on line %d: continue statement not within a loop",
-          node->source_line);
+      ErrorList_printf (ERROR_LIST,
+                        "Invalid 'continue' outside loop on line %d",
+                        node->source_line);
     }
   return;
 }
