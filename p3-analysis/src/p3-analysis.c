@@ -137,7 +137,6 @@ contains_element_string (char **arr, int size, char *val)
 void
 AnalysisVisitor_check_duplicate_symbols (NodeVisitor *visitor, ASTNode *node)
 {
-    printf("Node type %s\n", NodeType_to_string(node->type));
   SymbolTable *table
           = (SymbolTable *)ASTNode_get_attribute (node, "symbolTable");
     if (table != NULL)

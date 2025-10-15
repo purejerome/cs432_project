@@ -1,4 +1,5 @@
 int b;
 int b;
 def int f(int a, bool a) { return 0; }
-// def int main() { return f(1, true); }
+def int f(int a, bool a) { return 0; }
+def int main() { return f(1, true); }
