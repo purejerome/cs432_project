@@ -139,7 +139,6 @@ AnalysisVisitor_check_duplicate_symbols (NodeVisitor *visitor, ASTNode *node)
 {
   SymbolTable *table
           = (SymbolTable *)ASTNode_get_attribute (node, "symbolTable");
-    printf("Checking duplicates in node type %s\n", NodeType_to_string(node->type));
     if (table != NULL)
     {
         int count = SymbolList_size (table->local_symbols);
@@ -154,19 +153,17 @@ AnalysisVisitor_check_duplicate_symbols (NodeVisitor *visitor, ASTNode *node)
                     names[dup_count] = sym->name;
                     dup_count = dup_count + 1;
                 ErrorList_printf (ERROR_LIST,
-                                    "Duplicate symbol '%s' on line %d",
+                                    "Duplicate symbols named '%s' in scope started on line %d",
                                     sym->name, node->source_line);
                 }
         }
         
         for (int i = 0; i < dup_count; i++)
         {
-            printf("Found duplicate symbolokkkk: %s\n", names[i]);
             FOR_EACH (Symbol *, sym, table->local_symbols)
             {
             if (strncmp (sym->name, names[i], MAX_ID_LEN) == 0)
                 {
-                    printf("Setting type of %s to UNKNOWN\n", sym->name);
                     sym->type = UNKNOWN;
                 }
             }
