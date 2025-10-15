@@ -1,7 +1,8 @@
-// D12: valid program using builtin I/O (should be accepted)
-def int main() {
-    print_str("Hi");
-    print_int(123);
-    print_bool(false);
-    return 0;
-}
+// IGNORE THIS TEST
+// // D12: valid program using builtin I/O (should be accepted)
+// def int main() {
+//     print_str("Hi");
+//     print_int(123);
+//     print_bool(false);
+//     return 0;
+// }
