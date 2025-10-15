@@ -1,1 +1,1 @@
-Type error on line 5: assignment types do not match
+Type mismatch: int is incompatible with void on line 5

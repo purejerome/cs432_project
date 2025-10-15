@@ -137,107 +137,43 @@ contains_element_string (char **arr, int size, char *val)
 void
 AnalysisVisitor_check_duplicate_symbols (NodeVisitor *visitor, ASTNode *node)
 {
-  /* Only run on scope-bearing nodes */
-  if (node->type != PROGRAM && node->type != BLOCK)
-    return;
-
-  /* Determine the “scope start” line for the message.
-     - PROGRAM: use its own line (usually 1)
-     - BLOCK:   use the block’s line (this is the function body’s line for the
-                top-level block inside a function) */
-  int scope_line = node->source_line;
-
-  /* Grab this scope’s symbol table (attribute key may vary in codebases) */
   SymbolTable *table
-      = (SymbolTable *)ASTNode_get_attribute (node, "symbolTable");
-  if (table == NULL)
-    table = (SymbolTable *)ASTNode_get_attribute (node, "symbols");
-
-  /* 1) Check duplicates among local symbols in this scope */
-  if (table && table->local_symbols)
+          = (SymbolTable *)ASTNode_get_attribute (node, "symbolTable");
+    printf("Checking duplicates in node type %s\n", NodeType_to_string(node->type));
+    if (table != NULL)
     {
-      for (Symbol *s1 = table->local_symbols->head; s1; s1 = s1->next)
+        int count = SymbolList_size (table->local_symbols);
+        char **names = malloc (count * sizeof (char *));
+        int dup_count = 0;
+        FOR_EACH (Symbol *, sym, table->local_symbols)
         {
-
-          /* skip names we’ve already reported earlier in this scope */
-          bool seen_before = false;
-          for (Symbol *p = table->local_symbols->head; p != s1; p = p->next)
-            {
-              if (strncmp (p->name, s1->name, MAX_ID_LEN) == 0)
+            Symbol *other = SymbolTable_lookup (table, sym->name);
+            if (other != NULL && other != sym
+                && !contains_element_string (names, dup_count, sym->name))
                 {
-                  seen_before = true;
-                  break;
+                    names[dup_count] = sym->name;
+                    dup_count = dup_count + 1;
+                ErrorList_printf (ERROR_LIST,
+                                    "Duplicate symbol '%s' on line %d",
+                                    sym->name, node->source_line);
                 }
-            }
-          if (seen_before)
-            continue;
-
-          /* look ahead for a second occurrence of the same name */
-          bool dup = false;
-          for (Symbol *s2 = s1->next; s2; s2 = s2->next)
+        }
+        
+        for (int i = 0; i < dup_count; i++)
+        {
+            printf("Found duplicate symbolokkkk: %s\n", names[i]);
+            FOR_EACH (Symbol *, sym, table->local_symbols)
             {
-              if (strncmp (s1->name, s2->name, MAX_ID_LEN) == 0)
+            if (strncmp (sym->name, names[i], MAX_ID_LEN) == 0)
                 {
-                  dup = true;
-                  break;
+                    printf("Setting type of %s to UNKNOWN\n", sym->name);
+                    sym->type = UNKNOWN;
                 }
-            }
-
-          if (dup)
-            {
-              ErrorList_printf (
-                  ERROR_LIST,
-                  "Duplicate symbols named '%s' in scope started on line %d",
-                  s1->name, scope_line);
             }
         }
+        free (names);
     }
-
-  /* 2) If this is the *function body* block, also check parameter names.
-        (We can detect the function body by comparing the current block node to
-         DATA->current_function->body.) */
-  if (node->type == BLOCK && DATA->current_function != NULL
-      && DATA->current_function->body == node
-      && DATA->current_function->parameters != NULL)
-    {
-      ParameterList *plist = DATA->current_function->parameters;
-
-      for (Parameter *p1 = plist->head; p1; p1 = p1->next)
-        {
-
-          /* skip names already seen earlier in the parameter list */
-          bool seen_before = false;
-          for (Parameter *q = plist->head; q != p1; q = q->next)
-            {
-              if (strncmp (q->name, p1->name, MAX_ID_LEN) == 0)
-                {
-                  seen_before = true;
-                  break;
-                }
-            }
-          if (seen_before)
-            continue;
-
-          /* look ahead for a second occurrence */
-          bool dup = false;
-          for (Parameter *p2 = p1->next; p2; p2 = p2->next)
-            {
-              if (strncmp (p1->name, p2->name, MAX_ID_LEN) == 0)
-                {
-                  dup = true;
-                  break;
-                }
-            }
-
-          if (dup)
-            {
-              ErrorList_printf (
-                  ERROR_LIST,
-                  "Duplicate symbols named '%s' in scope started on line %d",
-                  p1->name, scope_line);
-            }
-        }
-    }
+  return;
 }
 
 void
@@ -360,6 +296,7 @@ void
 AnalysisVisitor_reset_current_function_type (NodeVisitor *visitor,
                                              ASTNode *node)
 {
+  AnalysisVisitor_check_duplicate_symbols (visitor, node);
   DATA->current_function = NULL;
   return;
 }

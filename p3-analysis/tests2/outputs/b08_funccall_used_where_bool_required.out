@@ -1,1 +1,1 @@
-Type error on line 4: conditional expression is not boolean
+Type mismatch: bool expected but int found on line 4

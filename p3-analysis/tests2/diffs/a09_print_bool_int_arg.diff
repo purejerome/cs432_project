@@ -1,2 +1,0 @@
-+Type mismatch in parameter 0 of call to 'print_bool': expected bool but found int on line 3
--Type error on line 3: function 'print_bool' called with wrong argument types

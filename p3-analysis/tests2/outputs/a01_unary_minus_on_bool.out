@@ -1,1 +1,1 @@
-Type error on line 4: unary - applied to non-integer operand
+Type mismatch: int expected but bool found on line 4

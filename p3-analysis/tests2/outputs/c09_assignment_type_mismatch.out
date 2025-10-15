@@ -1,1 +1,1 @@
-Type error on line 4: assignment types do not match
+Type mismatch: bool is incompatible with int on line 4
