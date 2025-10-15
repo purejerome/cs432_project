@@ -137,30 +137,28 @@ contains_element_string (char **arr, int size, char *val)
 void
 AnalysisVisitor_check_duplicate_symbols (NodeVisitor *visitor, ASTNode *node)
 {
-  if (node->type == PROGRAM || node->type == FUNCDECL || node->type == BLOCK)
-    {
-      SymbolTable *table
+    printf("Node type %s\n", NodeType_to_string(node->type));
+  SymbolTable *table
           = (SymbolTable *)ASTNode_get_attribute (node, "symbolTable");
-      if (table != NULL)
+    if (table != NULL)
+    {
+        int count = SymbolList_size (table->local_symbols);
+        char **names = malloc (count * sizeof (char *));
+        int size = 0;
+        FOR_EACH (Symbol *, sym, table->local_symbols)
         {
-          int count = SymbolList_size (table->local_symbols);
-          char **names = malloc (count * sizeof (char *));
-          int size = 0;
-          FOR_EACH (Symbol *, sym, table->local_symbols)
-          {
-            Symbol *other = SymbolTable_lookup (table, sym->name);
-            if (other != NULL && other != sym
-                && !contains_element_string (names, size, sym->name))
-              {
-                names[size] = sym->name;
-                size++;
-                ErrorList_printf (ERROR_LIST,
-                                  "Duplicate symbol '%s' on line %d",
-                                  sym->name, node->source_line);
-              }
-          }
-          free (names);
+        Symbol *other = SymbolTable_lookup (table, sym->name);
+        if (other != NULL && other != sym
+            && !contains_element_string (names, size, sym->name))
+            {
+            names[size] = sym->name;
+            size++;
+            ErrorList_printf (ERROR_LIST,
+                                "Duplicate symbol '%s' on line %d",
+                                sym->name, node->source_line);
+            }
         }
+        free (names);
     }
   return;
 }
@@ -168,6 +166,7 @@ AnalysisVisitor_check_duplicate_symbols (NodeVisitor *visitor, ASTNode *node)
 void
 AnalysisVisitor_check_main_function (NodeVisitor *visitor, ASTNode *node)
 {
+  AnalysisVisitor_check_duplicate_symbols (visitor, node);
   Symbol *symbol = lookup_symbol (node, "main");
   if (symbol == NULL)
     {
@@ -192,6 +191,13 @@ AnalysisVisitor_check_main_function (NodeVisitor *visitor, ASTNode *node)
           ErrorList_printf (ERROR_LIST, "'main' must take no parameters");
         }
     }
+  return;
+}
+
+void
+AnalysisVisitor_check_duplicate_symbols_block (NodeVisitor *visitor, ASTNode *node)
+{
+  AnalysisVisitor_check_duplicate_symbols (visitor, node);
   return;
 }
 
@@ -283,6 +289,7 @@ void
 AnalysisVisitor_reset_current_function_type (NodeVisitor *visitor,
                                              ASTNode *node)
 {
+  AnalysisVisitor_check_duplicate_symbols (visitor, node);
   DATA->current_function = NULL;
   return;
 }
@@ -720,8 +727,8 @@ analyze (ASTNode *tree)
   v->dtor = (Destructor)AnalysisData_free;
 
   /* BOILERPLATE: TODO: register analysis callbacks */
-  v->previsit_default = AnalysisVisitor_check_duplicate_symbols;
-  v->previsit_program = AnalysisVisitor_check_main_function;
+  v->postvisit_program = AnalysisVisitor_check_main_function;
+  v->postvisit_block = AnalysisVisitor_check_duplicate_symbols_block;
   v->postvisit_conditional = AnalysisVisitor_check_conditional;
   v->postvisit_whileloop = AnalysisVisitor_check_while;
   v->previsit_literal = AnalysisVisitor_infer_literal;

@@ -1,13 +1,4 @@
-def int main() 
-{ 
-    return 1;
-}
-bool a;
-
-def void test(int a, bool b){
-    bool a;
-    return;
-}
-
-
-// note, only the program can have arrays, the functions cannot
+int b;
+int b;
+def int f(int a, bool a) { return 0; }
+// def int main() { return f(1, true); }
