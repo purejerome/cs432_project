@@ -118,8 +118,10 @@ lookup_symbol_with_reporting (NodeVisitor *visitor, ASTNode *node,
 bool
 contains_element_string (char **arr, int size, char *val)
 {
+    printf("Checking for %s in array of size %d\n", val, size);
   for (int i = 0; i < size; i++)
     {
+        printf("Comparing %s and %s\n", arr[i], val);
       if (strncmp (arr[i], val, MAX_ID_LEN) == 0)
         {
           return true;
@@ -143,18 +145,31 @@ AnalysisVisitor_check_duplicate_symbols (NodeVisitor *visitor, ASTNode *node)
     {
         int count = SymbolList_size (table->local_symbols);
         char **names = malloc (count * sizeof (char *));
-        int size = 0;
+        int dup_count = 0;
         FOR_EACH (Symbol *, sym, table->local_symbols)
         {
-        Symbol *other = SymbolTable_lookup (table, sym->name);
-        if (other != NULL && other != sym
-            && !contains_element_string (names, size, sym->name))
+            Symbol *other = SymbolTable_lookup (table, sym->name);
+            if (other != NULL && other != sym
+                && !contains_element_string (names, dup_count, sym->name))
+                {
+                    names[dup_count] = sym->name;
+                    dup_count = dup_count + 1;
+                ErrorList_printf (ERROR_LIST,
+                                    "Duplicate symbol '%s' on line %d",
+                                    sym->name, node->source_line);
+                }
+        }
+        
+        for (int i = 0; i < dup_count; i++)
+        {
+            printf("Found duplicate symbolokkkk: %s\n", names[i]);
+            FOR_EACH (Symbol *, sym, table->local_symbols)
             {
-            names[size] = sym->name;
-            size++;
-            ErrorList_printf (ERROR_LIST,
-                                "Duplicate symbol '%s' on line %d",
-                                sym->name, node->source_line);
+            if (strncmp (sym->name, names[i], MAX_ID_LEN) == 0)
+                {
+                    printf("Setting type of %s to UNKNOWN\n", sym->name);
+                    sym->type = UNKNOWN;
+                }
             }
         }
         free (names);
@@ -302,6 +317,9 @@ AnalysisVisitor_check_return (NodeVisitor *visitor, ASTNode *node)
 
   FuncDeclNode *fn = DATA->current_function;
   if (fn == NULL)
+    return;
+
+  if (fn->return_type == UNKNOWN)
     return;
 
   if (node->funcreturn.value != NULL && expr_type == UNKNOWN)
