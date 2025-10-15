@@ -1,13 +1,12 @@
 def int main() 
 { 
-    return test(1, true);
+    return 1;
 }
 bool a;
 
-def int test(int a, bool b){
+def void test(int a, bool b){
     bool a;
-    bool a;
-    return 1;
+    return;
 }
 
 

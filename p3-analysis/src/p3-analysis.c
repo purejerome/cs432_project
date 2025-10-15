@@ -145,15 +145,15 @@ AnalysisVisitor_check_duplicate_symbols (NodeVisitor *visitor, ASTNode *node)
         {
           int count = SymbolList_size (table->local_symbols);
           char **names = malloc (count * sizeof (char *));
-          int index = 0;
+          int size = 0;
           FOR_EACH (Symbol *, sym, table->local_symbols)
           {
             Symbol *other = SymbolTable_lookup (table, sym->name);
             if (other != NULL && other != sym
-                && !contains_element_string (names, index, sym->name))
+                && !contains_element_string (names, size, sym->name))
               {
-                names[index] = sym->name;
-                index++;
+                names[size] = sym->name;
+                size++;
                 ErrorList_printf (ERROR_LIST,
                                   "Duplicate symbol '%s' on line %d",
                                   sym->name, node->source_line);
