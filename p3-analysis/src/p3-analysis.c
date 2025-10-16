@@ -286,6 +286,7 @@ AnalysisVisitor_check_vardecl (NodeVisitor *visitor, ASTNode *node)
 void
 AnalysisVisitor_set_current_function_type (NodeVisitor *visitor, ASTNode *node)
 {
+  AnalysisVisitor_check_duplicate_symbols (visitor, node);
   DATA->current_function = &node->funcdecl;
   return;
 }
@@ -294,7 +295,6 @@ void
 AnalysisVisitor_reset_current_function_type (NodeVisitor *visitor,
                                              ASTNode *node)
 {
-  AnalysisVisitor_check_duplicate_symbols (visitor, node);
   DATA->current_function = NULL;
   return;
 }
@@ -302,6 +302,7 @@ AnalysisVisitor_reset_current_function_type (NodeVisitor *visitor,
 void
 AnalysisVisitor_check_return (NodeVisitor *visitor, ASTNode *node)
 {
+  
   DecafType expr_type = (node->funcreturn.value == NULL)
                             ? VOID
                             : GET_INFERRED_TYPE (node->funcreturn.value);
@@ -309,12 +310,17 @@ AnalysisVisitor_check_return (NodeVisitor *visitor, ASTNode *node)
   FuncDeclNode *fn = DATA->current_function;
   if (fn == NULL)
     return;
+  Symbol *fn_symbol = lookup_symbol (node, fn->name);
+  DecafType fn_type = (fn_symbol == NULL) ? UNKNOWN : fn_symbol->type;
+
+  if(fn_type == UNKNOWN)
+    return;
 
   if (node->funcreturn.value != NULL && expr_type == UNKNOWN)
     return;
 
   // 1) Special case: void function returning a value
-  if (fn->return_type == VOID && node->funcreturn.value != NULL)
+  if (fn_type == VOID && node->funcreturn.value != NULL)
     {
       ErrorList_printf (
           ERROR_LIST, "Invalid non-void return from void function on line %d",
@@ -323,7 +329,7 @@ AnalysisVisitor_check_return (NodeVisitor *visitor, ASTNode *node)
     }
 
   // 2) Non-void function: returning no value?
-  if (fn->return_type != VOID && node->funcreturn.value == NULL)
+  if (fn_type != VOID && node->funcreturn.value == NULL)
     {
       ErrorList_printf (
           ERROR_LIST, "Invalid void return from non-void function on line %d",
@@ -332,11 +338,11 @@ AnalysisVisitor_check_return (NodeVisitor *visitor, ASTNode *node)
     }
 
   // 3) Regular mismatch (both sides present)
-  if (expr_type != fn->return_type)
+  if (expr_type != fn_type)
     {
       ErrorList_printf (ERROR_LIST,
                         "Type mismatch: %s expected but %s found on line %d",
-                        type_name (fn->return_type), type_name (expr_type),
+                        type_name (fn_type), type_name (expr_type),
                         node->source_line);
     }
 }
@@ -363,7 +369,7 @@ void
 AnalysisVisitor_check_funccall (NodeVisitor *visitor, ASTNode *node)
 {
   Symbol *func_symbol
-      = lookup_symbol_with_reporting (visitor, node, node->funccall.name);
+      = lookup_symbol (node, node->funccall.name);
 
   if (func_symbol == NULL)
     {
@@ -377,7 +383,7 @@ AnalysisVisitor_check_funccall (NodeVisitor *visitor, ASTNode *node)
                         "Invalid call to non-function '%s' on line %d",
                         node->funccall.name, node->source_line);
       SET_INFERRED_TYPE (UNKNOWN);
-      return; // <-- THIS return is crucial
+      //return; // <-- THIS return is crucial
     }
 
   ParameterList *formal_params = func_symbol->parameters;
@@ -740,12 +746,12 @@ analyze (ASTNode *tree)
   /* ---- Visitor wiring ---- */
 
   // Scope duplicate checks AFTER scopes are populated
-  v->postvisit_program = AnalysisVisitor_check_duplicate_symbols;
-  v->postvisit_block = AnalysisVisitor_check_duplicate_symbols;
+  v->previsit_program = AnalysisVisitor_check_duplicate_symbols;
+  v->previsit_block = AnalysisVisitor_check_duplicate_symbols;
   // (No need to also attach on funcdecl; running on the body BLOCK covers it.)
 
   // Main function checks
-  v->previsit_program = AnalysisVisitor_check_main_function;
+  v->postvisit_program = AnalysisVisitor_check_main_function;
 
   // While-loop context + checks
   v->previsit_whileloop = AnalysisVisitor_set_loop_depth;
