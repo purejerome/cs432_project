@@ -1,0 +1,22 @@
+Program [line 1]
+SYM TABLE:
+ print_int : (int) -> void
+ print_bool : (bool) -> void
+ print_str : (str) -> void
+ f : (int) -> int
+ main : () -> int
+
+  FuncDecl name="f" return_type=int parameters={a:int} [line 2]
+  SYM TABLE:
+   a : int
+
+    Block [line 2]
+    SYM TABLE:
+     a : int
+
+  FuncDecl name="main" return_type=int parameters={} [line 6]
+  SYM TABLE:
+
+    Block [line 6]
+    SYM TABLE:
+

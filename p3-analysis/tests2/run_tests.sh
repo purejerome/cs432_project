@@ -7,7 +7,7 @@
 set -u
 
 script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-REF="/cs/students/cs432/f25/decaf"
+REF=(/cs/students/cs432/f25/decaf --fdump-tables)
 ME="${script_dir}/../decaf"
 
 INPUT_DIR="${script_dir}/inputs"
@@ -52,8 +52,8 @@ for rel in "${tests[@]}"; do
 
   ((total++))
 
-  "$REF" "$t" 2>&1 | normalize > "$ref_out"
-  "$ME"  "$t" 2>&1 | normalize > "$my_out"
+  "${REF[@]}" "$t" 2>&1 | normalize > "$ref_out"
+  "$ME"          "$t" 2>&1 | normalize > "$my_out"
 
   diff -u "$ref_out" "$my_out"         | sed -e '/^--- /d' -e '/^\+\+\+ /d' -e '/^@@/d' -e '/^ /d'               -e 's/^\(+.*\)$/\x01\1/' -e 's/^\(-.*\)$/\x02\1/'               -e 's/^\x01+/-/' -e 's/^\x02-/+/' > "$difffile"
 
