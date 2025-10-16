@@ -1,0 +1,5 @@
+def void f(int[5] a) {
+    int a; // shadows array parameter
+    return;
+}
+def void main() { return; }

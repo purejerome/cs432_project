@@ -1,0 +1,12 @@
+// B28: param-vs-local duplicate
+def int
+foo (bool foo)
+{
+  int foo; // duplicate with parameter 'foo' in the same function scope
+  return;  // invalid: non-void function returning no value
+}
+def int
+main ()
+{
+  return foo (true);
+}

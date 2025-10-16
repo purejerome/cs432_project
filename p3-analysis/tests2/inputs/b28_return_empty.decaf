@@ -1,0 +1,18 @@
+// B28
+def int
+foo (bool foo)
+{
+  int foo;
+  int temp;
+  foo = "hello";
+  foo = 0x2;
+  foo = 7;
+  foo = false;
+  temp = foo(foo);
+  return;
+}
+def int
+main ()
+{
+  return foo (true);
+}

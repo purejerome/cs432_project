@@ -1,0 +1,5 @@
+def void g(int a) {
+    int a; // shadows parameter
+    return;
+}
+def void main() { return; }

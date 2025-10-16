@@ -1,0 +1,5 @@
+def void main() {
+    int a;
+    int a;   // duplicate in same block
+    return;
+}

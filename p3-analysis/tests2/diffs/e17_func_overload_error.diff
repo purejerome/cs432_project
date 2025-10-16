@@ -1,0 +1,3 @@
++Type mismatch: int expected but bool found on line 2
++Duplicate symbols named 'g' in scope started on line 1
+-Duplicate symbols named 'g' in scope started on line 1

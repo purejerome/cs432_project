@@ -1,0 +1,9 @@
+int x;
+def void m(int x) {   // shadows global
+    int x;            // shadows parameter
+    if (true) {
+        int x;        // shadows local
+    }
+    return;
+}
+def void main() { m(0); return; }

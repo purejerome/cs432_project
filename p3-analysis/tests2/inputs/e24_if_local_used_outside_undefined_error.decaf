@@ -1,0 +1,5 @@
+def void main() {
+    if (true) { int t = 1; }
+    t = 2; // t out of scope => error
+    return;
+}

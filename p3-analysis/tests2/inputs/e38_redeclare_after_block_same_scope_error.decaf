@@ -1,0 +1,7 @@
+def void main() {
+    int u;
+    { int v; }
+    { int w; }
+    int u; // duplicate in same scope
+    return;
+}

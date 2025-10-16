@@ -1,0 +1,3 @@
+int a;
+def void g(int a) { /* shadows global a */ return; }
+def void main() { return; }

@@ -1,0 +1,7 @@
+def void f(int a) {
+    int a; 
+    if (true) { int a; }
+    a = 1; // refers to the body-local 'a'
+    return;
+}
+def void main() { return; }

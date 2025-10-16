@@ -1,0 +1,7 @@
+def void main() {
+    if (true) {
+        int k;
+        { int k; } // new nested block => OK
+    }
+    return;
+}

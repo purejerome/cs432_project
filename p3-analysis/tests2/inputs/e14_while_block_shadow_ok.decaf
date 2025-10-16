@@ -1,0 +1,7 @@
+def void main() {
+    int w = 0;
+    while (false) {
+        int w = 1; // shadows outer
+    }
+    return;
+}

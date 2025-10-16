@@ -1,0 +1,5 @@
+def void other() { return; }
+def void main() {
+    int other = 1; // allowed; shadows function name in this scope
+    return;
+}

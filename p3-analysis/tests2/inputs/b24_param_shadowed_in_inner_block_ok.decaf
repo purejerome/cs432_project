@@ -1,0 +1,9 @@
+// B24: inner-block shadowing should be allowed (accept)
+def int k(int a) {
+    {
+        int a;   // inner block new scope; should NOT be flagged as duplicate
+        a = 0;
+    }
+    return 0;
+}
+def int main() { return k(5); }

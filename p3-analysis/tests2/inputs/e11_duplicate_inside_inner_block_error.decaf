@@ -1,0 +1,7 @@
+def void main() {
+    if (true) {
+        int y;
+        int y;  // duplicate within same inner block
+    }
+    return;
+}

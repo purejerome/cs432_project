@@ -1,0 +1,6 @@
+def int foo() { return 0; }
+def void main() {
+    int foo = 1;
+    foo(); // 'foo' is a local (not a function) => error
+    return;
+}

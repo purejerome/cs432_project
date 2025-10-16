@@ -1,0 +1,6 @@
+int t;
+def void f(int t) {  // param shadows global
+    int t;           // body shadows parameter => OK
+    return;
+}
+def void main() { return; }

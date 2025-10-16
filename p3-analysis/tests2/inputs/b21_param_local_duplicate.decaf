@@ -1,0 +1,6 @@
+// B21: param vs local duplicate (reject)
+def int f(int a) {
+    int a;         // duplicate of parameter 'a' in the same function scope
+    return 0;
+}
+def int main() { return f(1); }

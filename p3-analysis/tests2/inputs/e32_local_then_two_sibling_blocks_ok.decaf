@@ -1,0 +1,6 @@
+def void main() {
+    int z;
+    { int z; } // shadows outer in first inner block
+    { int z; } // different inner block, OK
+    return;
+}

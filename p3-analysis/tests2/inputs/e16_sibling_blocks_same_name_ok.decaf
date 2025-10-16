@@ -1,0 +1,5 @@
+def void main() {
+    { int s; }
+    { int s; } // different block => OK
+    return;
+}

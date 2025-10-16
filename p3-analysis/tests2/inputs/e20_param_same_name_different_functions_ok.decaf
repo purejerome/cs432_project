@@ -1,0 +1,3 @@
+def void f(int a) { return; }
+def void g(int a) { return; }
+def void main() { return; }

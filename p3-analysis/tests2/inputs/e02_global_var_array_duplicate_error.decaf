@@ -1,0 +1,3 @@
+int x;
+int[10] x;
+def void main() { return; }

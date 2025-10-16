@@ -1,0 +1,8 @@
+// B26: param vs one of several locals duplicate (reject)
+def int q(bool flag) {
+    int u;
+    int v;
+    bool flag;    // duplicates parameter 'flag'
+    return 0;
+}
+def int main() { return q(false); }

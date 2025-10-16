@@ -1,0 +1,6 @@
+// B25: global vs param same name allowed (accept)
+int z;
+def int m(int z) {   // param shadows global 'z'; should NOT be flagged as duplicate
+    return z;
+}
+def int main() { return m(1); }

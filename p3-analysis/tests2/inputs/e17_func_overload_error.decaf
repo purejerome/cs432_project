@@ -1,0 +1,3 @@
+def int g() { return 0; }
+def bool g() { return false; } // duplicate name different type => error
+def void main() { return; }

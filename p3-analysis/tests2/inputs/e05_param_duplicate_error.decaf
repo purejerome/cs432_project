@@ -1,0 +1,2 @@
+def void g(int a, bool a) { return; }
+def void main() { return; }

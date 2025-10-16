@@ -1,0 +1,8 @@
+def void f(int y) {
+    if (true) {
+        int y; // new inner block => shadows param OK
+        int y; // duplicate in same inner block => error
+    }
+    return;
+}
+def void main() { return; }

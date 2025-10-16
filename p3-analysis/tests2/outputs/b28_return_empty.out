@@ -1,0 +1,4 @@
+Type mismatch: int is incompatible with str on line 7
+Type mismatch: int is incompatible with bool on line 10
+Invalid call to non-function 'foo' on line 11
+Invalid void return from non-void function on line 12

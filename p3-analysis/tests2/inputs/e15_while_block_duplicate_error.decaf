@@ -1,0 +1,7 @@
+def void main() {
+    while (false) {
+        int q;
+        int q; // duplicate in same while block
+    }
+    return;
+}

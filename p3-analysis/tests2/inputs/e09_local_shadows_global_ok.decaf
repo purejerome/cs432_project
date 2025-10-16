@@ -1,0 +1,5 @@
+int a;
+def void main() {
+    int a; // shadows global
+    return;
+}

@@ -1,0 +1,6 @@
+def int foo() { return 0; }
+def void bar(int foo) {
+    foo(); // 'foo' is a parameter (not a function) => error
+    return;
+}
+def void main() { return; }

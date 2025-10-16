@@ -1,0 +1,6 @@
+// B23: duplicate among params, and param vs local (reject)
+def int h(int x, bool x) {   // duplicate params 'x'
+    bool x;                  // also duplicates param 'x'
+    return 0;
+}
+def int main() { return h(1, false); }

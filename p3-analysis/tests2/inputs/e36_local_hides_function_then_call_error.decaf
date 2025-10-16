@@ -1,0 +1,8 @@
+def void foo() { return; }
+def void main() {
+    int foo = 0;
+    if (true) {
+        foo(); // not a function error
+    }
+    return;
+}

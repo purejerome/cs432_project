@@ -1,0 +1,7 @@
+int gv;
+def int gvf() { return 0; }
+def void main() {
+    int a;
+    int a; // duplicate
+    return;
+}

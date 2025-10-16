@@ -1,0 +1,6 @@
+def void main() {
+    int r;
+    { int t; }
+    int r; // duplicate in same scope
+    return;
+}

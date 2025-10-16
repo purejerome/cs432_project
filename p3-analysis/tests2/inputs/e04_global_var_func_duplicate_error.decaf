@@ -1,0 +1,3 @@
+int h;
+def int h() { return 0; }
+def void main() { return; }

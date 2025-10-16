@@ -138,37 +138,38 @@ void
 AnalysisVisitor_check_duplicate_symbols (NodeVisitor *visitor, ASTNode *node)
 {
   SymbolTable *table
-          = (SymbolTable *)ASTNode_get_attribute (node, "symbolTable");
-    if (table != NULL)
+      = (SymbolTable *)ASTNode_get_attribute (node, "symbolTable");
+  if (table != NULL)
     {
-        int count = SymbolList_size (table->local_symbols);
-        char **names = malloc (count * sizeof (char *));
-        int dup_count = 0;
-        FOR_EACH (Symbol *, sym, table->local_symbols)
+      int count = SymbolList_size (table->local_symbols);
+      char **names = malloc (count * sizeof (char *));
+      int dup_count = 0;
+      FOR_EACH (Symbol *, sym, table->local_symbols)
+      {
+        Symbol *other = SymbolTable_lookup (table, sym->name);
+        if (other != NULL && other != sym
+            && !contains_element_string (names, dup_count, sym->name))
+          {
+            names[dup_count] = sym->name;
+            dup_count = dup_count + 1;
+            ErrorList_printf (
+                ERROR_LIST,
+                "Duplicate symbols named '%s' in scope started on line %d",
+                sym->name, node->source_line);
+          }
+      }
+
+      for (int i = 0; i < dup_count; i++)
         {
-            Symbol *other = SymbolTable_lookup (table, sym->name);
-            if (other != NULL && other != sym
-                && !contains_element_string (names, dup_count, sym->name))
-                {
-                    names[dup_count] = sym->name;
-                    dup_count = dup_count + 1;
-                ErrorList_printf (ERROR_LIST,
-                                    "Duplicate symbols named '%s' in scope started on line %d",
-                                    sym->name, node->source_line);
-                }
-        }
-        
-        for (int i = 0; i < dup_count; i++)
-        {
-            FOR_EACH (Symbol *, sym, table->local_symbols)
-            {
+          FOR_EACH (Symbol *, sym, table->local_symbols)
+          {
             if (strncmp (sym->name, names[i], MAX_ID_LEN) == 0)
-                {
-                    sym->type = UNKNOWN;
-                }
-            }
+              {
+                sym->type = UNKNOWN;
+              }
+          }
         }
-        free (names);
+      free (names);
     }
   return;
 }
@@ -325,7 +326,7 @@ AnalysisVisitor_check_return (NodeVisitor *visitor, ASTNode *node)
   if (fn->return_type != VOID && node->funcreturn.value == NULL)
     {
       ErrorList_printf (
-          ERROR_LIST, "Missing return value for non-void function on line %d",
+          ERROR_LIST, "Invalid void return from non-void function on line %d",
           node->source_line);
       return;
     }
@@ -345,7 +346,8 @@ AnalysisVisitor_infer_funccall (NodeVisitor *visitor, ASTNode *node)
 {
   Symbol *symbol
       = lookup_symbol_with_reporting (visitor, node, node->funccall.name);
-  if (symbol != NULL)
+
+  if (symbol != NULL && symbol->symbol_type == FUNCTION_SYMBOL)
     {
       SET_INFERRED_TYPE (symbol->type);
     }
@@ -353,6 +355,7 @@ AnalysisVisitor_infer_funccall (NodeVisitor *visitor, ASTNode *node)
     {
       SET_INFERRED_TYPE (UNKNOWN);
     }
+
   return;
 }
 
@@ -361,17 +364,20 @@ AnalysisVisitor_check_funccall (NodeVisitor *visitor, ASTNode *node)
 {
   Symbol *func_symbol
       = lookup_symbol_with_reporting (visitor, node, node->funccall.name);
+
   if (func_symbol == NULL)
     {
+      SET_INFERRED_TYPE (UNKNOWN);
       return;
     }
 
   if (func_symbol->symbol_type != FUNCTION_SYMBOL)
     {
       ErrorList_printf (ERROR_LIST,
-                        "Type error on line %d: symbol '%s' is not a function",
-                        node->source_line, node->funccall.name);
-      return;
+                        "Invalid call to non-function '%s' on line %d",
+                        node->funccall.name, node->source_line);
+      SET_INFERRED_TYPE (UNKNOWN);
+      return; // <-- THIS return is crucial
     }
 
   ParameterList *formal_params = func_symbol->parameters;
@@ -385,6 +391,7 @@ AnalysisVisitor_check_funccall (NodeVisitor *visitor, ASTNode *node)
       ErrorList_printf (ERROR_LIST,
                         "Invalid number of function arguments on line %d",
                         node->source_line);
+      SET_INFERRED_TYPE (UNKNOWN);
       return;
     }
 

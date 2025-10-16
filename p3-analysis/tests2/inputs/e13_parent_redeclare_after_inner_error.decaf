@@ -1,0 +1,8 @@
+def void main() {
+    int z;
+    if (true) {
+        int z; // shadows parent inside if
+    }
+    int z;    // duplicate in same parent scope => error
+    return;
+}

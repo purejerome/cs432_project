@@ -1,0 +1,6 @@
+// B22: param vs local array duplicate (reject)
+def int g(bool p) {
+    int p[3];      // duplicate name 'p' (array vs param) in same function scope
+    return 0;
+}
+def int main() { return g(true); }

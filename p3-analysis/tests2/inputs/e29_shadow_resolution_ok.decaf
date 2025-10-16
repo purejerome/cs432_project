@@ -1,0 +1,11 @@
+int val;
+def int get() { return 1; }
+def void main() {
+    int val = 2;      // shadows global
+    if (true) {
+        int val = 3;  // shadows local
+        val = 4;
+    }
+    // At this point, 'val' refers to the local (2), not 4 from inner block
+    return;
+}
