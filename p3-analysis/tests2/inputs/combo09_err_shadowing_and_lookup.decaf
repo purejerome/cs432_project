@@ -1,0 +1,9 @@
+def int foo(int a) { return a; }
+def int main() {
+  int foo = 0;            // hides function
+  int x;
+  x = foo(1);             // not a function
+  { int foo; int foo; }   // duplicate in same block
+  x = [1];                // invalid expression (likely parser error; keep to test analyzer robustness if parsed)
+  return 0;
+}

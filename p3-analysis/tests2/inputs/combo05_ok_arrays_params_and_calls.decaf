@@ -1,0 +1,11 @@
+def int sum3(int a, int b, int c) { return a + b + c; }
+def int pick(int[5] a, int i) { return a[i]; }
+int[5] G;
+
+def int main() {
+  int[5] L;
+  L[0] = 1; L[1] = 2; L[2] = 3; L[3] = 4; L[4] = 5;
+  G[0] = 9; G[1] = 8; G[2] = 7; G[3] = 6; G[4] = 5;
+  int x = sum3(pick(L,1), pick(G,2), 4);
+  return x; // 2 + 7 + 4 = 13
+}

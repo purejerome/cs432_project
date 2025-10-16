@@ -1,0 +1,3 @@
+Type mismatch: int is incompatible with void on line 6
+Duplicate symbols named 'g' in scope started on line 3
+'main' must return an integer

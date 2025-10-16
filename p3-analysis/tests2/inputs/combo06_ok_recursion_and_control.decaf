@@ -1,0 +1,9 @@
+def int fact(int n) {
+  if (n == 0) { return 1; }
+  else { return n * fact(n - 1); }
+}
+def int main() {
+  int r = fact(3);
+  if (r < 10) { r = r + 1; } else { r = r; }
+  return r;
+}

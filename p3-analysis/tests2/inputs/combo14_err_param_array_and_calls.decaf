@@ -1,0 +1,6 @@
+def int use(int[4] a, int i) { return a[i]; }
+def int main() {
+  int[3] local;
+  local[0] = 1; local[1] = 2; local[2] = 3;
+  return use(local, true) + use(local, 1, 2); // wrong type, wrong arity
+}

@@ -1,0 +1,8 @@
+def int f() { return 1; }
+def int f(int a) { return a; }  // duplicate name
+int f;                          // global var same name as function
+def int main() {
+  int x;
+  x = f();                      // ambiguous/duplicate symbol situation
+  return x;
+}

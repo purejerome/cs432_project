@@ -1,0 +1,7 @@
+int[10] array;
+def bool b() { return true; }
+def int main() {
+  int x;
+  x = array[b()];
+  return 0;
+}

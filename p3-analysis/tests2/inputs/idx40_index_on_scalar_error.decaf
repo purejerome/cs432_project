@@ -1,0 +1,6 @@
+int[10] array;
+def int main() {
+  int x;
+  x = array[1][0];  // array[1] is scalar int; indexing a scalar is invalid
+  return 0;
+}

@@ -1,0 +1,8 @@
+int g;
+def void helper() { return; }
+def void main() {               // wrong return type for main
+  int g;
+  int g;                        // duplicate in same block
+  g = helper();                 // void in assignment
+  return;
+}

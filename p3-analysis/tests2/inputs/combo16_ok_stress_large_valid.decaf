@@ -1,0 +1,21 @@
+int[10] A;
+int[10] B;
+def int add(int x, int y) { return x + y; }
+def int sel(int[10] t, int i) { return t[i]; }
+
+def int main() {
+  int i = 0;
+  while (i < 5) {
+    A[i] = add(i, 1);
+    B[i] = add(A[i], i);
+    i = i + 1;
+  }
+  if (sel(A, 1) < sel(B, 2)) {
+    int t = sel(A, 0) + sel(B, 1);
+    A[3] = t;
+  } else {
+    int t = sel(B, 0) + sel(A, 1);
+    B[3] = t;
+  }
+  return A[3] + B[3];
+}

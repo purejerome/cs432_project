@@ -1,0 +1,7 @@
+def int twice(int x) { return x + x; }
+def int main() {
+  int k = 0x5;
+  int z = twice(k) + (2 + 3) * (4 - 1);
+  if (z == 19) { z = z + 1; } else { z = z; }
+  return z;
+}

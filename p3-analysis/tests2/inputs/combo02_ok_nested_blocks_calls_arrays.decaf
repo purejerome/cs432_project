@@ -1,0 +1,13 @@
+int[10] A;
+def int f(int u, int v) { return u + v; }
+def int idx() { return 3; }
+
+def int main() {
+  int s = 0;
+  A[0] = 1;
+  A[1] = 2;
+  { int s = f(A[0], A[1]); s = s + A[idx()]; } // inner s shadows outer
+  if (true) { int t = 5; A[2] = t + f(1,2); } else { int t = 6; A[3] = t; }
+  s = f(4,5) + A[0] + A[1];
+  return s;
+}

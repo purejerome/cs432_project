@@ -1,0 +1,7 @@
+int[10] array;
+def int main() {
+  int x; bool flag;
+  flag = true;
+  x = array[flag];
+  return 0;
+}

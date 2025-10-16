@@ -1,0 +1,7 @@
+int[10] array;
+def void v() { return; }
+def int main() {
+  int x;
+  x = array[v() + 1];
+  return 0;
+}

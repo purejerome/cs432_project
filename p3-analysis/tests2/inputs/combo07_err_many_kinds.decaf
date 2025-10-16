@@ -1,0 +1,23 @@
+int x;
+int x;                  // duplicate global
+int[4] arr;
+def void v() { return; }
+def int foo(bool b) { return 1; }
+def bool foo(int b) { return true; } // duplicate function name (overload) -> error
+
+def int main() {
+  int foo;              // shadows function name
+  int t;
+  t = arr[true + 1];    // bool in '+' and non-int index
+  t = arr[0x1] + v();   // void in expression
+  t = foo(foo);         // calling non-function 'foo'
+  arr[1] = "hi";        // string to int assignment
+  if (1 < true) {       // compare int < bool -> type error
+    int x;
+    int x;              // duplicate in same block
+  } else {
+    int[2] arr;         // shadows global array OK
+    t = arr[arr];       // array name as index
+  }
+  return;               // missing return value (non-void main)
+}

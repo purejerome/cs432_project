@@ -1,0 +1,7 @@
+int[10] array;
+def int foo(int a) { return a; }
+def int main() {
+  int x;
+  x = array[foo];  // identifier 'foo' is a function, not a value
+  return 0;
+}

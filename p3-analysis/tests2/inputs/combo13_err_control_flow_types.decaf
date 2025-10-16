@@ -1,0 +1,8 @@
+int[3] A;
+def int main() {
+  if (1) { A[0] = 1; }         // non-bool in condition
+  else if (A[0]) { A[1] = 2; } // non-bool in condition
+  else { A[2] = 3; }
+  while (2 + 2) { break; }     // non-bool in condition
+  return A["x"];               // string index
+}

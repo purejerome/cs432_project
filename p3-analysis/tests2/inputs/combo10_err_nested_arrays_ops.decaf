@@ -1,0 +1,11 @@
+int[5] B;
+def void v() { return; }
+def int main() {
+  int x;
+  B[0] = 2;
+  x = B[B[0] < 3];        // bool index
+  x = B[v() + 1];         // void in arithmetic
+  x = B[B] + B[true];     // array name as index, bool index
+  B[1][0] = 9;            // index on scalar
+  return "nope";          // wrong return type
+}

@@ -1,0 +1,15 @@
+int g;
+def int main() {
+  int g = 1;
+  if (true) {
+    int g = 2;
+    if (false) {
+      int g = 3;
+    } else {
+      int g = 4;
+    }
+  }
+  int[5] a;
+  a[1 + 2] = g;  // g from function body scope
+  return g + a[3];
+}

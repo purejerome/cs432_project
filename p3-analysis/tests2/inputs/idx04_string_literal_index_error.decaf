@@ -1,0 +1,6 @@
+int[10] array;
+def int main() {
+  int x;
+  x = array["hi"];
+  return 0;
+}

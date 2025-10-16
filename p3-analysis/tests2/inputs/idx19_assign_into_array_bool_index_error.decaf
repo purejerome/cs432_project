@@ -1,0 +1,5 @@
+int[10] array;
+def int main() {
+  array[true] = 9;
+  return 0;
+}

@@ -1,0 +1,10 @@
+int[5] g;
+def int f(int[5] a) {
+  int x;
+  x = a[1 + 2];   // OK
+  x = a[true];    // ERROR
+  return 0;
+}
+def int main() {
+  return f(g);
+}

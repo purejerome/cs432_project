@@ -158,17 +158,17 @@ AnalysisVisitor_check_duplicate_symbols (NodeVisitor *visitor, ASTNode *node)
                 sym->name, node->source_line);
           }
       }
-
-      for (int i = 0; i < dup_count; i++)
-        {
-          FOR_EACH (Symbol *, sym, table->local_symbols)
-          {
-            if (strncmp (sym->name, names[i], MAX_ID_LEN) == 0)
-              {
-                sym->type = UNKNOWN;
-              }
-          }
-        }
+      // When i comment this out its not affecting any tests?
+      // for (int i = 0; i < dup_count; i++)
+      //   {
+      //     FOR_EACH (Symbol *, sym, table->local_symbols)
+      //     {
+      //       if (strncmp (sym->name, names[i], MAX_ID_LEN) == 0)
+      //         {
+      //           sym->type = UNKNOWN;
+      //         }
+      //     }
+      //   }
       free (names);
     }
   return;
@@ -286,7 +286,7 @@ AnalysisVisitor_check_vardecl (NodeVisitor *visitor, ASTNode *node)
 void
 AnalysisVisitor_set_current_function_type (NodeVisitor *visitor, ASTNode *node)
 {
-  AnalysisVisitor_check_duplicate_symbols (visitor, node);
+  // AnalysisVisitor_check_duplicate_symbols (visitor, node);
   DATA->current_function = &node->funcdecl;
   return;
 }
@@ -302,7 +302,7 @@ AnalysisVisitor_reset_current_function_type (NodeVisitor *visitor,
 void
 AnalysisVisitor_check_return (NodeVisitor *visitor, ASTNode *node)
 {
-  
+
   DecafType expr_type = (node->funcreturn.value == NULL)
                             ? VOID
                             : GET_INFERRED_TYPE (node->funcreturn.value);
@@ -313,7 +313,7 @@ AnalysisVisitor_check_return (NodeVisitor *visitor, ASTNode *node)
   Symbol *fn_symbol = lookup_symbol (node, fn->name);
   DecafType fn_type = (fn_symbol == NULL) ? UNKNOWN : fn_symbol->type;
 
-  if(fn_type == UNKNOWN)
+  if (fn_type == UNKNOWN)
     return;
 
   if (node->funcreturn.value != NULL && expr_type == UNKNOWN)
@@ -340,10 +340,9 @@ AnalysisVisitor_check_return (NodeVisitor *visitor, ASTNode *node)
   // 3) Regular mismatch (both sides present)
   if (expr_type != fn_type)
     {
-      ErrorList_printf (ERROR_LIST,
-                        "Type mismatch: %s expected but %s found on line %d",
-                        type_name (fn_type), type_name (expr_type),
-                        node->source_line);
+      ErrorList_printf (
+          ERROR_LIST, "Type mismatch: %s expected but %s found on line %d",
+          type_name (fn_type), type_name (expr_type), node->source_line);
     }
 }
 
@@ -368,8 +367,7 @@ AnalysisVisitor_infer_funccall (NodeVisitor *visitor, ASTNode *node)
 void
 AnalysisVisitor_check_funccall (NodeVisitor *visitor, ASTNode *node)
 {
-  Symbol *func_symbol
-      = lookup_symbol (node, node->funccall.name);
+  Symbol *func_symbol = lookup_symbol (node, node->funccall.name);
 
   if (func_symbol == NULL)
     {
@@ -383,7 +381,7 @@ AnalysisVisitor_check_funccall (NodeVisitor *visitor, ASTNode *node)
                         "Invalid call to non-function '%s' on line %d",
                         node->funccall.name, node->source_line);
       SET_INFERRED_TYPE (UNKNOWN);
-      //return; // <-- THIS return is crucial
+      // return; // <-- THIS return is crucial
     }
 
   ParameterList *formal_params = func_symbol->parameters;
@@ -686,6 +684,27 @@ AnalysisVisitor_check_continue (NodeVisitor *visitor, ASTNode *node)
   return;
 }
 
+// Run program-level checks once, in the desired order.
+static void
+AnalysisVisitor_finalize_program (NodeVisitor *visitor, ASTNode *node)
+{
+  // 1) Program/global-scope duplicates
+  AnalysisVisitor_check_duplicate_symbols (visitor, node);
+  // 2) 'main' signature/return checks
+  AnalysisVisitor_check_main_function (visitor, node);
+}
+
+static void
+AnalysisVisitor_postvisit_funcdecl_chain (NodeVisitor *visitor, ASTNode *node)
+{
+  // Catch duplicates in the *function-declaration scope* (parameters live
+  // here)
+  AnalysisVisitor_check_duplicate_symbols (visitor, node);
+
+  // Keep your original teardown
+  AnalysisVisitor_reset_current_function_type (visitor, node);
+}
+
 typedef struct
 {
   int block_depth;
@@ -746,12 +765,15 @@ analyze (ASTNode *tree)
   /* ---- Visitor wiring ---- */
 
   // Scope duplicate checks AFTER scopes are populated
-  v->previsit_program = AnalysisVisitor_check_duplicate_symbols;
-  v->previsit_block = AnalysisVisitor_check_duplicate_symbols;
+  // v->previsit_program = AnalysisVisitor_check_duplicate_symbols;
+  // v->previsit_block = AnalysisVisitor_check_duplicate_symbols;
+  v->postvisit_block = AnalysisVisitor_check_duplicate_symbols;
+
   // (No need to also attach on funcdecl; running on the body BLOCK covers it.)
 
   // Main function checks
-  v->postvisit_program = AnalysisVisitor_check_main_function;
+  // v->postvisit_program = AnalysisVisitor_check_main_function;
+  v->postvisit_program = AnalysisVisitor_finalize_program;
 
   // While-loop context + checks
   v->previsit_whileloop = AnalysisVisitor_set_loop_depth;
@@ -785,7 +807,8 @@ analyze (ASTNode *tree)
 
   // Function context
   v->previsit_funcdecl = AnalysisVisitor_set_current_function_type;
-  v->postvisit_funcdecl = AnalysisVisitor_reset_current_function_type;
+  // v->postvisit_funcdecl = AnalysisVisitor_reset_current_function_type;
+  v->postvisit_funcdecl = AnalysisVisitor_postvisit_funcdecl_chain;
 
   // Function calls
   v->previsit_funccall = AnalysisVisitor_infer_funccall;

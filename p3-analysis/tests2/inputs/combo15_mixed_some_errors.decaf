@@ -1,0 +1,13 @@
+int[6] T;
+def int h(int x) { return x + 1; }
+def void q() { return; }
+
+def int main() {
+  int s = 0;
+  T[0] = 1;
+  s = h(T[0]) + h(2);
+  T[true] = s;              // error: bool index
+  s = s + q();              // error: void in expression
+  { int s = 3; T[1] = s; }  // OK: shadow
+  return s;
+}

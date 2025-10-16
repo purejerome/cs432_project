@@ -1,0 +1,16 @@
+def int add2(int a, int b) { return a + b; }
+def void side() { return; }
+int[5] A;
+
+def int main() {
+  int r;
+  r = add2(1);                 // wrong arity
+  r = add2(1, true);           // type mismatch in arg
+  r = add2(1, side());         // void as argument
+  A[1 == 1] = 3;               // bool index
+  r = A[!1];                   // '!' on int operand and bool index
+  if (true) {
+    int r = "s";               // string to int
+  }
+  return;                      // missing return value
+}
