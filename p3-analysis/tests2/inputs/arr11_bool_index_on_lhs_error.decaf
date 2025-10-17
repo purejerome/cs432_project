@@ -1,0 +1,5 @@
+int[10] a;
+def int main() {
+  a[1 < 2] = 7;
+  return 0;
+}

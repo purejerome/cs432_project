@@ -1,0 +1,8 @@
+def int nest(int[10] a, int[10] b, int[10] c, int i) {
+  a[i] = 2; b[2] = 4; c[4] = 6;
+  return c[b[a[i]]];
+}
+int[10] A; int[10] B; int[10] C;
+def int main() {
+  return nest(A,B,C,1);
+}

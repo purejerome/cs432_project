@@ -1,0 +1,8 @@
+int[10] a;
+int[10] b;
+def int main() {
+  int i; i = 1; b[1] = 2;
+  a[i] = "hello";
+  a[i] = b[1];
+  return a[i];
+}

@@ -1,0 +1,12 @@
+int[10] a;
+int[10] b;
+int[10] c;
+def int main() {
+  int i; int r;
+  i = 1;
+  a[i] = 2;
+  b[2] = 3;
+  c[3] = 9;
+  r = c[b[a[i]]];
+  return r;
+}

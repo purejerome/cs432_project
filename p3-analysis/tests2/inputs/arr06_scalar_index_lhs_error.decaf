@@ -1,0 +1,5 @@
+int s;
+def int main() {
+  s[0] = 1;
+  return 0;
+}

@@ -1,0 +1,11 @@
+int[10] a;
+int[10] b;
+int[10] c;
+def int main() {
+  int i;
+  i = 0;
+  a[i] = true;
+  b[0] = 1;
+  c[1] = 9;
+  return c[b[a[i]]];
+}

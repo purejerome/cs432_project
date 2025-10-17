@@ -1,0 +1,13 @@
+int[10] a;
+int[10] b;
+int[10] c;
+def void v() { return; }
+def int main() {
+  int i;
+  i = 1;
+  a[i] = 2;
+  b[2] = 3;
+  c[v()] = 5;
+  c[b[a[i]]] = 8;
+  return 0;
+}

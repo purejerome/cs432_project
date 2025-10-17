@@ -1,0 +1,6 @@
+def void h() { return; }
+def int main() {
+  int x;
+  x = h();
+  return 0;
+}

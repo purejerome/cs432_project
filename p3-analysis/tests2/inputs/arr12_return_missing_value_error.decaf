@@ -1,0 +1,8 @@
+def int f() {
+  int[5] a;
+  a[0] = 1;
+  return;
+}
+def int main() {
+  return 0;
+}
