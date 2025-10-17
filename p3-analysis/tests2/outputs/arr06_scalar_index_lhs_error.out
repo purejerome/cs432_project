@@ -1,1 +1,1 @@
-Non-array 's' accessed as an array on line 3
+Type error on line 3: non-array variable used with index

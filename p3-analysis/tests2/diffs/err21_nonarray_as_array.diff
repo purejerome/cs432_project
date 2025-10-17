@@ -1,0 +1,2 @@
++Non-array 'x' accessed as an array on line 4
+-Type error on line 4: non-array variable used with index

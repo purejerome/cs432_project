@@ -1,9 +1,7 @@
 int a[32];
 int b;
-def int foo(bool foo) {
-    int foo;
-    foo = 0;
-    return foo;
+def int foo(bool a, bool a) {
+    return 0;
 }
 
 def int main() {

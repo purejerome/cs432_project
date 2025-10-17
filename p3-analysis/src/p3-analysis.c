@@ -4,6 +4,8 @@
  */
 /*
 AI assist: AI was used to help pinpoint and correct some edge cases.
+AI was also used to clean up code formatting, create documenation comments,
+and test the code thouroughly.
 */
 
 #include "p3-analysis.h"
@@ -115,6 +117,14 @@ lookup_symbol_with_reporting (NodeVisitor *visitor, ASTNode *node,
   ASTNode_set_printable_attribute (node, "type", (void *)(T),                 \
                                    type_attr_print, dummy_free)
 
+/**
+ * @brief Helper function to check if a string array contains a specific string.
+ *
+ * @param arr The string array to search.
+ * @param size The size of the array.
+ * @param val The string value to find.
+ * @returns True if the array contains the string, false otherwise.
+ */
 bool
 contains_element_string (char **arr, int size, char *val)
 {
@@ -134,6 +144,13 @@ contains_element_string (char **arr, int size, char *val)
 #define GET_INFERRED_TYPE(N)                                                  \
   (DecafType) (long) ASTNode_get_attribute (N, "type")
 
+
+/**
+ * @brief Check for duplicate symbols in the current scope
+ *
+ * @param visitor Visitor object containing analysis data
+ * @param node AST node representing the scope to check
+ */
 void
 AnalysisVisitor_check_duplicate_symbols (NodeVisitor *visitor, ASTNode *node)
 {
@@ -158,22 +175,18 @@ AnalysisVisitor_check_duplicate_symbols (NodeVisitor *visitor, ASTNode *node)
                 sym->name, node->source_line);
           }
       }
-      // When i comment this out its not affecting any tests?
-      // for (int i = 0; i < dup_count; i++)
-      //   {
-      //     FOR_EACH (Symbol *, sym, table->local_symbols)
-      //     {
-      //       if (strncmp (sym->name, names[i], MAX_ID_LEN) == 0)
-      //         {
-      //           sym->type = UNKNOWN;
-      //         }
-      //     }
-      //   }
       free (names);
     }
   return;
 }
 
+
+/**
+ * @brief Check that the program contains a valid main function
+ *
+ * @param visitor Visitor object containing analysis data
+ * @param node AST node representing the program
+ */
 void
 AnalysisVisitor_check_main_function (NodeVisitor *visitor, ASTNode *node)
 {
@@ -187,7 +200,8 @@ AnalysisVisitor_check_main_function (NodeVisitor *visitor, ASTNode *node)
     {
       if (symbol->symbol_type != FUNCTION_SYMBOL)
         {
-          ErrorList_printf (ERROR_LIST, "'main' must be a function",
+          ErrorList_printf (ERROR_LIST,
+                            "Symbol 'main' is not a function on line %d",
                             node->source_line);
         }
       if (symbol->type != INT)
@@ -203,6 +217,13 @@ AnalysisVisitor_check_main_function (NodeVisitor *visitor, ASTNode *node)
   return;
 }
 
+
+/**
+ * @brief Check that the condition expression of a conditional is boolean
+ *
+ * @param visitor Visitor object containing analysis data
+ * @param node AST node representing the conditional
+ */
 void
 AnalysisVisitor_check_conditional (NodeVisitor *visitor, ASTNode *node)
 {
@@ -218,27 +239,46 @@ AnalysisVisitor_check_conditional (NodeVisitor *visitor, ASTNode *node)
     }
 }
 
+/**
+ * @brief Check that the condition expression of a while loop is boolean
+ *
+ * @param visitor Visitor object containing analysis data
+ * @param node AST node representing the while loop
+ */
 void
 AnalysisVisitor_check_while (NodeVisitor *visitor, ASTNode *node)
 {
-  DecafType cond_type = GET_INFERRED_TYPE (node->whileloop.condition);
-  if (cond_type != BOOL)
+  DecafType condition_type = GET_INFERRED_TYPE (node->whileloop.condition);
+  if (condition_type != BOOL)
     {
-      ErrorList_printf (ERROR_LIST,
-                        "Type mismatch: bool expected but %s found on line %d",
-                        type_name (cond_type), node->source_line);
+      ErrorList_printf (
+          ERROR_LIST,
+          "Type error on line %d: while loop condition is not boolean",
+          node->source_line);
     }
   if (DATA->loop_depth > 0)
     DATA->loop_depth--;
   return;
 }
 
+/**
+ * @brief Infer the type of a literal node
+ *
+ * @param visitor Visitor object containing analysis data
+ * @param node AST node representing the literal
+ */
 void
 AnalysisVisitor_infer_literal (NodeVisitor *visitor, ASTNode *node)
 {
   SET_INFERRED_TYPE (node->literal.type);
 }
 
+/**
+ * @brief Check that the types in an assignment are compatible
+ *
+ * @param visitor Visitor object containing analysis data
+ * @param node AST node representing the assignment
+ */
 void
 AnalysisVisitor_check_assignment (NodeVisitor *visitor, ASTNode *node)
 {
@@ -256,6 +296,12 @@ AnalysisVisitor_check_assignment (NodeVisitor *visitor, ASTNode *node)
     }
 }
 
+/**
+ * @brief Check that a variable declaration is valid
+ *
+ * @param visitor Visitor object containing analysis data
+ * @param node AST node representing the variable declaration
+ */
 void
 AnalysisVisitor_check_vardecl (NodeVisitor *visitor, ASTNode *node)
 {
@@ -281,14 +327,25 @@ AnalysisVisitor_check_vardecl (NodeVisitor *visitor, ASTNode *node)
   return;
 }
 
+/**
+ * @brief Set the current function context for return type checking
+ *
+ * @param visitor Visitor object containing analysis data
+ * @param node AST node representing the function declaration
+ */
 void
 AnalysisVisitor_set_current_function_type (NodeVisitor *visitor, ASTNode *node)
 {
-  // AnalysisVisitor_check_duplicate_symbols (visitor, node);
   DATA->current_function = &node->funcdecl;
   return;
 }
 
+/**
+ * @brief Reset the current function context
+ *
+ * @param visitor Visitor object containing analysis data
+ * @param node AST node representing the function declaration
+ */
 void
 AnalysisVisitor_reset_current_function_type (NodeVisitor *visitor,
                                              ASTNode *node)
@@ -297,6 +354,13 @@ AnalysisVisitor_reset_current_function_type (NodeVisitor *visitor,
   return;
 }
 
+
+/**
+ * @brief Check that a return statement matches the function's return type
+ *
+ * @param visitor Visitor object containing analysis data
+ * @param node AST node representing the return statement
+ */
 void
 AnalysisVisitor_check_return (NodeVisitor *visitor, ASTNode *node)
 {
@@ -344,6 +408,12 @@ AnalysisVisitor_check_return (NodeVisitor *visitor, ASTNode *node)
     }
 }
 
+/**
+ * @brief Infer the type of a function call node
+ *
+ * @param visitor Visitor object containing analysis data
+ * @param node AST node representing the function call
+ */
 void
 AnalysisVisitor_infer_funccall (NodeVisitor *visitor, ASTNode *node)
 {
@@ -362,6 +432,12 @@ AnalysisVisitor_infer_funccall (NodeVisitor *visitor, ASTNode *node)
   return;
 }
 
+/**
+ * @brief Check that a function call has valid arguments
+ *
+ * @param visitor Visitor object containing analysis data
+ * @param node AST node representing the function call
+ */
 void
 AnalysisVisitor_check_funccall (NodeVisitor *visitor, ASTNode *node)
 {
@@ -428,6 +504,12 @@ AnalysisVisitor_check_funccall (NodeVisitor *visitor, ASTNode *node)
     }
 }
 
+/**
+ * @brief Infer the type of a location (variable) node
+ *
+ * @param visitor Visitor object containing analysis data
+ * @param node AST node representing the location
+ */
 void
 AnalysisVisitor_infer_location (NodeVisitor *visitor, ASTNode *node)
 {
@@ -443,6 +525,12 @@ AnalysisVisitor_infer_location (NodeVisitor *visitor, ASTNode *node)
   SET_INFERRED_TYPE (sym->type);
 }
 
+/**
+ * @brief Check that a location (variable) node is used correctly
+ *
+ * @param visitor Visitor object containing analysis data
+ * @param node AST node representing the location
+ */
 void
 AnalysisVisitor_check_location (NodeVisitor *visitor, ASTNode *node)
 {
@@ -452,9 +540,10 @@ AnalysisVisitor_check_location (NodeVisitor *visitor, ASTNode *node)
     {
       if (symbol != NULL && symbol->symbol_type != ARRAY_SYMBOL)
         {
-          ErrorList_printf (ERROR_LIST,
-                            "Non-array '%s' accessed as an array on line %d",
-                            node->location.name, node->source_line);
+          ErrorList_printf (
+              ERROR_LIST,
+              "Type error on line %d: non-array variable used with index",
+              node->source_line);
         }
 
       DecafType index_type = GET_INFERRED_TYPE (node->location.index);
@@ -479,23 +568,28 @@ AnalysisVisitor_check_location (NodeVisitor *visitor, ASTNode *node)
     {
       if (symbol != NULL && symbol->symbol_type != SCALAR_SYMBOL)
         {
-          if (symbol->symbol_type == ARRAY_SYMBOL)
+          if(symbol->symbol_type == ARRAY_SYMBOL)
             {
               ErrorList_printf (ERROR_LIST,
-                                "Array '%s' accessed without index on line %d",
-                                node->location.name, node->source_line);
+                            "Array '%s' accessed without index on line %d",
+                            node->location.name, node->source_line);
             }
-          else
-            {
-              ErrorList_printf (
-                  ERROR_LIST,
-                  "Function '%s' accessed as a variable on line %d",
-                  node->location.name, node->source_line);
-            }
+          else {
+            ErrorList_printf (ERROR_LIST,
+                            "Function '%s' accessed as a variable on line %d",
+                            node->location.name, node->source_line);
+          }
         }
     }
   return;
 }
+
+/**
+ * @brief Infer the type of a unary operation node
+ *
+ * @param visitor Visitor object containing analysis data
+ * @param node AST node representing the unary operation
+ */
 void
 AnalysisVisitor_infer_unaryop (NodeVisitor *visitor, ASTNode *node)
 {
@@ -516,6 +610,12 @@ AnalysisVisitor_infer_unaryop (NodeVisitor *visitor, ASTNode *node)
   return;
 }
 
+/**
+ * @brief Check that the operand of a unary operation is valid
+ *
+ * @param visitor Visitor object containing analysis data
+ * @param node AST node representing the unary operation
+ */
 void
 AnalysisVisitor_check_unaryop (NodeVisitor *visitor, ASTNode *node)
 {
@@ -549,6 +649,12 @@ AnalysisVisitor_check_unaryop (NodeVisitor *visitor, ASTNode *node)
   return;
 }
 
+/**
+ * @brief Infer the type of a binary operation node
+ *
+ * @param visitor Visitor object containing analysis data
+ * @param node AST node representing the binary operation
+ */
 void
 AnalysisVisitor_infer_binaryop (NodeVisitor *visitor, ASTNode *node)
 {
@@ -580,6 +686,12 @@ AnalysisVisitor_infer_binaryop (NodeVisitor *visitor, ASTNode *node)
   return;
 }
 
+/**
+ * @brief Check that the operands of a binary operation are valid
+ *
+ * @param visitor Visitor object containing analysis data
+ * @param node AST node representing the binary operation
+ */
 void
 AnalysisVisitor_check_binaryop (NodeVisitor *visitor, ASTNode *node)
 {
@@ -654,6 +766,12 @@ AnalysisVisitor_check_binaryop (NodeVisitor *visitor, ASTNode *node)
   return;
 }
 
+/**
+ * @brief Increment loop depth when entering a while loop
+ *
+ * @param visitor Visitor object containing analysis data
+ * @param node AST node representing the while loop
+ */
 void
 AnalysisVisitor_set_loop_depth (NodeVisitor *visitor, ASTNode *node)
 {
@@ -661,13 +779,25 @@ AnalysisVisitor_set_loop_depth (NodeVisitor *visitor, ASTNode *node)
   return;
 }
 
+/**
+ * @brief Reset loop depth when exiting a loop
+ *
+ * @param visitor Visitor object containing analysis data
+ * @param node AST node representing the loop
+ */
 void
 AnalysisVisitor_reset_loop_depth (NodeVisitor *visitor, ASTNode *node)
 {
-  DATA->loop_depth = false;
+  DATA->loop_depth = 0;
   return;
 }
 
+/**
+ * @brief Check that a 'break' statement is inside a loop
+ *
+ * @param visitor Visitor object containing analysis data
+ * @param node AST node representing the 'break' statement
+ */
 void
 AnalysisVisitor_check_break (NodeVisitor *visitor, ASTNode *node)
 {
@@ -679,6 +809,12 @@ AnalysisVisitor_check_break (NodeVisitor *visitor, ASTNode *node)
   return;
 }
 
+/**
+ * @brief Check that a 'continue' statement is inside a loop
+ *
+ * @param visitor Visitor object containing analysis data
+ * @param node AST node representing the 'continue' statement
+ */
 void
 AnalysisVisitor_check_continue (NodeVisitor *visitor, ASTNode *node)
 {
@@ -701,6 +837,7 @@ AnalysisVisitor_finalize_program (NodeVisitor *visitor, ASTNode *node)
   AnalysisVisitor_check_main_function (visitor, node);
 }
 
+// Chain postvisit_funcdecl to also do duplicate checks in function scope
 static void
 AnalysisVisitor_postvisit_funcdecl_chain (NodeVisitor *visitor, ASTNode *node)
 {
@@ -772,14 +909,11 @@ analyze (ASTNode *tree)
   /* ---- Visitor wiring ---- */
 
   // Scope duplicate checks AFTER scopes are populated
-  // v->previsit_program = AnalysisVisitor_check_duplicate_symbols;
-  // v->previsit_block = AnalysisVisitor_check_duplicate_symbols;
   v->postvisit_block = AnalysisVisitor_check_duplicate_symbols;
 
   // (No need to also attach on funcdecl; running on the body BLOCK covers it.)
 
   // Main function checks
-  // v->postvisit_program = AnalysisVisitor_check_main_function;
   v->postvisit_program = AnalysisVisitor_finalize_program;
 
   // While-loop context + checks

@@ -1,1 +1,1 @@
-Type mismatch: bool expected but int found on line 2
+Type error on line 2: while loop condition is not boolean

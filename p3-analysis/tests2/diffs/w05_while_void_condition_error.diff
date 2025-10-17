@@ -1,0 +1,2 @@
++Type mismatch: bool expected but void found on line 3
+-Type error on line 3: while loop condition is not boolean
