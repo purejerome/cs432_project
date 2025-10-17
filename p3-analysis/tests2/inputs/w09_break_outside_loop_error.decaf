@@ -1,0 +1,5 @@
+def int main() {
+  while (false) { break; }
+  break;
+  return 0;
+}

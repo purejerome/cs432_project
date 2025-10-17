@@ -222,13 +222,12 @@ AnalysisVisitor_check_conditional (NodeVisitor *visitor, ASTNode *node)
 void
 AnalysisVisitor_check_while (NodeVisitor *visitor, ASTNode *node)
 {
-  DecafType condition_type = GET_INFERRED_TYPE (node->whileloop.condition);
-  if (condition_type != BOOL)
+  DecafType cond_type = GET_INFERRED_TYPE (node->whileloop.condition);
+  if (cond_type != BOOL)
     {
-      ErrorList_printf (
-          ERROR_LIST,
-          "Type error on line %d: while loop condition is not boolean",
-          node->source_line);
+      ErrorList_printf (ERROR_LIST,
+                        "Type mismatch: bool expected but %s found on line %d",
+                        type_name (cond_type), node->source_line);
     }
   if (DATA->loop_depth > 0)
     DATA->loop_depth--;

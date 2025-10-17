@@ -1,0 +1,5 @@
+int[3] a;
+def int main() {
+  while (a) { break; }
+  return 0;
+}
