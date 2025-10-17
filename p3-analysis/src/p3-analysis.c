@@ -482,9 +482,17 @@ AnalysisVisitor_check_location (NodeVisitor *visitor, ASTNode *node)
     {
       if (symbol != NULL && symbol->symbol_type != SCALAR_SYMBOL)
         {
-          ErrorList_printf (ERROR_LIST,
+          if(symbol->symbol_type == ARRAY_SYMBOL)
+            {
+              ErrorList_printf (ERROR_LIST,
                             "Array '%s' accessed without index on line %d",
                             node->location.name, node->source_line);
+            }
+          else {
+            ErrorList_printf (ERROR_LIST,
+                            "Function '%s' accessed as a variable on line %d",
+                            node->location.name, node->source_line);
+          }
         }
     }
   return;

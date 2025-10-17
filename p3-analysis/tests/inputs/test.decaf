@@ -1,3 +1,13 @@
-int x;
-int x;
-def void main() { return; }
+int a[32];
+int b;
+def int foo(bool foo) {
+    int foo;
+    foo = 0;
+    return foo;
+}
+
+def int main() {
+    int c;
+    c = foo;
+    return foo(false);
+}
