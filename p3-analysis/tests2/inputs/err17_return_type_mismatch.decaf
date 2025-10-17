@@ -1,0 +1,2 @@
+def int f() { return true; } // mismatch
+def int main() { return f(); }

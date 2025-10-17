@@ -1,0 +1,2 @@
+int[0] a;                // invalid length
+def int main() { return 0; }

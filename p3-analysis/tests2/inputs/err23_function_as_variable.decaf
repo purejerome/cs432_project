@@ -1,0 +1,6 @@
+def int f() { return 0; }
+def int main() {
+  int y;
+  y = f;         // function as variable
+  return 0;
+}

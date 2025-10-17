@@ -1,0 +1,6 @@
+def int main() {
+  int x;
+  x = 0;
+  x = x[0];      // non-array as array
+  return 0;
+}

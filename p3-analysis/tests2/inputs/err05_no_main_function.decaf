@@ -1,0 +1,1 @@
+def int f() { return 0; }

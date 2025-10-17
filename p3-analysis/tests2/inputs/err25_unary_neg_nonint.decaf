@@ -1,0 +1,5 @@
+def int main() {
+  int x;
+  x = -true;     // '-' expects int
+  return 0;
+}

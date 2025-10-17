@@ -1,0 +1,2 @@
+def int f(int a, bool b) { return a; }
+def int main() { return f(true, 1); } // a: int<-bool, b: bool<-int

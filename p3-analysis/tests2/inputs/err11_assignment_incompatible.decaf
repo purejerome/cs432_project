@@ -1,0 +1,6 @@
+def int main() {
+  int x; bool b;
+  b = true;
+  x = b;        // int vs bool
+  return 0;
+}

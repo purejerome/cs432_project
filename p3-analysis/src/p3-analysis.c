@@ -187,8 +187,7 @@ AnalysisVisitor_check_main_function (NodeVisitor *visitor, ASTNode *node)
     {
       if (symbol->symbol_type != FUNCTION_SYMBOL)
         {
-          ErrorList_printf (ERROR_LIST,
-                            "Symbol 'main' is not a function on line %d",
+          ErrorList_printf (ERROR_LIST, "'main' must be a function",
                             node->source_line);
         }
       if (symbol->type != INT)

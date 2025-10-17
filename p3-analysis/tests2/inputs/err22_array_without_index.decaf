@@ -1,0 +1,6 @@
+int[3] a;
+def int main() {
+  int y;
+  y = a;         // array used as variable
+  return 0;
+}

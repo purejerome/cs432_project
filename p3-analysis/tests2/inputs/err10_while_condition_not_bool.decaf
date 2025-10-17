@@ -1,0 +1,4 @@
+def int main() {
+  while (2 + 2) { break; }  // int in condition
+  return 0;
+}

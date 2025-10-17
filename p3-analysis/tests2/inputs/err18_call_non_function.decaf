@@ -1,0 +1,5 @@
+def int foo(int a) { return a; }
+def int main() {
+  int foo;               // shadows function
+  return foo(1);         // not a function
+}

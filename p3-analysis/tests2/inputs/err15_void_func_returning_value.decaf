@@ -1,0 +1,2 @@
+def void f() { return 1; }   // invalid
+def int main() { f(); return 0; }
