@@ -1,0 +1,6 @@
+int[3] ai;
+bool[3] ab;
+def int main() {
+  ai = ab;          // ERROR: array-to-array assignment and elem type mismatch
+  return 0;
+}

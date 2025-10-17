@@ -1,0 +1,11 @@
+bool[3] ab;
+int[3] ai;
+def int main() {
+  int i; i = 0;
+  ab[0] = true; ab[1] = false; ab[2] = true;
+  while (i < 3) {
+    ai[i] = ab[i];      // ERROR: bool -> int
+    i = i + 1;
+  }
+  return 0;
+}

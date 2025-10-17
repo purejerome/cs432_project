@@ -1,0 +1,5 @@
+int[2] a;
+def int main() {
+  if (a) { return 1; }   // ERROR: array in boolean context
+  return 0;
+}

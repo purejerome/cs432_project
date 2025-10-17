@@ -1,0 +1,6 @@
+int[3] a; int[3] b;
+def int main() {
+  int x;
+  x = a + b;       // ERROR: arrays used as values in binary op
+  return 0;
+}

@@ -1,0 +1,8 @@
+def int head(int[5] a) {
+  return a[0];
+}
+int[3] small;
+def int main() {
+  small[0] = 7;
+  return head(small);    // ERROR: expected int[5], found int[3] (if sizes are enforced)
+}

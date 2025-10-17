@@ -1,0 +1,8 @@
+def int sum_first_two(int[3] a) {
+  return a[0] + a[1];
+}
+bool[3] ab;
+def int main() {
+  ab[0] = true; ab[1] = false; ab[2] = true;
+  return sum_first_two(ab);   // ERROR: expected int[3], found bool[3]
+}

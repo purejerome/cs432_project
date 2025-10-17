@@ -1,0 +1,11 @@
+bool[4] src;
+bool[4] dst;
+def int main() {
+  int i; i = 0;
+  src[0] = true; src[1] = false; src[2] = true; src[3] = false;
+  while (i < 4) {
+    dst[i] = src[i];   // element-wise assignment OK (bool -> bool)
+    i = i + 1;
+  }
+  return 0;
+}

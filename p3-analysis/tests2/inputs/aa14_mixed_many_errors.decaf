@@ -1,0 +1,15 @@
+int[3] ai; bool[3] ab; int[4] a4;
+def void foo() { return; }
+def int main() {
+  int x;
+  ai = ab;            // array-to-array + elem type mismatch
+  ab = ai;            // array-to-array + elem type mismatch
+  ai = a4;            // array-to-array + size mismatch
+  x = ai;             // array to scalar value
+  x = ai + ai;        // arrays in binary op
+  if (ab) { x = 1; }  // array in condition
+  ai[0] = foo();      // void on RHS
+  ab[1] = ai[1];      // int -> bool element mismatch
+  ai[2] = ab[2];      // bool -> int element mismatch
+  return 0;
+}

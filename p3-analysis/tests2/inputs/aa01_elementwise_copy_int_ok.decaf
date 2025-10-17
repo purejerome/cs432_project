@@ -1,0 +1,12 @@
+int[5] src;
+int[5] dst;
+def int main() {
+  int i;
+  i = 0;
+  src[0] = 1; src[1] = 2; src[2] = 3; src[3] = 4; src[4] = 5;
+  while (i < 5) {
+    dst[i] = src[i];   // element-wise assignment OK (int -> int)
+    i = i + 1;
+  }
+  return dst[3];       // 4
+}

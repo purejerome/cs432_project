@@ -1,0 +1,6 @@
+int[2] a2;
+int[4] a4;
+def int main() {
+  a2 = a4;          // ERROR: arrays cannot be assigned; also size mismatch
+  return 0;
+}

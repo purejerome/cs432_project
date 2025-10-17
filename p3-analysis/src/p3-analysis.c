@@ -454,10 +454,9 @@ AnalysisVisitor_check_location (NodeVisitor *visitor, ASTNode *node)
     {
       if (symbol != NULL && symbol->symbol_type != ARRAY_SYMBOL)
         {
-          ErrorList_printf (
-              ERROR_LIST,
-              "Type error on line %d: non-array variable used with index",
-              node->source_line);
+          ErrorList_printf (ERROR_LIST,
+                            "Non-array '%s' accessed as an array on line %d",
+                            node->location.name, node->source_line);
         }
 
       DecafType index_type = GET_INFERRED_TYPE (node->location.index);
@@ -482,17 +481,19 @@ AnalysisVisitor_check_location (NodeVisitor *visitor, ASTNode *node)
     {
       if (symbol != NULL && symbol->symbol_type != SCALAR_SYMBOL)
         {
-          if(symbol->symbol_type == ARRAY_SYMBOL)
+          if (symbol->symbol_type == ARRAY_SYMBOL)
             {
               ErrorList_printf (ERROR_LIST,
-                            "Array '%s' accessed without index on line %d",
-                            node->location.name, node->source_line);
+                                "Array '%s' accessed without index on line %d",
+                                node->location.name, node->source_line);
             }
-          else {
-            ErrorList_printf (ERROR_LIST,
-                            "Function '%s' accessed as a variable on line %d",
-                            node->location.name, node->source_line);
-          }
+          else
+            {
+              ErrorList_printf (
+                  ERROR_LIST,
+                  "Function '%s' accessed as a variable on line %d",
+                  node->location.name, node->source_line);
+            }
         }
     }
   return;

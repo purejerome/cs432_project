@@ -1,0 +1,6 @@
+int[3] a;
+def int main() {
+  int x;
+  x = a;            // ERROR: array is not a value
+  return 0;
+}

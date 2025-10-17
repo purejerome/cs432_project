@@ -1,0 +1,13 @@
+def int count_true(bool[4] b) {
+  int c; c = 0;
+  if (b[0]) { c = c + 1; }
+  if (b[1]) { c = c + 1; }
+  if (b[2]) { c = c + 1; }
+  if (b[3]) { c = c + 1; }
+  return c;
+}
+int[4] ai;
+def int main() {
+  ai[0] = 1; ai[1] = 0; ai[2] = 1; ai[3] = 0;
+  return count_true(ai);   // ERROR: expected bool[4], found int[4]
+}
