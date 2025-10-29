@@ -143,6 +143,30 @@ void CodeGenVisitor_gen_funcdecl (NodeVisitor* visitor, ASTNode* node)
     EMIT0OP(RETURN);
 }
 
+void CodeGenVisitor_gen_block (NodeVisitor* visitor, ASTNode* node)
+{
+    /* copy code from each statement in the block */
+    FOR_EACH(ASTNode*, stmt, node->block.statements) {
+        ASTNode_copy_code(node, stmt);
+    }
+}
+
+void CodeGenVisitor_gen_return (NodeVisitor* visitor, ASTNode* node)
+{
+    /*example code from class*/
+    /*TODO: move to literal gen*/
+    // EMIT2OP(LOAD_I, int_const(5), return_register());
+    // Operand temp_reg = virtual_register();
+    // EMIT2OP(LOAD_I, int_const(5), temp_reg);
+    // EMIT2OP(I2I, temp_reg, return_register());
+    
+    /*TODO: copy code from child*/
+    
+    /*TODO: get childs temp reg and use that as instead of reg from below*/
+    
+    /*TODO: add a jump to epilogue*/
+}
+
 #endif
 InsnList* generate_code (ASTNode* tree)
 {
@@ -155,6 +179,8 @@ InsnList* generate_code (ASTNode* tree)
     v->postvisit_program     = CodeGenVisitor_gen_program;
     v->previsit_funcdecl     = CodeGenVisitor_previsit_funcdecl;
     v->postvisit_funcdecl    = CodeGenVisitor_gen_funcdecl;
+    v->postvisit_block       = CodeGenVisitor_gen_block;
+    v->postvisit_return      = CodeGenVisitor_gen_return;
 
     /* generate code into AST attributes */
     NodeVisitor_traverse_and_free(v, tree);
