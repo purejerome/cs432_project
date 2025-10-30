@@ -4,6 +4,7 @@
  */
 #include "p4-codegen.h"
 
+
 /**
  * @brief State/data for the code generator visitor
  */
@@ -13,6 +14,7 @@ typedef struct CodeGenData
      * @brief Reference to the epilogue jump label for the current function
      */
     Operand current_epilogue_jump_label;
+    bool gen_location_code;
 
     /* add any new desired state information (and clean it up in CodeGenData_free) */
 } CodeGenData;
@@ -27,6 +29,7 @@ CodeGenData* CodeGenData_new (void)
     CodeGenData* data = (CodeGenData*)calloc(1, sizeof(CodeGenData));
     CHECK_MALLOC_PTR(data);
     data->current_epilogue_jump_label = empty_operand();
+    data->gen_location_code = true;
     return data;
 }
 
@@ -130,17 +133,31 @@ void CodeGenVisitor_previsit_funcdecl (NodeVisitor* visitor, ASTNode* node)
 
 void CodeGenVisitor_gen_funcdecl (NodeVisitor* visitor, ASTNode* node)
 {
+    Operand base_pointer = base_register();
+    Operand stack_pointer = stack_register();
+    int local_size = (int)ASTNode_get_int_attribute(node, "localSize");
     /* every function begins with the corresponding call label */
     EMIT1OP(LABEL, call_label(node->funcdecl.name));
 
     /* BOILERPLATE: TODO: implement prologue */
+    EMIT1OP(PUSH, base_pointer);
+    EMIT2OP(I2I, stack_pointer, base_pointer);
+    EMIT3OP(ADD_I, stack_pointer,
+            int_const(-local_size), stack_pointer);
 
     /* copy code from body */
     ASTNode_copy_code(node, node->funcdecl.body);
 
     EMIT1OP(LABEL, DATA->current_epilogue_jump_label);
     /* BOILERPLATE: TODO: implement epilogue */
+    
+    EMIT2OP(I2I, base_pointer, stack_pointer);
+    EMIT1OP(POP, base_pointer);
     EMIT0OP(RETURN);
+}
+
+void CodeGenVisitor_gen_funccall (NodeVisitor* visitor, ASTNode* node)
+{
 }
 
 void CodeGenVisitor_gen_block (NodeVisitor* visitor, ASTNode* node)
@@ -165,12 +182,122 @@ void CodeGenVisitor_gen_return (NodeVisitor* visitor, ASTNode* node)
     /*TODO: get childs temp reg and use that as instead of reg from below*/
     
     /*TODO: add a jump to epilogue*/
+    Operand child_reg = ASTNode_get_temp_reg(node->funcreturn.value);
+    ASTNode_copy_code(node, node->funcreturn.value);
+    EMIT2OP(I2I, child_reg, return_register());
+    EMIT1OP(JUMP, DATA->current_epilogue_jump_label);
+    
+    // EMIT1OP(LABEL, DATA->current_epilogue_jump_label);
+    // EMIT2OP(I2I, base_register(), stack_register());
+    // EMIT0OP(RETURN);
+}
+
+void CodeGenVisitor_previsit_assignment (NodeVisitor* visitor, ASTNode* node)
+{
+    DATA->gen_location_code = false;
+}
+
+void CodeGenVisitor_gen_assignment (NodeVisitor* visitor, ASTNode* node)
+{
+    //TOOD: IMPLEMENT ARRAY ASSIGNMENTS
+    ASTNode_copy_code(node, node->assignment.value);
+    Symbol* var_symbol = lookup_symbol(node, node->assignment.location->location.name);
+    Operand child_reg = ASTNode_get_temp_reg(node->assignment.value);
+    Operand var_base_reg = var_base(node, var_symbol);
+    Operand var_offset_op = var_offset(node, var_symbol);
+    EMIT3OP(STORE_AI, child_reg, var_base_reg, var_offset_op);
+}
+
+void CodeGenVisitor_gen_location (NodeVisitor* visitor, ASTNode* node)
+{
+    bool gen_location_code = DATA->gen_location_code;
+    if(!gen_location_code) {
+        DATA->gen_location_code = true;
+        return;
+    }
+    Symbol* var_symbol = lookup_symbol(node, node->location.name);
+    Operand base_reg = var_base(node, var_symbol);
+    Operand offset_reg = var_offset(node, var_symbol);
+    Operand reg = virtual_register();
+    ASTNode_set_temp_reg(node, reg);
+    EMIT3OP(LOAD_AI, base_reg, offset_reg, reg);
+}
+
+//
+/* BINARY OPERATIONS */
+//
+
+void CodeGenVisitor_gen_addition (NodeVisitor* visitor, ASTNode* node);
+
+void CodeGenVisitor_gen_binaryop (NodeVisitor* visitor, ASTNode* node)
+{
+    switch (node->binaryop.operator) {
+        case ADDOP:
+            CodeGenVisitor_gen_addition(visitor, node);
+            break;
+        default:
+            break;
+    }
+}
+
+void CodeGenVisitor_gen_addition (NodeVisitor* visitor, ASTNode* node)
+{
+    Operand left_reg, right_reg;
+    left_reg = ASTNode_get_temp_reg(node->binaryop.left);
+    right_reg = ASTNode_get_temp_reg(node->binaryop.right);
+    Operand result_reg = virtual_register();
+    ASTNode_copy_code(node, node->binaryop.left);
+    ASTNode_copy_code(node, node->binaryop.right);
+    EMIT3OP(ADD, left_reg, right_reg, result_reg);
+    ASTNode_set_temp_reg(node, result_reg);
+}
+
+//
+/* LITERALS */
+//
+
+void CodeGenVisitor_gen_bool (NodeVisitor* visitor, ASTNode* node);
+void CodeGenVisitor_gen_int (NodeVisitor* visitor, ASTNode* node);
+
+void CodeGenVisitor_gen_literal (NodeVisitor* visitor, ASTNode* node)
+{
+    switch (node->literal.type) {
+        case INT:
+            CodeGenVisitor_gen_int(visitor, node);
+            break;
+        case BOOL:
+            CodeGenVisitor_gen_bool(visitor, node);
+            break;
+        // case STR:
+        //     CodeGenVisitor_gen_str(visitor, node);
+        //     break;
+        default:
+            break;
+    }
+}
+
+void CodeGenVisitor_gen_int (NodeVisitor* visitor, ASTNode* node)
+{
+    Operand reg = virtual_register();
+    EMIT2OP(LOAD_I, int_const(node->literal.integer), reg);
+    ASTNode_set_temp_reg(node, reg);
+}
+
+void CodeGenVisitor_gen_bool (NodeVisitor* visitor, ASTNode* node)
+{
+    Operand reg = virtual_register();
+    EMIT2OP(LOAD_I, int_const(node->literal.boolean ? 1 : 0), reg);
+    ASTNode_set_temp_reg(node, reg);
 }
 
 #endif
 InsnList* generate_code (ASTNode* tree)
 {
     InsnList* iloc = InsnList_new();
+    
+    if(tree == NULL) {
+        return iloc;
+    }
 
 
     NodeVisitor* v = NodeVisitor_new();
@@ -179,8 +306,14 @@ InsnList* generate_code (ASTNode* tree)
     v->postvisit_program     = CodeGenVisitor_gen_program;
     v->previsit_funcdecl     = CodeGenVisitor_previsit_funcdecl;
     v->postvisit_funcdecl    = CodeGenVisitor_gen_funcdecl;
+    v->postvisit_funccall    = CodeGenVisitor_gen_funccall;
     v->postvisit_block       = CodeGenVisitor_gen_block;
     v->postvisit_return      = CodeGenVisitor_gen_return;
+    v->postvisit_literal     = CodeGenVisitor_gen_literal;
+    v->previsit_assignment   = CodeGenVisitor_previsit_assignment;
+    v->postvisit_assignment  = CodeGenVisitor_gen_assignment;
+    v->postvisit_binaryop    = CodeGenVisitor_gen_binaryop;
+    v->postvisit_location    = CodeGenVisitor_gen_location;
 
     /* generate code into AST attributes */
     NodeVisitor_traverse_and_free(v, tree);

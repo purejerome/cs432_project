@@ -175,8 +175,8 @@ int main(int argc, char** argv)
     }
 
     /* run program (w/ trace output enabled if debug mode is enabled) */
-    long return_value = run_simulator(iloc, debug_mode);
-    printf("RETURN VALUE = %ld\n", return_value);
+    // long return_value = run_simulator(iloc, debug_mode);
+    // printf("RETURN VALUE = %ld\n", return_value);
 
     /* clean up ILOC code (no longer needed) */
     InsnList_free(iloc);
