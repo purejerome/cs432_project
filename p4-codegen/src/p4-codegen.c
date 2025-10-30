@@ -200,12 +200,27 @@ void CodeGenVisitor_previsit_assignment (NodeVisitor* visitor, ASTNode* node)
 void CodeGenVisitor_gen_assignment (NodeVisitor* visitor, ASTNode* node)
 {
     //TOOD: IMPLEMENT ARRAY ASSIGNMENTS
-    ASTNode_copy_code(node, node->assignment.value);
     Symbol* var_symbol = lookup_symbol(node, node->assignment.location->location.name);
     Operand child_reg = ASTNode_get_temp_reg(node->assignment.value);
-    Operand var_base_reg = var_base(node, var_symbol);
-    Operand var_offset_op = var_offset(node, var_symbol);
-    EMIT3OP(STORE_AI, child_reg, var_base_reg, var_offset_op);
+    Operand var_offset_op;
+    if(var_symbol->symbol_type == ARRAY_SYMBOL){
+        Operand index_reg = ASTNode_get_temp_reg(node->assignment.location->location.index);
+        ASTNode_copy_code(node, node->assignment.location->location.index);
+        ASTNode_copy_code(node, node->assignment.value);
+        Operand var_base_reg = var_base(node, var_symbol);
+        Operand offset_reg = virtual_register();
+        if(var_symbol->type == BOOL){
+            EMIT3OP(MULT_I, index_reg, int_const(sizeof(bool)), offset_reg);
+        } else if (var_symbol->type == INT){
+            EMIT3OP(MULT_I, index_reg, int_const(sizeof(long)), offset_reg);
+        }
+        EMIT3OP(STORE_AO, child_reg, var_base_reg, offset_reg);
+    } else {
+        var_offset_op = var_offset(node, var_symbol);
+        ASTNode_copy_code(node, node->assignment.value);
+        Operand var_base_reg = var_base(node, var_symbol);
+        EMIT3OP(STORE_AI, child_reg, var_base_reg, var_offset_op);
+    }
 }
 
 void CodeGenVisitor_gen_location (NodeVisitor* visitor, ASTNode* node)
@@ -217,10 +232,23 @@ void CodeGenVisitor_gen_location (NodeVisitor* visitor, ASTNode* node)
     }
     Symbol* var_symbol = lookup_symbol(node, node->location.name);
     Operand base_reg = var_base(node, var_symbol);
-    Operand offset_reg = var_offset(node, var_symbol);
     Operand reg = virtual_register();
     ASTNode_set_temp_reg(node, reg);
-    EMIT3OP(LOAD_AI, base_reg, offset_reg, reg);
+    if(var_symbol->symbol_type == SCALAR_SYMBOL) {
+        Operand offset_op = var_offset(node, var_symbol);
+        EMIT3OP(LOAD_AI, base_reg, offset_op, reg);
+    } else {
+        /* array variable */
+        ASTNode_copy_code(node, node->location.index);
+        Operand offset_reg = virtual_register();
+        Operand child_reg = ASTNode_get_temp_reg(node->location.index);
+        if(var_symbol->type == BOOL){
+            EMIT3OP(MULT_I, child_reg, int_const(sizeof(bool)), offset_reg);
+        } else if (var_symbol->type == INT){
+            EMIT3OP(MULT_I, child_reg, int_const(sizeof(long)), offset_reg);
+        }
+        EMIT3OP(LOAD_AO, base_reg, offset_reg, reg);
+    }
 }
 
 //

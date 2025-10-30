@@ -1,23 +1,21 @@
 digraph AST {
-3 [shape=box, label="VarDecl name='a'"];
+1 [shape=box, label="VarDecl name='a'"];
+6 [shape=box, label="Literal value=0\nreg: r0\ncode: \nloadI 0 => r0\ntype: int"];
 5 [shape=box, label="Location name='a'\ntype: int"];
-7 [shape=box, label="Literal value=3\nreg: r0\ncode: \nloadI 3 => r0\ntype: int"];
-8 [shape=box, label="Literal value=2\nreg: r1\ncode: \nloadI 2 => r1\ntype: int"];
-6 [shape=box, label="BinaryOp op='+'\nreg: r2\ncode: \nloadI 3 => r0\nloadI 2 => r1\nadd r0, r1 => r2\ntype: int"];
-6 -> 7;
-6 -> 8;
-4 [shape=box, label="Assignment\ncode: \nloadI 3 => r0\nloadI 2 => r1\nadd r0, r1 => r2\nstoreAI r2 => [BP-8]"];
+5 -> 6;
+7 [shape=box, label="Literal value=2\nreg: r1\ncode: \nloadI 2 => r1\ntype: int"];
+4 [shape=box, label="Assignment\ncode: \nloadI 0 => r0\nloadI 2 => r1\nloadI 256 => r2\nmultI r0, 8 => r3\nstoreAO r1 => [r2+r3]"];
 4 -> 5;
-4 -> 6;
-10 [shape=box, label="Location name='a'\ncode: \nloadAI [BP-8] => r3\nreg: r3\ntype: int"];
-9 [shape=box, label="Return\ncode: \nloadAI [BP-8] => r3\ni2i r3 => RET\njump l0"];
-9 -> 10;
-2 [shape=box, label="Block\ncode: \nloadI 3 => r0\nloadI 2 => r1\nadd r0, r1 => r2\nstoreAI r2 => [BP-8]\nloadAI [BP-8] => r3\ni2i r3 => RET\njump l0\nsymbolTable: \n  a : int {stack offset=-8}"];
+4 -> 7;
+9 [shape=box, label="Literal value=1\nreg: r4\ncode: \nloadI 1 => r4\ntype: int"];
+8 [shape=box, label="Return\ncode: \nloadI 1 => r4\ni2i r4 => RET\njump l0"];
+8 -> 9;
+3 [shape=box, label="Block\ncode: \nloadI 0 => r0\nloadI 2 => r1\nloadI 256 => r2\nmultI r0, 8 => r3\nstoreAO r1 => [r2+r3]\nloadI 1 => r4\ni2i r4 => RET\njump l0\nsymbolTable: (empty)"];
+3 -> 4;
+3 -> 8;
+2 [shape=box, label="FuncDecl name='main'\ncode: \nmain:\npush BP\ni2i SP => BP\naddI SP, 0 => SP\nloadI 0 => r0\nloadI 2 => r1\nloadI 256 => r2\nmultI r0, 8 => r3\nstoreAO r1 => [r2+r3]\nloadI 1 => r4\ni2i r4 => RET\njump l0\nl0:\ni2i BP => SP\npop BP\nreturn\nlocalSize: 0\nsymbolTable: (empty)"];
 2 -> 3;
-2 -> 4;
-2 -> 9;
-1 [shape=box, label="FuncDecl name='main'\ncode: \nmain:\npush BP\ni2i SP => BP\naddI SP, -8 => SP\nloadI 3 => r0\nloadI 2 => r1\nadd r0, r1 => r2\nstoreAI r2 => [BP-8]\nloadAI [BP-8] => r3\ni2i r3 => RET\njump l0\nl0:\ni2i BP => SP\npop BP\nreturn\nlocalSize: 8\nsymbolTable: (empty)"];
-1 -> 2;
-0 [shape=box, label="Program\ncode: (...)\nstaticSize: 0\nsymbolTable: \n  print_int : (int) -> void\n  print_bool : (bool) -> void\n  print_str : (str) -> void\n  main : () -> int"];
+0 [shape=box, label="Program\ncode: (...)\nstaticSize: 16\nsymbolTable: \n  print_int : (int) -> void\n  print_bool : (bool) -> void\n  print_str : (str) -> void\n  main : () -> int\n  a : int [2] {static offset=256}"];
 0 -> 1;
+0 -> 2;
 }
