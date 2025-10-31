@@ -1,5 +1,5 @@
-int a[2];
 def int main(){
-    a[0] = 2;
+    bool a;
+    a = 3 > 2;
     return 1;
 }

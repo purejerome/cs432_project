@@ -252,23 +252,37 @@ void CodeGenVisitor_gen_location (NodeVisitor* visitor, ASTNode* node)
 }
 
 //
-/* BINARY OPERATIONS */
+/* UNARY OPERATIONS */
 //
 
-void CodeGenVisitor_gen_addition (NodeVisitor* visitor, ASTNode* node);
-
-void CodeGenVisitor_gen_binaryop (NodeVisitor* visitor, ASTNode* node)
+void unary_op_code_gen (NodeVisitor* visitor, ASTNode* node, InsnForm form)
 {
-    switch (node->binaryop.operator) {
-        case ADDOP:
-            CodeGenVisitor_gen_addition(visitor, node);
+    Operand child_reg = ASTNode_get_temp_reg(node->unaryop.child);
+    Operand result_reg = virtual_register();
+    ASTNode_copy_code(node, node->unaryop.child);
+    EMIT2OP(form, child_reg, result_reg);
+    ASTNode_set_temp_reg(node, result_reg);
+}
+
+void CodeGenVisitor_gen_unaryop (NodeVisitor* visitor, ASTNode* node)
+{
+    switch(node->unaryop.operator){
+        case NEGOP:
+            unary_op_code_gen(visitor, node, NEG);
+            break;
+        case NOTOP:
+            unary_op_code_gen(visitor, node, NOT);
             break;
         default:
             break;
     }
 }
 
-void CodeGenVisitor_gen_addition (NodeVisitor* visitor, ASTNode* node)
+//
+/* BINARY OPERATIONS */
+//
+
+void binary_op_code_gen (NodeVisitor* visitor, ASTNode* node, InsnForm form)
 {
     Operand left_reg, right_reg;
     left_reg = ASTNode_get_temp_reg(node->binaryop.left);
@@ -276,8 +290,83 @@ void CodeGenVisitor_gen_addition (NodeVisitor* visitor, ASTNode* node)
     Operand result_reg = virtual_register();
     ASTNode_copy_code(node, node->binaryop.left);
     ASTNode_copy_code(node, node->binaryop.right);
-    EMIT3OP(ADD, left_reg, right_reg, result_reg);
+    EMIT3OP(form, left_reg, right_reg, result_reg);
     ASTNode_set_temp_reg(node, result_reg);
+}
+
+void comparison_op_code_gen (NodeVisitor* visitor, ASTNode* node, InsnForm form)
+{
+    Operand left_reg, right_reg;
+    left_reg = ASTNode_get_temp_reg(node->binaryop.left);
+    right_reg = ASTNode_get_temp_reg(node->binaryop.right);
+    Operand result_reg = virtual_register();
+    ASTNode_copy_code(node, node->binaryop.left);
+    ASTNode_copy_code(node, node->binaryop.right);
+    EMIT3OP(form, left_reg, right_reg, result_reg);
+    ASTNode_set_temp_reg(node, result_reg);
+}
+
+void modulus_code_gen(NodeVisitor* visitor, ASTNode* node)
+{
+    Operand left_reg, right_reg;
+    left_reg = ASTNode_get_temp_reg(node->binaryop.left);
+    right_reg = ASTNode_get_temp_reg(node->binaryop.right);
+    Operand result_reg = virtual_register();
+    Operand quotient_reg = virtual_register();
+    Operand product_reg = virtual_register();
+    ASTNode_copy_code(node, node->binaryop.left);
+    ASTNode_copy_code(node, node->binaryop.right);
+    EMIT3OP(DIV, left_reg, right_reg, quotient_reg);
+    EMIT3OP(MULT, right_reg, quotient_reg, product_reg);
+    EMIT3OP(SUB, left_reg, product_reg, result_reg);
+    ASTNode_set_temp_reg(node, result_reg);
+}
+
+void CodeGenVisitor_gen_binaryop (NodeVisitor* visitor, ASTNode* node)
+{
+    switch (node->binaryop.operator) {
+        case ADDOP:
+            binary_op_code_gen(visitor, node, ADD);
+            break;
+        case SUBOP:
+            binary_op_code_gen(visitor, node, SUB);
+            break;
+        case MULOP:
+            binary_op_code_gen(visitor, node, MULT);
+            break;
+        case DIVOP:
+            binary_op_code_gen(visitor, node, DIV);
+            break;
+        case MODOP:
+            modulus_code_gen(visitor, node);
+            break;
+        case ANDOP:
+            binary_op_code_gen(visitor, node, AND);
+            break;
+        case OROP:
+            binary_op_code_gen(visitor, node, OR);
+            break;
+        case EQOP:
+            comparison_op_code_gen(visitor, node, CMP_EQ);
+            break;
+        case NEQOP:
+            comparison_op_code_gen(visitor, node, CMP_NE);
+            break;
+        case LTOP:
+            comparison_op_code_gen(visitor, node, CMP_LT);
+            break;
+        case LEOP:
+            comparison_op_code_gen(visitor, node, CMP_LE);
+            break;
+        case GEOP:
+            comparison_op_code_gen(visitor, node, CMP_GE);
+            break;
+        case GTOP:
+            comparison_op_code_gen(visitor, node, CMP_GT);
+            break;
+        default:
+            break;
+    }
 }
 
 //
@@ -341,7 +430,9 @@ InsnList* generate_code (ASTNode* tree)
     v->previsit_assignment   = CodeGenVisitor_previsit_assignment;
     v->postvisit_assignment  = CodeGenVisitor_gen_assignment;
     v->postvisit_binaryop    = CodeGenVisitor_gen_binaryop;
+    v->postvisit_unaryop     = CodeGenVisitor_gen_unaryop;
     v->postvisit_location    = CodeGenVisitor_gen_location;
+    v->postvisit_conditional = NULL; /* TODO: add conditional code gen */
 
     /* generate code into AST attributes */
     NodeVisitor_traverse_and_free(v, tree);
