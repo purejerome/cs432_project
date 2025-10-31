@@ -1,5 +1,4 @@
 def int main(){
-    bool a;
-    a = 3 > 2;
+    print_str("hello");
     return 1;
 }

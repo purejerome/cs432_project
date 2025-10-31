@@ -158,6 +158,19 @@ void CodeGenVisitor_gen_funcdecl (NodeVisitor* visitor, ASTNode* node)
 
 void CodeGenVisitor_gen_funccall (NodeVisitor* visitor, ASTNode* node)
 {
+    if(strcmp(node->funccall.name, "print_int") == 0){
+        Operand int_reg = ASTNode_get_temp_reg(node->funccall.arguments->head);
+        ASTNode_copy_code(node, node->funccall.arguments->head);
+        EMIT1OP(PRINT, int_reg);
+    } else if(strcmp(node->funccall.name, "print_bool") == 0){
+        Operand bool_reg = ASTNode_get_temp_reg(node->funccall.arguments->head);
+        ASTNode_copy_code(node, node->funccall.arguments->head);
+        EMIT1OP(PRINT, bool_reg);
+    } else if(strcmp(node->funccall.name, "print_str") == 0){
+        EMIT1OP(PRINT, str_const(node->funccall.arguments->head->literal.string));
+    } else {
+        return;
+    }
 }
 
 void CodeGenVisitor_gen_block (NodeVisitor* visitor, ASTNode* node)
@@ -373,8 +386,19 @@ void CodeGenVisitor_gen_binaryop (NodeVisitor* visitor, ASTNode* node)
 /* LITERALS */
 //
 
-void CodeGenVisitor_gen_bool (NodeVisitor* visitor, ASTNode* node);
-void CodeGenVisitor_gen_int (NodeVisitor* visitor, ASTNode* node);
+void CodeGenVisitor_gen_int (NodeVisitor* visitor, ASTNode* node)
+{
+    Operand reg = virtual_register();
+    EMIT2OP(LOAD_I, int_const(node->literal.integer), reg);
+    ASTNode_set_temp_reg(node, reg);
+}
+
+void CodeGenVisitor_gen_bool (NodeVisitor* visitor, ASTNode* node)
+{
+    Operand reg = virtual_register();
+    EMIT2OP(LOAD_I, int_const(node->literal.boolean ? 1 : 0), reg);
+    ASTNode_set_temp_reg(node, reg);
+}
 
 void CodeGenVisitor_gen_literal (NodeVisitor* visitor, ASTNode* node)
 {
@@ -391,20 +415,6 @@ void CodeGenVisitor_gen_literal (NodeVisitor* visitor, ASTNode* node)
         default:
             break;
     }
-}
-
-void CodeGenVisitor_gen_int (NodeVisitor* visitor, ASTNode* node)
-{
-    Operand reg = virtual_register();
-    EMIT2OP(LOAD_I, int_const(node->literal.integer), reg);
-    ASTNode_set_temp_reg(node, reg);
-}
-
-void CodeGenVisitor_gen_bool (NodeVisitor* visitor, ASTNode* node)
-{
-    Operand reg = virtual_register();
-    EMIT2OP(LOAD_I, int_const(node->literal.boolean ? 1 : 0), reg);
-    ASTNode_set_temp_reg(node, reg);
 }
 
 #endif
