@@ -1,4 +1,34 @@
 def int main(){
-    print_str("hello");
-    return 1;
+    int b;
+    b = 10;
+    if(b < 11){
+        b = 11;
+    }
+    
+    if(b < 11){
+        b = 11;
+    } else{
+        b = 11;
+    }
+    while(b < 11){
+        break;
+        b = b + 1;
+        continue;
+    }
+    
+    if(b < 11){
+        b = 11;
+    }
+    
+    if(b < 11){
+        b = 11;
+    } else{
+        b = 11;
+    }
+    return foo(84, b, true);
+}
+
+def int foo(int a, int b, bool c)
+{
+    return a;
 }

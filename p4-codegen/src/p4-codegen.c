@@ -14,6 +14,9 @@ typedef struct CodeGenData
      * @brief Reference to the epilogue jump label for the current function
      */
     Operand current_epilogue_jump_label;
+    Operand current_loop_check_jump_label;
+    Operand current_loop_body_jump_label;
+    Operand current_loop_end_jump_label;
     bool gen_location_code;
 
     /* add any new desired state information (and clean it up in CodeGenData_free) */
@@ -29,6 +32,9 @@ CodeGenData* CodeGenData_new (void)
     CodeGenData* data = (CodeGenData*)calloc(1, sizeof(CodeGenData));
     CHECK_MALLOC_PTR(data);
     data->current_epilogue_jump_label = empty_operand();
+    data->current_loop_check_jump_label = empty_operand();
+    data->current_loop_body_jump_label = empty_operand();
+    data->current_loop_end_jump_label = empty_operand();
     data->gen_location_code = true;
     return data;
 }
@@ -169,6 +175,26 @@ void CodeGenVisitor_gen_funccall (NodeVisitor* visitor, ASTNode* node)
     } else if(strcmp(node->funccall.name, "print_str") == 0){
         EMIT1OP(PRINT, str_const(node->funccall.arguments->head->literal.string));
     } else {
+        Operand* arg_regs = (Operand*)calloc(
+            NodeList_size(node->funccall.arguments), sizeof(Operand));
+        int i = 0;
+        int arg_count = NodeList_size(node->funccall.arguments);
+        FOR_EACH(ASTNode*, arg, node->funccall.arguments) {
+            arg_regs[i] = ASTNode_get_temp_reg(arg);
+            ASTNode_copy_code(node, arg);
+            i++;
+        }
+        for(int j = arg_count - 1; j >= 0; j--){
+            EMIT1OP(PUSH, arg_regs[j]);
+        }
+        EMIT1OP(CALL, call_label(node->funccall.name));
+        free(arg_regs);
+        
+        Operand temp_ret_reg = virtual_register();
+        int arg_size = arg_count * 8;
+        EMIT3OP(ADD_I, stack_register(), int_const(arg_size), stack_register());
+        EMIT2OP(I2I, return_register(), temp_ret_reg);
+        ASTNode_set_temp_reg(node, temp_ret_reg);
         return;
     }
 }
@@ -183,26 +209,10 @@ void CodeGenVisitor_gen_block (NodeVisitor* visitor, ASTNode* node)
 
 void CodeGenVisitor_gen_return (NodeVisitor* visitor, ASTNode* node)
 {
-    /*example code from class*/
-    /*TODO: move to literal gen*/
-    // EMIT2OP(LOAD_I, int_const(5), return_register());
-    // Operand temp_reg = virtual_register();
-    // EMIT2OP(LOAD_I, int_const(5), temp_reg);
-    // EMIT2OP(I2I, temp_reg, return_register());
-    
-    /*TODO: copy code from child*/
-    
-    /*TODO: get childs temp reg and use that as instead of reg from below*/
-    
-    /*TODO: add a jump to epilogue*/
     Operand child_reg = ASTNode_get_temp_reg(node->funcreturn.value);
     ASTNode_copy_code(node, node->funcreturn.value);
     EMIT2OP(I2I, child_reg, return_register());
     EMIT1OP(JUMP, DATA->current_epilogue_jump_label);
-    
-    // EMIT1OP(LABEL, DATA->current_epilogue_jump_label);
-    // EMIT2OP(I2I, base_register(), stack_register());
-    // EMIT0OP(RETURN);
 }
 
 void CodeGenVisitor_previsit_assignment (NodeVisitor* visitor, ASTNode* node)
@@ -212,7 +222,6 @@ void CodeGenVisitor_previsit_assignment (NodeVisitor* visitor, ASTNode* node)
 
 void CodeGenVisitor_gen_assignment (NodeVisitor* visitor, ASTNode* node)
 {
-    //TOOD: IMPLEMENT ARRAY ASSIGNMENTS
     Symbol* var_symbol = lookup_symbol(node, node->assignment.location->location.name);
     Operand child_reg = ASTNode_get_temp_reg(node->assignment.value);
     Operand var_offset_op;
@@ -265,8 +274,74 @@ void CodeGenVisitor_gen_location (NodeVisitor* visitor, ASTNode* node)
 }
 
 //
-/* UNARY OPERATIONS */
+/*CONDITIONALS */
 //
+
+void CodeGenVisitor_gen_conditional (NodeVisitor* visitor, ASTNode* node)
+{
+    Operand cond_reg = ASTNode_get_temp_reg(node->conditional.condition);
+    Operand if_label = anonymous_label();
+    Operand end_label = anonymous_label();
+    Operand else_label;
+    
+    ASTNode_copy_code(node, node->conditional.condition);
+    if(node->conditional.else_block != NULL){
+        else_label = end_label;
+        end_label = anonymous_label();
+        EMIT3OP(CBR, cond_reg, if_label, else_label);
+    } else {
+        EMIT3OP(CBR, cond_reg, if_label, end_label);
+    }
+    
+    EMIT1OP(LABEL, if_label);
+    ASTNode_copy_code(node, node->conditional.if_block);
+    
+    if(node->conditional.else_block != NULL){
+        EMIT1OP(JUMP, end_label);
+        EMIT1OP(LABEL, else_label);
+        ASTNode_copy_code(node, node->conditional.else_block);
+    }
+    
+    EMIT1OP(LABEL, end_label);
+}
+
+//
+/* WHILE LOOPS */
+//
+
+void CodeGenVisitor_previsit_whileloop (NodeVisitor* visitor, ASTNode* node)
+{
+    /* generate labels for the beginning and end of the loop */
+    DATA->current_loop_check_jump_label = anonymous_label();
+    DATA->current_loop_body_jump_label = anonymous_label();
+    DATA->current_loop_end_jump_label = anonymous_label();
+}
+
+void CodeGenVisitor_gen_whileloop (NodeVisitor* visitor, ASTNode* node)
+{
+    Operand check_label = DATA->current_loop_check_jump_label;
+    Operand body_label = DATA->current_loop_body_jump_label;
+    Operand end_label = DATA->current_loop_end_jump_label;
+    Operand cond_reg = ASTNode_get_temp_reg(node->whileloop.condition);
+    
+    EMIT1OP(LABEL, check_label);
+    ASTNode_copy_code(node, node->whileloop.condition);
+    EMIT3OP(CBR, cond_reg, body_label, end_label);
+    EMIT1OP(LABEL, body_label);
+    ASTNode_copy_code(node, node->whileloop.body);
+    EMIT1OP(JUMP, check_label);
+    EMIT1OP(LABEL, end_label);
+}
+
+void CodeGenVisitor_gen_break (NodeVisitor* visitor, ASTNode* node)
+{
+    EMIT1OP(JUMP, DATA->current_loop_end_jump_label);
+}
+
+void CodeGenVisitor_gen_continue (NodeVisitor* visitor, ASTNode* node)
+{
+    EMIT1OP(JUMP, DATA->current_loop_check_jump_label);
+}
 
 void unary_op_code_gen (NodeVisitor* visitor, ASTNode* node, InsnForm form)
 {
@@ -442,7 +517,11 @@ InsnList* generate_code (ASTNode* tree)
     v->postvisit_binaryop    = CodeGenVisitor_gen_binaryop;
     v->postvisit_unaryop     = CodeGenVisitor_gen_unaryop;
     v->postvisit_location    = CodeGenVisitor_gen_location;
-    v->postvisit_conditional = NULL; /* TODO: add conditional code gen */
+    v->previsit_whileloop    = CodeGenVisitor_previsit_whileloop;
+    v->postvisit_whileloop   = CodeGenVisitor_gen_whileloop;
+    v->postvisit_break       = CodeGenVisitor_gen_break;
+    v->postvisit_continue    = CodeGenVisitor_gen_continue;
+    v->postvisit_conditional = CodeGenVisitor_gen_conditional;
 
     /* generate code into AST attributes */
     NodeVisitor_traverse_and_free(v, tree);
