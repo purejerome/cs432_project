@@ -16,7 +16,7 @@ typedef struct CodeGenData
   Operand current_loop_check_jump_label;
   Operand current_loop_body_jump_label;
   Operand current_loop_end_jump_label;
-  bool gen_location_code;
+  ASTNode *suppress_location;
 
   /* add any new desired state information (and clean it up in
    * CodeGenData_free) */
@@ -36,7 +36,7 @@ CodeGenData_new (void)
   data->current_loop_check_jump_label = empty_operand ();
   data->current_loop_body_jump_label = empty_operand ();
   data->current_loop_end_jump_label = empty_operand ();
-  data->gen_location_code = true;
+  data->suppress_location = NULL;
   return data;
 }
 
@@ -251,7 +251,7 @@ CodeGenVisitor_gen_return (NodeVisitor *visitor, ASTNode *node)
 void
 CodeGenVisitor_previsit_assignment (NodeVisitor *visitor, ASTNode *node)
 {
-  DATA->gen_location_code = false;
+  DATA->suppress_location = node->assignment.location;
 }
 
 void
@@ -291,16 +291,19 @@ CodeGenVisitor_gen_assignment (NodeVisitor *visitor, ASTNode *node)
 void
 CodeGenVisitor_gen_location (NodeVisitor *visitor, ASTNode *node)
 {
-  bool gen_location_code = DATA->gen_location_code;
-  if (!gen_location_code)
+  if (DATA->suppress_location == node)
     {
-      DATA->gen_location_code = true;
+      // Skip generating a LOAD for the lvalue itself,
+      // but DO NOT affect the index child’s codegen.
+      DATA->suppress_location = NULL;
       return;
     }
+
   Symbol *var_symbol = lookup_symbol (node, node->location.name);
   Operand base_reg = var_base (node, var_symbol);
   Operand reg = virtual_register ();
   ASTNode_set_temp_reg (node, reg);
+
   if (var_symbol->symbol_type == SCALAR_SYMBOL)
     {
       Operand offset_op = var_offset (node, var_symbol);
@@ -308,18 +311,13 @@ CodeGenVisitor_gen_location (NodeVisitor *visitor, ASTNode *node)
     }
   else
     {
-      /* array variable */
       ASTNode_copy_code (node, node->location.index);
       Operand offset_reg = virtual_register ();
-      Operand child_reg = ASTNode_get_temp_reg (node->location.index);
+      Operand idx_reg = ASTNode_get_temp_reg (node->location.index);
       if (var_symbol->type == BOOL)
-        {
-          EMIT3OP (MULT_I, child_reg, int_const (sizeof (bool)), offset_reg);
-        }
+        EMIT3OP (MULT_I, idx_reg, int_const (sizeof (bool)), offset_reg);
       else if (var_symbol->type == INT)
-        {
-          EMIT3OP (MULT_I, child_reg, int_const (sizeof (long)), offset_reg);
-        }
+        EMIT3OP (MULT_I, idx_reg, int_const (sizeof (long)), offset_reg);
       EMIT3OP (LOAD_AO, base_reg, offset_reg, reg);
     }
 }
