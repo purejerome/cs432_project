@@ -1,0 +1,4 @@
+def int main() {
+  int a; a = 40;
+  { int a; a = 100; { return a - 98; } }
+}

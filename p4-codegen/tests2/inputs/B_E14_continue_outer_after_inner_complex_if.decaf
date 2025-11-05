@@ -1,0 +1,16 @@
+def int main() {
+  int i; int j; int s;
+  s = 0; i = 0;
+  while (i < 3) {
+    j = 0;
+    while (j < 3) {
+      if ((j == 1) || (j == 2)) { j = j + 1; continue; }
+      s = s + 1;
+      j = j + 1;
+    }
+    i = i + 1;
+    continue; // must go to outer test
+    s = s + 1000; // unreachable
+  }
+  return s; // expected 3 (j==0 for each i)
+}

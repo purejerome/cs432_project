@@ -1,27 +1,22 @@
 #!/usr/bin/env bash
 # Runs Decaf tests from inputs/, stores your outputs in outputs/, and diffs vs instructor in diffs/.
-# Student compiler: ../decaf (override with ME_BIN)
-# Instructor: /cs/students/cs432/f25/decaf (override with REF_BIN)
+# Student compiler: ../decaf
+# Instructor: /cs/students/cs432/f25/decaf (always uses --fdump-iloc)
 # Diff format: extra lines from *your* output (-); missing lines (+)
 
 set -u
 
 script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-# Binaries (override via env if needed)
-REF_BIN="${REF_BIN:-/cs/students/cs432/f25/decaf}"
-ME_BIN="${ME_BIN:-${script_dir}/../decaf}"
+# Binaries
+REF_BIN="/cs/students/cs432/f25/decaf"
+ME_BIN="${script_dir}/../decaf"
 
 INPUT_DIR="${script_dir}/inputs"
 OUT_DIR="${script_dir}/outputs"
 DIFF_DIR="${script_dir}/diffs"
 
 mkdir -p "$OUT_DIR" "$DIFF_DIR"
-
-# Optional flags via env (e.g., REF_FLAGS="--fdump-iloc" ME_FLAGS="--fdump-iloc")
-# Safely split them into arrays:
-read -r -a REF_OPTS <<< "${REF_FLAGS:-}"
-read -r -a ME_OPTS  <<< "${ME_FLAGS:-}"
 
 if [[ ! -x "$ME_BIN" ]]; then
   echo "ERROR: ${ME_BIN} not found or not executable." >&2
@@ -44,7 +39,6 @@ if [[ ${#tests[@]} -eq 0 ]]; then
 fi
 
 normalize() {
-  # Strip CR and the simulator return line to avoid noise
   sed -e 's/\r$//' -e '/^RETURN VALUE = /d'
 }
 
@@ -61,19 +55,16 @@ for rel in "${tests[@]}"; do
 
   ((total++))
 
-  # Run reference and student compilers; normalize their outputs
-  "$REF_BIN" "${REF_OPTS[@]}" "$t" 2>&1 | normalize > "$ref_out"
-  "$ME_BIN"  "${ME_OPTS[@]}"  "$t" 2>&1 | normalize > "$my_out"
+  # Run reference compiler with --fdump-iloc, student compiler with no flags
+  "$REF_BIN" --fdump-iloc "$t" 2>&1 | normalize > "$ref_out"
+  "$ME_BIN" "$t" 2>&1 | normalize > "$my_out"
 
-  # Create a diff that hides headers/context and flips signs so:
-  #   extra lines from *your* output appear as '-' (extra),
-  #   missing lines (present in ref, absent in yours) appear as '+'
   diff -u "$ref_out" "$my_out" \
     | awk '
-        /^--- / || /^\+\+\+ / || /^@@/ { next }  # drop headers/hunks
-        /^ / { next }                             # drop context
-        /^-/ { print "+" substr($0,2); next }     # missing (you lack it)
-        /^\+/ { print "-" substr($0,2); next }    # extra (you added it)
+        /^--- / || /^\+\+\+ / || /^@@/ { next }
+        /^ / { next }
+        /^-/ { print "+" substr($0,2); next }
+        /^\+/ { print "-" substr($0,2); next }
       ' > "$difffile"
 
   if [[ -s "$difffile" ]]; then

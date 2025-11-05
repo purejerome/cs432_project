@@ -10,10 +10,10 @@
 
 /**
  * @brief Enables debug output (intermediate ILOC and trace output)
- * 
+ *
  * Disable this before submitting or running integration tests
  */
-const bool debug_mode = false;
+const bool debug_mode = true;
 
 /**
  * @brief Error message buffer
@@ -31,41 +31,46 @@ jmp_buf decaf_error;
  * This function is declared in common.h but must be defined here in main.c
  * because that's where the @c jmp_buf declaration is.
  */
-void Error_throw_printf (const char* format, ...)
+void
+Error_throw_printf (const char *format, ...)
 {
-    /* delegate to vsnprintf for error message formatting */
-    va_list args;
-    va_start(args, format);
-    vsnprintf(decaf_error_msg, MAX_ERROR_LEN, format, args);
-    va_end(args);
+  /* delegate to vsnprintf for error message formatting */
+  va_list args;
+  va_start (args, format);
+  vsnprintf (decaf_error_msg, MAX_ERROR_LEN, format, args);
+  va_end (args);
 
-    /* jump to location saved by setjmp */
-    longjmp(decaf_error, 1);
+  /* jump to location saved by setjmp */
+  longjmp (decaf_error, 1);
 }
 
 /**
  * @brief Read all text data from a file
  *
  * @param filename Name of file to read
- * @param text String buffer destination (must be #MAX_FILE_SIZE characters long)
+ * @param text String buffer destination (must be #MAX_FILE_SIZE characters
+ * long)
  * @returns True if and only if the file read was successful.
  */
-bool read_file (const char* filename, char* text)
+bool
+read_file (const char *filename, char *text)
 {
-    FILE* input = fopen(filename, "r");
-    if (input == NULL) {
-        return false;
+  FILE *input = fopen (filename, "r");
+  if (input == NULL)
+    {
+      return false;
     }
-    size_t nchars = 0;
-    char* p = text;
-    int c;
-    while (nchars < MAX_FILE_SIZE && (c = fgetc(input)) != EOF) {
-        *p++ = (char)c;
-        nchars++;
+  size_t nchars = 0;
+  char *p = text;
+  int c;
+  while (nchars < MAX_FILE_SIZE && (c = fgetc (input)) != EOF)
+    {
+      *p++ = (char)c;
+      nchars++;
     }
-    *p = '\0';
-    fclose(input);
-    return true;
+  *p = '\0';
+  fclose (input);
+  return true;
 }
 
 /**
@@ -76,111 +81,120 @@ bool read_file (const char* filename, char* text)
  * @returns @c EXIT_SUCCESS if the compilation succeeds and @c EXIT_FAILURE
  * otherwise
  */
-int main(int argc, char** argv)
+int
+main (int argc, char **argv)
 {
-    /* check for filename */
-    if (argc != 2) {
-        fprintf(stderr, "Usage: %s <decaf-filename>\n", argv[0]);
-        return EXIT_FAILURE;
+  /* check for filename */
+  if (argc != 2)
+    {
+      fprintf (stderr, "Usage: %s <decaf-filename>\n", argv[0]);
+      return EXIT_FAILURE;
     }
-    char* filename = argv[argc-1];
+  char *filename = argv[argc - 1];
 
-    /* read file */
-    char text[MAX_FILE_SIZE];
-    if (!read_file(filename, text)) {
-        fprintf(stderr, "Could not read file: %s", filename);
-        exit(EXIT_FAILURE);
-    }
-
-    /* FRONT END */
-
-    TokenQueue* tokens = NULL;
-    ASTNode* tree = NULL;
-
-    /* fatal errors are possible in the front end, so check for them */
-    if (setjmp(decaf_error) == 0) {
-
-        /* PROJECT 1: lexer */
-        tokens = lex(text);
-
-        /* PROJECT 2: parser */
-        tree = parse(tokens);
-
-        /* clean up tokens (no longer needed) */
-        TokenQueue_free(tokens);
-        tokens = NULL;
-
-    } else {
-
-        /* handle fatal error: print message and clean up */
-        fprintf(stderr, "%s", decaf_error_msg);
-        if (tokens   != NULL) TokenQueue_free(tokens);
-        if (tree     != NULL) ASTNode_free(tree);
-        exit(EXIT_FAILURE);
+  /* read file */
+  char text[MAX_FILE_SIZE];
+  if (!read_file (filename, text))
+    {
+      fprintf (stderr, "Could not read file: %s", filename);
+      exit (EXIT_FAILURE);
     }
 
-    /* set up parent links and calculate node depths */
-    NodeVisitor_traverse_and_free(SetParentVisitor_new(), tree);
-    NodeVisitor_traverse_and_free(CalcDepthVisitor_new(), tree);
+  /* FRONT END */
 
-    /* MIDDLE END */
+  TokenQueue *tokens = NULL;
+  ASTNode *tree = NULL;
 
-    /* build symbol tables */
-    NodeVisitor_traverse_and_free(BuildSymbolTablesVisitor_new(), tree);
+  /* fatal errors are possible in the front end, so check for them */
+  if (setjmp (decaf_error) == 0)
+    {
 
-    /* PROJECT 3: analysis */
-    ErrorList* errors = analyze(tree);
+      /* PROJECT 1: lexer */
+      tokens = lex (text);
 
-    /* print analysis errors */
-    FOR_EACH(AnalysisError*, err, errors) {
-        printf("%s\n", err->message);
+      /* PROJECT 2: parser */
+      tree = parse (tokens);
+
+      /* clean up tokens (no longer needed) */
+      TokenQueue_free (tokens);
+      tokens = NULL;
+    }
+  else
+    {
+
+      /* handle fatal error: print message and clean up */
+      fprintf (stderr, "%s", decaf_error_msg);
+      if (tokens != NULL)
+        TokenQueue_free (tokens);
+      if (tree != NULL)
+        ASTNode_free (tree);
+      exit (EXIT_FAILURE);
     }
 
-    /* abort if analysis has reported errors */
-    if (!ErrorList_is_empty(errors)) {
-        ASTNode_free(tree);
-        ErrorList_free(errors);
-        exit(EXIT_FAILURE);
+  /* set up parent links and calculate node depths */
+  NodeVisitor_traverse_and_free (SetParentVisitor_new (), tree);
+  NodeVisitor_traverse_and_free (CalcDepthVisitor_new (), tree);
+
+  /* MIDDLE END */
+
+  /* build symbol tables */
+  NodeVisitor_traverse_and_free (BuildSymbolTablesVisitor_new (), tree);
+
+  /* PROJECT 3: analysis */
+  ErrorList *errors = analyze (tree);
+
+  /* print analysis errors */
+  FOR_EACH (AnalysisError *, err, errors) { printf ("%s\n", err->message); }
+
+  /* abort if analysis has reported errors */
+  if (!ErrorList_is_empty (errors))
+    {
+      ASTNode_free (tree);
+      ErrorList_free (errors);
+      exit (EXIT_FAILURE);
     }
 
-    /* clean up error list */
-    ErrorList_free(errors);
-    errors = NULL;
+  /* clean up error list */
+  ErrorList_free (errors);
+  errors = NULL;
 
-    /* BACK END */
+  /* BACK END */
 
-    /* run symbol allocation */
-    NodeVisitor_traverse_and_free(AllocateSymbolsVisitor_new(), tree);
+  /* run symbol allocation */
+  NodeVisitor_traverse_and_free (AllocateSymbolsVisitor_new (), tree);
 
-    /* PROJECT 4: code gen */
-    InsnList* iloc = generate_code(tree);
+  /* PROJECT 4: code gen */
+  InsnList *iloc = generate_code (tree);
 
-    /* generate graphical AST */
-    FILE* graph_file = fopen("iloc-tree.dot", "w");
-    if (graph_file != NULL) {
-        NodeVisitor_traverse_and_free(GenerateASTGraph_new(graph_file), tree);
-        fclose(graph_file);
-        if (system("dot -Tpng -o iloc-tree.png iloc-tree.dot") == -1) {
-            fprintf(stderr, "Could not generate AST image\n");
+  /* generate graphical AST */
+  FILE *graph_file = fopen ("iloc-tree.dot", "w");
+  if (graph_file != NULL)
+    {
+      NodeVisitor_traverse_and_free (GenerateASTGraph_new (graph_file), tree);
+      fclose (graph_file);
+      if (system ("dot -Tpng -o iloc-tree.png iloc-tree.dot") == -1)
+        {
+          fprintf (stderr, "Could not generate AST image\n");
         }
     }
 
-    /* clean up syntax tree (no longer needed) */
-    ASTNode_free(tree);
-    tree = NULL;
+  /* clean up syntax tree (no longer needed) */
+  ASTNode_free (tree);
+  tree = NULL;
 
-    /* print ILOC if debug mode is enabled */
-    if (debug_mode) {
-        InsnList_print(iloc, stdout);
+  /* print ILOC if debug mode is enabled */
+  if (debug_mode)
+    {
+      InsnList_print (iloc, stdout);
     }
 
-    /* run program (w/ trace output enabled if debug mode is enabled) */
-    long return_value = run_simulator(iloc, debug_mode);
-    printf("RETURN VALUE = %ld\n", return_value);
+  /* run program (w/ trace output enabled if debug mode is enabled) */
+  // long return_value = run_simulator(iloc, debug_mode);
+  // printf("RETURN VALUE = %ld\n", return_value);
 
-    /* clean up ILOC code (no longer needed) */
-    InsnList_free(iloc);
-    iloc = NULL;
+  /* clean up ILOC code (no longer needed) */
+  InsnList_free (iloc);
+  iloc = NULL;
 
-    return EXIT_SUCCESS;
+  return EXIT_SUCCESS;
 }

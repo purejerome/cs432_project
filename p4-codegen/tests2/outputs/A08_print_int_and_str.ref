@@ -1,3 +1,19 @@
+main:
+  push BP
+  i2i SP => BP
+  addI SP, 0 => SP
+  print \"A-level prints:\\n\"
+  loadI 42 => r0
+  print r0
+  print \"\\n\"
+  print \"done\\n\"
+  loadI 0 => r1
+  i2i r1 => RET
+  jump l0
+l0:
+  i2i BP => SP
+  pop BP
+  return
 A-level prints:
 42
 done

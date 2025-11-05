@@ -1,0 +1,5 @@
+def int main() {
+  // Weird spacing/comments
+  { /* block */ }    {/**/}{ }
+  return /*ret*/  40 /*forty*/ + /*plus*/ 2 /*two*/ ;
+}

@@ -1,0 +1,5 @@
+def int main() {
+  int x; x = 7;
+  { int x; x = 20; { int x; x = 100; } }
+  return x; // 7
+}

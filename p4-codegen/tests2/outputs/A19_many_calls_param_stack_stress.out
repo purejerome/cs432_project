@@ -1,0 +1,171 @@
+f6:
+  push BP
+  i2i SP => BP
+  addI SP, 0 => SP
+  loadAI [BP+16] => r0
+  loadAI [BP+24] => r1
+  add r0, r1 => r2
+  loadAI [BP+32] => r3
+  add r2, r3 => r4
+  loadAI [BP+40] => r5
+  add r4, r5 => r6
+  loadAI [BP+48] => r7
+  add r6, r7 => r8
+  loadAI [BP+56] => r9
+  add r8, r9 => r10
+  i2i r10 => RET
+  jump l0
+l0:
+  i2i BP => SP
+  pop BP
+  return
+f5:
+  push BP
+  i2i SP => BP
+  addI SP, 0 => SP
+  loadAI [BP+16] => r11
+  loadAI [BP+24] => r12
+  add r11, r12 => r13
+  loadAI [BP+32] => r14
+  add r13, r14 => r15
+  loadAI [BP+40] => r16
+  add r15, r16 => r17
+  loadAI [BP+48] => r18
+  add r17, r18 => r19
+  i2i r19 => RET
+  jump l1
+l1:
+  i2i BP => SP
+  pop BP
+  return
+f4:
+  push BP
+  i2i SP => BP
+  addI SP, 0 => SP
+  loadAI [BP+16] => r20
+  loadAI [BP+24] => r21
+  add r20, r21 => r22
+  loadAI [BP+32] => r23
+  add r22, r23 => r24
+  loadAI [BP+40] => r25
+  add r24, r25 => r26
+  i2i r26 => RET
+  jump l2
+l2:
+  i2i BP => SP
+  pop BP
+  return
+f3:
+  push BP
+  i2i SP => BP
+  addI SP, 0 => SP
+  loadAI [BP+16] => r27
+  loadAI [BP+24] => r28
+  add r27, r28 => r29
+  loadAI [BP+32] => r30
+  add r29, r30 => r31
+  i2i r31 => RET
+  jump l3
+l3:
+  i2i BP => SP
+  pop BP
+  return
+f2:
+  push BP
+  i2i SP => BP
+  addI SP, 0 => SP
+  loadAI [BP+16] => r32
+  loadAI [BP+24] => r33
+  add r32, r33 => r34
+  i2i r34 => RET
+  jump l4
+l4:
+  i2i BP => SP
+  pop BP
+  return
+f1:
+  push BP
+  i2i SP => BP
+  addI SP, 0 => SP
+  loadAI [BP+16] => r35
+  i2i r35 => RET
+  jump l5
+l5:
+  i2i BP => SP
+  pop BP
+  return
+main:
+  push BP
+  i2i SP => BP
+  addI SP, 0 => SP
+  loadI 1 => r36
+  loadI 2 => r37
+  loadI 3 => r38
+  loadI 4 => r39
+  loadI 5 => r40
+  loadI 6 => r41
+  push r41
+  push r40
+  push r39
+  push r38
+  push r37
+  push r36
+  call f6
+  addI SP, 48 => SP
+  i2i RET => r42
+  loadI 1 => r43
+  loadI 2 => r44
+  loadI 3 => r45
+  loadI 4 => r46
+  loadI 5 => r47
+  push r47
+  push r46
+  push r45
+  push r44
+  push r43
+  call f5
+  addI SP, 40 => SP
+  i2i RET => r48
+  add r42, r48 => r49
+  loadI 1 => r50
+  loadI 2 => r51
+  loadI 3 => r52
+  loadI 4 => r53
+  push r53
+  push r52
+  push r51
+  push r50
+  call f4
+  addI SP, 32 => SP
+  i2i RET => r54
+  add r49, r54 => r55
+  loadI 1 => r56
+  loadI 2 => r57
+  loadI 3 => r58
+  push r58
+  push r57
+  push r56
+  call f3
+  addI SP, 24 => SP
+  i2i RET => r59
+  add r55, r59 => r60
+  loadI 1 => r61
+  loadI 2 => r62
+  push r62
+  push r61
+  call f2
+  addI SP, 16 => SP
+  i2i RET => r63
+  add r60, r63 => r64
+  loadI 30 => r65
+  push r65
+  call f1
+  addI SP, 8 => SP
+  i2i RET => r66
+  add r64, r66 => r67
+  i2i r67 => RET
+  jump l6
+l6:
+  i2i BP => SP
+  pop BP
+  return

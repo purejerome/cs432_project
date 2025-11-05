@@ -1,0 +1,16 @@
+int g;
+
+def int zero() { return 0; }
+def int one()  { return 1; }
+def int flip() { if (g == 0) { g = 1; return 0; } else { g = 0; return 1; } }
+
+def int main() {
+  int x;
+  g = 0;
+  x = 0;
+  if (one()) { x = x + 10; } else { x = x + 100; } // +10
+  if (zero()) { x = x + 100; } else { x = x + 1; } // +1
+  if (flip()) { x = x + 1000; } else { x = x + 100; } // flip returns 0 first => +100
+  if (flip()) { x = x + 1000; } else { x = x + 100; } // flip returns 1 next => +1000
+  return x; // expected 1111
+}

@@ -1,0 +1,31 @@
+main:
+  push BP
+  i2i SP => BP
+  addI SP, 0 => SP
+  loadI 2 => r0
+  loadI 3 => r1
+  loadI 4 => r2
+  mult r1, r2 => r3
+  add r0, r3 => r4
+  loadI 10 => r5
+  loadI 3 => r6
+  div r5, r6 => r7
+  sub r4, r7 => r8
+  loadI 6 => r9
+  loadI 2 => r10
+  loadI 1 => r11
+  add r10, r11 => r12
+  mult r9, r12 => r13
+  add r8, r13 => r14
+  loadI 8 => r15
+  loadI 3 => r16
+  loadI 2 => r17
+  mult r16, r17 => r18
+  sub r15, r18 => r19
+  sub r14, r19 => r20
+  i2i r20 => RET
+  jump l0
+l0:
+  i2i BP => SP
+  pop BP
+  return

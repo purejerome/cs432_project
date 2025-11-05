@@ -1,0 +1,44 @@
+get5:
+  push BP
+  i2i SP => BP
+  addI SP, 0 => SP
+  loadI 5 => r0
+  i2i r0 => RET
+  jump l0
+l0:
+  i2i BP => SP
+  pop BP
+  return
+main:
+  push BP
+  i2i SP => BP
+  addI SP, -16 => SP
+  loadI 0 => r1
+  storeAI r1 => [BP-8]
+  loadI 0 => r2
+  storeAI r2 => [BP-16]
+l2:
+  loadAI [BP-8] => r3
+  call get5
+  addI SP, 0 => SP
+  i2i RET => r4
+  cmp_LT r3, r4 => r5
+  cbr r5 => l3, l4
+l3:
+  loadAI [BP-16] => r6
+  loadAI [BP-8] => r7
+  add r6, r7 => r8
+  storeAI r8 => [BP-16]
+  loadAI [BP-8] => r9
+  loadI 1 => r10
+  add r9, r10 => r11
+  storeAI r11 => [BP-8]
+  jump l2
+l4:
+  loadAI [BP-16] => r12
+  i2i r12 => RET
+  jump l1
+l1:
+  i2i BP => SP
+  pop BP
+  return

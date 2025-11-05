@@ -1,0 +1,39 @@
+f:
+  push BP
+  i2i SP => BP
+  addI SP, 0 => SP
+  loadI 5 => r0
+  i2i r0 => RET
+  jump l0
+l0:
+  i2i BP => SP
+  pop BP
+  return
+g:
+  push BP
+  i2i SP => BP
+  addI SP, 0 => SP
+  loadI 37 => r1
+  i2i r1 => RET
+  jump l1
+l1:
+  i2i BP => SP
+  pop BP
+  return
+main:
+  push BP
+  i2i SP => BP
+  addI SP, 0 => SP
+  call f
+  addI SP, 0 => SP
+  i2i RET => r2
+  call g
+  addI SP, 0 => SP
+  i2i RET => r3
+  add r2, r3 => r4
+  i2i r4 => RET
+  jump l2
+l2:
+  i2i BP => SP
+  pop BP
+  return

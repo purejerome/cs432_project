@@ -1,0 +1,53 @@
+inc:
+  push BP
+  i2i SP => BP
+  addI SP, 0 => SP
+  loadAI [BP+16] => r0
+  loadI 1 => r1
+  add r0, r1 => r2
+  i2i r2 => RET
+  jump l0
+l0:
+  i2i BP => SP
+  pop BP
+  return
+tri:
+  push BP
+  i2i SP => BP
+  addI SP, 0 => SP
+  loadAI [BP+16] => r3
+  loadAI [BP+24] => r4
+  add r3, r4 => r5
+  loadI 1 => r6
+  add r5, r6 => r7
+  i2i r7 => RET
+  jump l1
+l1:
+  i2i BP => SP
+  pop BP
+  return
+main:
+  push BP
+  i2i SP => BP
+  addI SP, 0 => SP
+  loadI 5 => r8
+  loadI 6 => r9
+  push r9
+  call inc
+  addI SP, 8 => SP
+  i2i RET => r10
+  push r10
+  push r8
+  call tri
+  addI SP, 16 => SP
+  i2i RET => r11
+  push r11
+  call inc
+  addI SP, 8 => SP
+  i2i RET => r12
+  i2i r12 => RET
+  jump l2
+l2:
+  i2i BP => SP
+  pop BP
+  return

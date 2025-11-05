@@ -1,0 +1,9 @@
+def int t1() { return 1; }
+def int t2() { return 1; }
+def int f1() { return 0; }
+
+def int main() {
+  int x; x = 0;
+  if (t1() && t2() && !f1()) { x = 42; } else { x = 99; }
+  return x; // expected 42
+}

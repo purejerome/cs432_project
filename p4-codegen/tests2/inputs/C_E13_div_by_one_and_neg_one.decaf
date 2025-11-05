@@ -1,0 +1,4 @@
+def int main() {
+  int x; x = 12345;
+  return (x/1) + (x/(-1)); // 0
+}

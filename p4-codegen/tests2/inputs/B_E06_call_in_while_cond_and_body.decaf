@@ -1,0 +1,16 @@
+int t;
+
+def int toggle() { if (t == 0) { t = 1; return 1; } else { t = 0; return 0; } }
+
+def int main() {
+  int k; int s;
+  t = 1;   // first toggle -> 0 (returns 0) => while should NOT enter
+  s = 0;
+  while (toggle()) {
+    s = s + 100;       // should never execute
+  }
+  // force one true condition:
+  k = toggle();        // returns 1; t becomes 1
+  if (k) { s = s + 7; }
+  return s; // expected 7
+}

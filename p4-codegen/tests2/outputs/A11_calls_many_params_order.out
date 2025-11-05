@@ -1,0 +1,66 @@
+pack6:
+  push BP
+  i2i SP => BP
+  addI SP, -8 => SP
+  loadAI [BP+16] => r0
+  loadI 10 => r1
+  mult r0, r1 => r2
+  loadAI [BP+24] => r3
+  add r2, r3 => r4
+  storeAI r4 => [BP-8]
+  loadAI [BP-8] => r5
+  loadI 10 => r6
+  mult r5, r6 => r7
+  loadAI [BP+32] => r8
+  add r7, r8 => r9
+  storeAI r9 => [BP-8]
+  loadAI [BP-8] => r10
+  loadI 10 => r11
+  mult r10, r11 => r12
+  loadAI [BP+40] => r13
+  add r12, r13 => r14
+  storeAI r14 => [BP-8]
+  loadAI [BP-8] => r15
+  loadI 10 => r16
+  mult r15, r16 => r17
+  loadAI [BP+48] => r18
+  add r17, r18 => r19
+  storeAI r19 => [BP-8]
+  loadAI [BP-8] => r20
+  loadI 10 => r21
+  mult r20, r21 => r22
+  loadAI [BP+56] => r23
+  add r22, r23 => r24
+  storeAI r24 => [BP-8]
+  loadAI [BP-8] => r25
+  i2i r25 => RET
+  jump l0
+l0:
+  i2i BP => SP
+  pop BP
+  return
+main:
+  push BP
+  i2i SP => BP
+  addI SP, 0 => SP
+  loadI 1 => r26
+  loadI 2 => r27
+  loadI 3 => r28
+  loadI 4 => r29
+  loadI 5 => r30
+  loadI 6 => r31
+  push r31
+  push r30
+  push r29
+  push r28
+  push r27
+  push r26
+  call pack6
+  addI SP, 48 => SP
+  i2i RET => r32
+  i2i r32 => RET
+  jump l1
+l1:
+  i2i BP => SP
+  pop BP
+  return

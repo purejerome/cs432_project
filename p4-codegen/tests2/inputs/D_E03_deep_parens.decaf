@@ -1,0 +1,4 @@
+def int main() {
+  // Deeply nested parentheses
+  return (((((((((((((((((((1 + 1))))))))))))))))));
+}

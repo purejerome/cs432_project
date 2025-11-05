@@ -1,0 +1,12 @@
+def int a() { return 0; }
+def int b() { return 1; }
+def int c() { return 0; }
+
+def int main() {
+  int x; x = 0;
+  if (a()) { x = x + 100; }
+  else if (b()) { x = x + 10; }
+  else if (c()) { x = x + 1; }
+  else { x = x + 1000; }
+  return x; // expected 10
+}

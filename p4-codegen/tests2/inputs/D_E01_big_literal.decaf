@@ -1,0 +1,4 @@
+def int main() {
+  // Very large positive literal (within signed 64-bit)
+  return 9223372036854775807;
+}

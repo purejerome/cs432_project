@@ -1,0 +1,20 @@
+main:
+  push BP
+  i2i SP => BP
+  addI SP, -8 => SP
+  loadI 12345 => r0
+  storeAI r0 => [BP-8]
+  loadAI [BP-8] => r1
+  loadI 1 => r2
+  div r1, r2 => r3
+  loadAI [BP-8] => r4
+  loadI 1 => r5
+  neg r5 => r6
+  div r4, r6 => r7
+  add r3, r7 => r8
+  i2i r8 => RET
+  jump l0
+l0:
+  i2i BP => SP
+  pop BP
+  return

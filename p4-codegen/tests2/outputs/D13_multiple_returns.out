@@ -1,0 +1,17 @@
+main:
+  push BP
+  i2i SP => BP
+  addI SP, 0 => SP
+  loadI 1 => r0
+  i2i r0 => RET
+  jump l0
+  loadI 2 => r1
+  i2i r1 => RET
+  jump l0
+  loadI 3 => r2
+  i2i r2 => RET
+  jump l0
+l0:
+  i2i BP => SP
+  pop BP
+  return

@@ -1,0 +1,13 @@
+def int main() {
+  int i; int j; int s;
+  i = 0; s = 0;
+  while (i < 3) {
+    j = 0;
+    while (j < 3) {
+      if (j == 1) { j = j + 1; } else { j = j + 1; }
+    }
+    // break the OUTER loop here
+    break;
+  }
+  return 0; // expected 0
+}

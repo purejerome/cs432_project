@@ -1,0 +1,18 @@
+def int main() {
+  int i; int j; int k; int s;
+  s = 0; i = 0;
+  while (i < 2) {
+    j = 0;
+    while (j < 2) {
+      k = 0;
+      while (k < 2) {
+        s = s + 1;
+        k = k + 1;
+      }
+      j = j + 1;
+    }
+    // break outer after the two inners finish
+    break;
+  }
+  return s; // expected 4
+}

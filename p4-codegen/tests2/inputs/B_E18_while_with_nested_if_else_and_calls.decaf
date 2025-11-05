@@ -1,0 +1,13 @@
+def int t() { return 1; }
+def int f() { return 0; }
+
+def int main() {
+  int i; int s; i = 0; s = 0;
+  while (i < 5) {
+    if (t()) { s = s + 1; }
+    else if (f()) { s = s + 100; }
+    else { s = s + 1000; }
+    i = i + 1;
+  }
+  return s; // expected 5
+}

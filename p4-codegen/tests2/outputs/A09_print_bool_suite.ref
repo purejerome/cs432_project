@@ -1,3 +1,33 @@
+main:
+  push BP
+  i2i SP => BP
+  addI SP, 0 => SP
+  loadI 1 => r0
+  loadI 2 => r1
+  cmp_LT r0, r1 => r2
+  print r2
+  print \"\\n\"
+  loadI 2 => r3
+  loadI 1 => r4
+  cmp_LT r3, r4 => r5
+  print r5
+  print \"\\n\"
+  loadI 3 => r6
+  loadI 3 => r7
+  cmp_EQ r6, r7 => r8
+  loadI 0 => r9
+  loadI 1 => r10
+  cmp_EQ r9, r10 => r11
+  and r8, r11 => r12
+  print r12
+  print \"\\n\"
+  loadI 0 => r13
+  i2i r13 => RET
+  jump l0
+l0:
+  i2i BP => SP
+  pop BP
+  return
 1
 0
 0

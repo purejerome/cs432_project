@@ -1,0 +1,11 @@
+def int main() {
+  int i; int s;
+  i = 0; s = 0;
+  while (i < 10) {
+    if (i == 6) { break; }
+    if (i % 2 == 0) { i = i + 1; continue; }
+    s = s + 1;
+    i = i + 1;
+  }
+  return s; // counts odd < 6: 1,3,5 => 3
+}

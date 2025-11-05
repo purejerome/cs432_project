@@ -1,0 +1,46 @@
+main:
+  push BP
+  i2i SP => BP
+  addI SP, -24 => SP
+  loadI 0 => r0
+  storeAI r0 => [BP-24]
+  loadI 0 => r1
+  storeAI r1 => [BP-8]
+l1:
+  loadAI [BP-8] => r2
+  loadI 3 => r3
+  cmp_LT r2, r3 => r4
+  cbr r4 => l2, l3
+l2:
+  loadI 0 => r5
+  storeAI r5 => [BP-16]
+l4:
+  loadAI [BP-16] => r6
+  loadI 2 => r7
+  cmp_LT r6, r7 => r8
+  cbr r8 => l5, l6
+l5:
+  loadAI [BP-24] => r9
+  loadI 1 => r10
+  add r9, r10 => r11
+  storeAI r11 => [BP-24]
+  loadAI [BP-16] => r12
+  loadI 1 => r13
+  add r12, r13 => r14
+  storeAI r14 => [BP-16]
+  jump l4
+l6:
+  loadAI [BP-24] => r15
+  loadI 10 => r16
+  add r15, r16 => r17
+  i2i r17 => RET
+  jump l0
+  jump l1
+l3:
+  loadI 999 => r18
+  i2i r18 => RET
+  jump l0
+l0:
+  i2i BP => SP
+  pop BP
+  return

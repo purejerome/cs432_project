@@ -1,5 +1,42 @@
-start
-v=7
-v=42
-0
-end
+tag:
+  push BP
+  i2i SP => BP
+  addI SP, 0 => SP
+  print \"v=\"
+  loadAI [BP+16] => r0
+  print r0
+  print \"\\n\"
+  loadI 0 => r1
+  i2i r1 => RET
+  jump l0
+l0:
+  i2i BP => SP
+  pop BP
+  return
+main:
+  push BP
+  i2i SP => BP
+  addI SP, 0 => SP
+  print \"start\\n\"
+  loadI 7 => r2
+  push r2
+  call tag
+  addI SP, 8 => SP
+  i2i RET => r3
+  loadI 42 => r4
+  push r4
+  call tag
+  addI SP, 8 => SP
+  i2i RET => r5
+  loadI 3 => r6
+  loadI 2 => r7
+  cmp_LT r6, r7 => r8
+  print r8
+  print \"\\nend\\n\"
+  loadI 0 => r9
+  i2i r9 => RET
+  jump l1
+l1:
+  i2i BP => SP
+  pop BP
+  return

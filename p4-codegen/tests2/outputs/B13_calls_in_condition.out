@@ -1,0 +1,61 @@
+is_one:
+  push BP
+  i2i SP => BP
+  addI SP, 0 => SP
+  loadI 1 => r0
+  i2i r0 => RET
+  jump l0
+l0:
+  i2i BP => SP
+  pop BP
+  return
+zero:
+  push BP
+  i2i SP => BP
+  addI SP, 0 => SP
+  loadI 0 => r1
+  i2i r1 => RET
+  jump l1
+l1:
+  i2i BP => SP
+  pop BP
+  return
+main:
+  push BP
+  i2i SP => BP
+  addI SP, -8 => SP
+  loadI 0 => r2
+  storeAI r2 => [BP-8]
+  call is_one
+  addI SP, 0 => SP
+  i2i RET => r3
+  loadI 1 => r4
+  cmp_EQ r3, r4 => r5
+  cbr r5 => l3, l4
+l3:
+  loadI 10 => r6
+  storeAI r6 => [BP-8]
+  jump l5
+l4:
+  loadI 20 => r7
+  storeAI r7 => [BP-8]
+l5:
+  call zero
+  addI SP, 0 => SP
+  i2i RET => r8
+  loadI 0 => r9
+  cmp_EQ r8, r9 => r10
+  cbr r10 => l6, l7
+l6:
+  loadAI [BP-8] => r11
+  loadI 2 => r12
+  add r11, r12 => r13
+  storeAI r13 => [BP-8]
+l7:
+  loadAI [BP-8] => r14
+  i2i r14 => RET
+  jump l2
+l2:
+  i2i BP => SP
+  pop BP
+  return

@@ -1,0 +1,10 @@
+def int ping() { return 1; }
+def int pong() { return 0; }
+
+def int main() {
+  int x; x = 0;
+  while (0) {
+    x = x + ping() + pong(); // unreachable at runtime but code must be well-formed
+  }
+  return x; // expected 0
+}

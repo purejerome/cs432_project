@@ -1,0 +1,29 @@
+main:
+  push BP
+  i2i SP => BP
+  addI SP, 0 => SP
+  loadI 0 => r0
+  loadI 10 => r1
+  loadI 256 => r2
+  multI r0, 8 => r3
+  storeAO r1 => [r2+r3]
+  loadI 1 => r4
+  loadI 20 => r5
+  loadI 256 => r6
+  multI r4, 8 => r7
+  storeAO r5 => [r6+r7]
+  loadI 2 => r8
+  loadI 12 => r9
+  loadI 256 => r10
+  multI r8, 8 => r11
+  storeAO r9 => [r10+r11]
+  loadI 256 => r13
+  loadI 2 => r12
+  multI r12, 8 => r15
+  loadAO [r13+r15] => r14
+  i2i r14 => RET
+  jump l0
+l0:
+  i2i BP => SP
+  pop BP
+  return

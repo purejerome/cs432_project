@@ -1,0 +1,49 @@
+main:
+  push BP
+  i2i SP => BP
+  addI SP, 0 => SP
+  loadI 1 => r0
+  loadI 2 => r1
+  add r0, r1 => r2
+  loadI 3 => r3
+  add r2, r3 => r4
+  loadI 4 => r5
+  add r4, r5 => r6
+  loadI 5 => r7
+  add r6, r7 => r8
+  loadI 6 => r9
+  add r8, r9 => r10
+  loadI 7 => r11
+  add r10, r11 => r12
+  loadI 8 => r13
+  add r12, r13 => r14
+  loadI 9 => r15
+  add r14, r15 => r16
+  loadI 10 => r17
+  add r16, r17 => r18
+  loadI 11 => r19
+  add r18, r19 => r20
+  loadI 12 => r21
+  add r20, r21 => r22
+  loadI 13 => r23
+  add r22, r23 => r24
+  loadI 14 => r25
+  add r24, r25 => r26
+  loadI 15 => r27
+  add r26, r27 => r28
+  loadI 16 => r29
+  add r28, r29 => r30
+  loadI 17 => r31
+  add r30, r31 => r32
+  loadI 18 => r33
+  add r32, r33 => r34
+  loadI 19 => r35
+  add r34, r35 => r36
+  loadI 20 => r37
+  add r36, r37 => r38
+  i2i r38 => RET
+  jump l0
+l0:
+  i2i BP => SP
+  pop BP
+  return

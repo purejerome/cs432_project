@@ -1,0 +1,4 @@
+def int main() {
+  // trunc toward 0 if correct
+  return ( 7/ 3) + (-7/ 3) + ( 7/-3) + (-7/-3); // 2 + (-2) + (-2) + 2 = 0
+}

@@ -1,0 +1,14 @@
+def int main() {
+  int i; int j; int s;
+  i = 0; s = 0;
+  while (i < 5) {
+    j = 0;
+    while (j < 3) {
+      s = s + 1;
+      j = j + 1;
+    }
+    break;              // should exit OUTER loop
+    i = i + 1;          // unreachable
+  }
+  return s; // expected 3
+}

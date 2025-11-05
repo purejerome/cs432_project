@@ -1,0 +1,12 @@
+int cnt;
+def int decpos() { cnt = cnt - 1; if (cnt >= 0) { return 1; } else { return 0; } }
+
+def int main() {
+  int s; s = 0;
+  cnt = 3;
+  while (decpos()) {
+    if (cnt == 1) { break; } // should exit loop when cnt==1 after decrement
+    s = s + 2;
+  }
+  return s; // expected: cnt path: 3->2 (s=2), then cnt==1 break => total 2
+}
