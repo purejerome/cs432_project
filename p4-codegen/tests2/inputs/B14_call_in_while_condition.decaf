@@ -1,0 +1,10 @@
+def int get5() { return 5; }
+def int main() {
+  int i; int s;
+  i = 0; s = 0;
+  while (i < get5()) {
+    s = s + i;
+    i = i + 1;
+  }
+  return s; // 0+1+2+3+4 = 10
+}

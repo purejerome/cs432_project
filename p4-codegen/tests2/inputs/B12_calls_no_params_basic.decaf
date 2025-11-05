@@ -1,0 +1,3 @@
+def int f() { return 5; }
+def int g() { return 37; }
+def int main() { return f() + g(); }

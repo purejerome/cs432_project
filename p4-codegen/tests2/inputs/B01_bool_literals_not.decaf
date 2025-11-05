@@ -1,0 +1,4 @@
+def int main() {
+  // true=1, false=0
+  return (true + false) + ((!false) + (!true));
+}

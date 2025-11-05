@@ -1,0 +1,7 @@
+def int t() { return 1; }
+def int f() { return 0; }
+def int main() {
+  // Compose boolean expressions from comparisons & logical ops, return as int
+  return ((1 < 2) && (3 <= 3)) + ((4 > 9) || (t() == 1)) + (! (f() == 1));
+  // 1 + 1 + 1 = 3
+}

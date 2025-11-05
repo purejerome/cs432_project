@@ -1,0 +1,5 @@
+def int main() {
+  // Note: Decaf logical ops are non-short-circuit; both sides should be evaluated by the compiler.
+  // Pure boolean math: (1 && 0) = 0 ; (1 && 1) = 1 ; (0 || 0) = 0 ; (0 || 1) = 1  => sum = 2
+  return (1 && 0) + (1 && 1) + (0 || 0) + (0 || 1);
+}

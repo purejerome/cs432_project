@@ -1,0 +1,8 @@
+def int lt(int a, int b) { if (a < b) { return 1; } else { return 0; } }
+def int main() {
+  int x;
+  x = 0;
+  if (lt(3, 5) == 1) { x = x + 10; }
+  if (lt(7, 2) == 1) { x = x + 100; }
+  return x; // 10
+}

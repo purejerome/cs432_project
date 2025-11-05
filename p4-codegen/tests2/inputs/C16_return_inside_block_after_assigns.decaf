@@ -1,0 +1,10 @@
+def int main() {
+  int x; int y;
+  x = 20; y = 22;
+  {
+    int y;
+    y = 100; // inner y
+    return x + 22; // 42, ensure epilogue/jump is handled from inside block
+  }
+  // unreachable
+}

@@ -1,0 +1,7 @@
+def int main() {
+  int a; int b;
+  a = 12345;
+  b = 97;
+  // Check the identity: a == (a/b)*b + (a%b)
+  return a - ((a / b) * b + (a % b)); // should be 0
+}

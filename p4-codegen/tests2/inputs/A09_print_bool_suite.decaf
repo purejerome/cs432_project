@@ -1,0 +1,10 @@
+def int main() {
+  // We don't assert exact text form; we rely on the reference behavior.
+  print_bool(1 < 2);
+  print_str("\n");
+  print_bool(2 < 1);
+  print_str("\n");
+  print_bool(3 == 3 && 0 == 1);
+  print_str("\n");
+  return 0;
+}

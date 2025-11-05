@@ -1,0 +1,10 @@
+def int main() {
+  int a; int b; int c; int r;
+  a = 6; b = 4; c = 3;
+  // r = ((a*b) + (a/b) + (a-b)) + ((a==b) + (a!=b)) + ((a>c) + (b<=c)) + (!0);
+  r = (a * b) + (a / b) + (a - b);
+  r = r + (a == b) + (a != b);
+  r = r + (a > c) + (b <= c);
+  r = r + (!0);
+  return r;
+}

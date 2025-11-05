@@ -1,0 +1,11 @@
+def int f6(int a,int b,int c,int d,int e,int f){ return a+b+c+d+e+f; }
+def int f5(int a,int b,int c,int d,int e){ return a+b+c+d+e; }
+def int f4(int a,int b,int c,int d){ return a+b+c+d; }
+def int f3(int a,int b,int c){ return a+b+c; }
+def int f2(int a,int b){ return a+b; }
+def int f1(int a){ return a; }
+def int main() {
+  // Multiple calls back-to-back to check caller deallocates args each time
+  return f6(1,2,3,4,5,6) + f5(1,2,3,4,5) + f4(1,2,3,4) + f3(1,2,3) + f2(1,2) + f1(30);
+  // 21 + 15 + 10 + 6 + 3 + 30 = 85
+}

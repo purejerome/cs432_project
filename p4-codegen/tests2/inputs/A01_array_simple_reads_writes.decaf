@@ -1,0 +1,17 @@
+// Global arrays are required in Decaf
+int A[5];
+
+def int main() {
+  int s; int i;
+  A[0] = 1;
+  A[1] = 2;
+  A[2] = 3;
+  A[3] = 4;
+  A[4] = 5;
+  s = 0; i = 0;
+  while (i < 5) {
+    s = s + A[i];
+    i = i + 1;
+  }
+  return s; // 15
+}

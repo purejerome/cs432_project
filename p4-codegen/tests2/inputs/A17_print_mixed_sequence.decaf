@@ -1,0 +1,14 @@
+def int tag(int v) {
+  print_str("v=");
+  print_int(v);
+  print_str("\n");
+  return 0;
+}
+def int main() {
+  print_str("start\n");
+  tag(7);
+  tag(42);
+  print_bool(3 < 2);
+  print_str("\nend\n");
+  return 0;
+}

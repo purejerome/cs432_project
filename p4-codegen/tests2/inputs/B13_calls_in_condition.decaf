@@ -1,0 +1,15 @@
+def int is_one() { return 1; }
+def int zero()   { return 0; }
+def int main() {
+  int x;
+  x = 0;
+  if (is_one() == 1) {
+    x = 10;
+  } else {
+    x = 20;
+  }
+  if (zero() == 0) {
+    x = x + 2;
+  }
+  return x; // 12
+}

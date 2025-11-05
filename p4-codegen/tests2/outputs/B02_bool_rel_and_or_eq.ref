@@ -1,0 +1,4 @@
+Type mismatch: int is incompatible with bool on line 3
+Type mismatch: int expected but bool found on line 4
+Type mismatch: int expected but bool found on line 5
+Type mismatch: int expected but bool found on line 6

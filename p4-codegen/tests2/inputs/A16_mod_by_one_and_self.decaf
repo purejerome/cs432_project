@@ -1,0 +1,4 @@
+def int main() {
+  int x; x = 1234;
+  return (x % 1) + (x % x); // 0 + 0 = 0
+}

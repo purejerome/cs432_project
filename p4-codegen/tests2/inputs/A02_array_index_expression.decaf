@@ -1,0 +1,9 @@
+int B[8];
+
+def int main() {
+  int i; int j;
+  i = 2 + 3;     // 5
+  j = i - 1;     // 4
+  B[j] = 40;     // B[4] = 40
+  return B[2+2]; // 40
+}

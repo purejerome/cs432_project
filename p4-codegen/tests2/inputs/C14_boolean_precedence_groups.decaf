@@ -1,0 +1,5 @@
+def int main() {
+  // Explicit grouping to test precedence handling in codegen
+  // (!1 && 0) || 1 => (0 && 0) || 1 => 0 || 1 => 1
+  return ((!1) && 0) || 1;
+}

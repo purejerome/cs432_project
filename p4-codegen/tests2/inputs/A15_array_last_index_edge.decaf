@@ -1,0 +1,5 @@
+int H[3];
+def int main() {
+  H[0] = 10; H[1] = 20; H[2] = 12;
+  return H[2]; // last valid index
+}

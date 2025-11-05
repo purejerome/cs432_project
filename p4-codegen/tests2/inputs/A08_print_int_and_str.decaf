@@ -1,0 +1,7 @@
+def int main() {
+  print_str("A-level prints:\n");
+  print_int(42);
+  print_str("\n");
+  print_str("done\n");
+  return 0;
+}

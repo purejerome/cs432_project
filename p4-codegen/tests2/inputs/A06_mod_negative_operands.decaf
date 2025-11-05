@@ -1,0 +1,9 @@
+def int main() {
+  int a; int b; int c;
+  a = -17 % 5;   // semantics follow Decaf/C: sign of numerator
+  b =  17 % -5;
+  c = -17 % -5;
+  // Return a value that depends on correct sign handling.
+  // For typical trunc-toward-zero remainder: a=-2, b=2, c=-2 => sum=-2
+  return a + b + c;
+}

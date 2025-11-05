@@ -1,0 +1,13 @@
+int Z[5];
+
+def int fill() {
+  Z[0] = 2; Z[1] = 4; Z[2] = 6; Z[3] = 8; Z[4] = 22;
+  return 0;
+}
+def int main() {
+  int i; int s;
+  fill();
+  s = 0; i = 0;
+  while (i < 5) { s = s + Z[i]; i = i + 1; }
+  return s; // 42
+}

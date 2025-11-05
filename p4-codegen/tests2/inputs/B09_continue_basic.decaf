@@ -1,0 +1,10 @@
+def int main() {
+  int i; int s;
+  i = 0; s = 0;
+  while (i < 6) {
+    if (i == 3) { i = i + 1; continue; }
+    s = s + i;
+    i = i + 1;
+  }
+  return s; // 0+1+2+4+5 = 12
+}

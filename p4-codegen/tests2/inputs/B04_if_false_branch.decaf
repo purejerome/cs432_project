@@ -1,0 +1,6 @@
+def int main() {
+  int x;
+  x = 5;
+  if (2 < 1) { x = 0; } else { x = x + 7; }
+  return x; // 12
+}

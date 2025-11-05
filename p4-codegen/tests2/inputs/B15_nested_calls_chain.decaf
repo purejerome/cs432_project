@@ -1,0 +1,5 @@
+def int a() { return 1; }
+def int b() { return 2; }
+def int c() { return 39; }
+def int h() { return a() + b() + c(); }
+def int main() { return h(); } // 42

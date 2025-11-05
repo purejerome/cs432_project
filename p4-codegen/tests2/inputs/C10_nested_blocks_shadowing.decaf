@@ -1,0 +1,13 @@
+def int main() {
+  int x;
+  x = 5;
+  {
+    int x;
+    x = 2;       // inner x
+    {
+      int x;
+      x = 7;     // innermost x
+    }
+  }
+  return x;      // should still be 5 if BP offsets/scopes are correct
+}
