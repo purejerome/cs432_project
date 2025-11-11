@@ -13,7 +13,7 @@
  *
  * Disable this before submitting or running integration tests
  */
-const bool debug_mode = true;
+const bool debug_mode = false;
 
 /**
  * @brief Error message buffer
@@ -189,7 +189,7 @@ main (int argc, char **argv)
     }
 
   /* run program (w/ trace output enabled if debug mode is enabled) */
-  long return_value = run_simulator (iloc, false);
+  long return_value = run_simulator (iloc, debug_mode);
   printf ("RETURN VALUE = %ld\n", return_value);
 
   /* clean up ILOC code (no longer needed) */

@@ -268,9 +268,13 @@ CodeGenVisitor_gen_funccall (NodeVisitor *visitor, ASTNode *node)
            stack_register ());
 
   /* Move return register into a fresh temp and set it as this node's temp */
-  Operand temp_ret_reg = virtual_register ();
-  EMIT2OP (I2I, return_register (), temp_ret_reg);
-  ASTNode_set_temp_reg (node, temp_ret_reg);
+  DecafType return_type = (DecafType )ASTNode_get_int_attribute (node, "type");
+  if(return_type != VOID)
+  {
+    Operand temp_ret_reg = virtual_register ();
+    EMIT2OP (I2I, return_register (), temp_ret_reg);
+    ASTNode_set_temp_reg (node, temp_ret_reg);
+  }
 }
 
 void
