@@ -1,0 +1,50 @@
+// Goal: Show that LHS (location) is evaluated before RHS (value) when both
+// sides contain function calls with side effects.
+//
+// Mechanism:
+//   - foo() returns the current global counter and THEN increments it.
+//   - We start with g = 0 and a = [10, 20, 30].
+//   - Statement: a[foo()] = a[foo()]
+//
+// Correct left-to-right evaluation:
+//   LHS index: foo() -> returns 0, g becomes 1
+//   RHS index: foo() -> returns 1, g becomes 2
+//   So: a[0] = a[1]  => a becomes [20, 20, 30]
+//   Prints: 20 20 30   and returns 70
+//
+// Incorrect right-to-left (bug):
+//   RHS index: foo() -> returns 0, g becomes 1
+//   LHS index: foo() -> returns 1, g becomes 2
+//   So: a[1] = a[0]  => a becomes [10, 10, 30]
+//   Prints: 10 10 30   and returns 50
+
+int g[1];      // use a 1-element array as a mutable global int "g[0]"
+
+def int foo() {
+  int old;
+  old = g[0];
+  g[0] = g[0] + 1;
+  return old;
+}
+
+def int main() {
+  int a[3];
+  // init g = 0
+  g[0] = 0;
+
+  // init a = [10, 20, 30]
+  a[0] = 10;
+  a[1] = 20;
+  a[2] = 30;
+
+  // The key statement under test:
+  a[foo()] = a[foo()];
+
+  // Print resulting array so diff is obvious
+  print_int(a[0]); print_str(" ");
+  print_int(a[1]); print_str(" ");
+  print_int(a[2]); print_str("\n");
+
+  // Return sum as a second check
+  return a[0] + a[1] + a[2];
+}

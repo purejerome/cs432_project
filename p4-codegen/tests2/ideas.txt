@@ -1,0 +1,5 @@
+both sides function call with side effecs
+in decaf left should happen before the right, create test to show
+a[foo()] = a[foo()]
+where value of foo is dependent on how many calls there has been
+array of booleans

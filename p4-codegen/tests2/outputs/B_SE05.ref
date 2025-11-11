@@ -1,0 +1,70 @@
+foo:
+  push BP
+  i2i SP => BP
+  addI SP, -8 => SP
+  loadI 256 => r1
+  loadI 0 => r0
+  multI r0, 8 => r3
+  loadAO [r1+r3] => r2
+  storeAI r2 => [BP-8]
+  loadI 0 => r4
+  loadI 256 => r6
+  loadI 0 => r5
+  multI r5, 8 => r8
+  loadAO [r6+r8] => r7
+  loadI 1 => r9
+  add r7, r9 => r10
+  loadI 256 => r11
+  multI r4, 8 => r12
+  storeAO r10 => [r11+r12]
+  loadAI [BP-8] => r13
+  i2i r13 => RET
+  jump l0
+l0:
+  i2i BP => SP
+  pop BP
+  return
+bar:
+  push BP
+  i2i SP => BP
+  addI SP, 0 => SP
+  loadAI [BP+16] => r14
+  print r14
+  print \" \"
+  loadAI [BP+24] => r15
+  print r15
+  print \"\\n\"
+l1:
+  i2i BP => SP
+  pop BP
+  return
+main:
+  push BP
+  i2i SP => BP
+  addI SP, 0 => SP
+  loadI 0 => r16
+  loadI 0 => r17
+  loadI 256 => r18
+  multI r16, 8 => r19
+  storeAO r17 => [r18+r19]
+  call foo
+  addI SP, 0 => SP
+  i2i RET => r20
+  call foo
+  addI SP, 0 => SP
+  i2i RET => r21
+  push r21
+  push r20
+  call bar
+  addI SP, 16 => SP
+  loadI 256 => r23
+  loadI 0 => r22
+  multI r22, 8 => r25
+  loadAO [r23+r25] => r24
+  i2i r24 => RET
+  jump l2
+l2:
+  i2i BP => SP
+  pop BP
+  return
+0 1

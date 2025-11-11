@@ -28,3 +28,6 @@ l0:
   i2i BP => SP
   pop BP
   return
+1
+0
+0

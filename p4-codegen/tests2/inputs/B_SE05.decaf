@@ -1,0 +1,29 @@
+// Purpose: Show that function-call arguments are evaluated left-to-right.
+// Mechanism: foo() returns g[0] and then increments it. bar(x,y) prints "x y\n".
+// If eval is left->right, bar(foo(), foo()) prints "0 1". If reversed, "1 0".
+
+int g[1];
+
+def int foo() {
+  int old;
+  old = g[0];
+  g[0] = g[0] + 1;
+  return old;
+}
+
+def void bar(int x, int y) {
+  print_int(x);
+  print_str(" ");
+  print_int(y);
+  print_str("\n");
+}
+
+def int main() {
+  g[0] = 0;
+
+  // Key call: left argument evaluated before right if compiler is correct.
+  bar(foo(), foo());   // Expected print: "0 1\n" (left-to-right)
+
+  // Return a checksum to make diffs obvious and keep harness happy.
+  return g[0];         // Expected: 2
+}

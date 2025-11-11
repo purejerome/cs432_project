@@ -1,0 +1,133 @@
+foo:
+  push BP
+  i2i SP => BP
+  addI SP, -8 => SP
+  loadI 256 => r1
+  loadI 0 => r0
+  multI r0, 8 => r3
+  loadAO [r1+r3] => r2
+  storeAI r2 => [BP-8]
+  loadI 0 => r4
+  loadI 256 => r6
+  loadI 0 => r5
+  multI r5, 8 => r8
+  loadAO [r6+r8] => r7
+  loadI 1 => r9
+  add r7, r9 => r10
+  loadI 256 => r11
+  multI r4, 8 => r12
+  storeAO r10 => [r11+r12]
+  loadAI [BP-8] => r13
+  i2i r13 => RET
+  jump l0
+l0:
+  i2i BP => SP
+  pop BP
+  return
+main:
+  push BP
+  i2i SP => BP
+  addI SP, 0 => SP
+  loadI 0 => r14
+  loadI 1 => r15
+  loadI 256 => r16
+  multI r14, 8 => r17
+  storeAO r15 => [r16+r17]
+  loadI 0 => r18
+  loadI 100 => r19
+  loadI 264 => r20
+  multI r18, 8 => r21
+  storeAO r19 => [r20+r21]
+  loadI 1 => r22
+  loadI 200 => r23
+  loadI 264 => r24
+  multI r22, 8 => r25
+  storeAO r23 => [r24+r25]
+  loadI 2 => r26
+  loadI 300 => r27
+  loadI 264 => r28
+  multI r26, 8 => r29
+  storeAO r27 => [r28+r29]
+  loadI 3 => r30
+  loadI 400 => r31
+  loadI 264 => r32
+  multI r30, 8 => r33
+  storeAO r31 => [r32+r33]
+  loadI 4 => r34
+  loadI 500 => r35
+  loadI 264 => r36
+  multI r34, 8 => r37
+  storeAO r35 => [r36+r37]
+  call foo
+  addI SP, 0 => SP
+  i2i RET => r38
+  loadI 264 => r40
+  call foo
+  addI SP, 0 => SP
+  i2i RET => r39
+  multI r39, 8 => r42
+  loadAO [r40+r42] => r41
+  loadI 264 => r43
+  multI r38, 8 => r44
+  storeAO r41 => [r43+r44]
+  loadI 264 => r46
+  loadI 0 => r45
+  multI r45, 8 => r48
+  loadAO [r46+r48] => r47
+  print r47
+  print \" \"
+  loadI 264 => r50
+  loadI 1 => r49
+  multI r49, 8 => r52
+  loadAO [r50+r52] => r51
+  print r51
+  print \" \"
+  loadI 264 => r54
+  loadI 2 => r53
+  multI r53, 8 => r56
+  loadAO [r54+r56] => r55
+  print r55
+  print \" \"
+  loadI 264 => r58
+  loadI 3 => r57
+  multI r57, 8 => r60
+  loadAO [r58+r60] => r59
+  print r59
+  print \" \"
+  loadI 264 => r62
+  loadI 4 => r61
+  multI r61, 8 => r64
+  loadAO [r62+r64] => r63
+  print r63
+  print \"\\n\"
+  loadI 264 => r66
+  loadI 0 => r65
+  multI r65, 8 => r68
+  loadAO [r66+r68] => r67
+  loadI 264 => r70
+  loadI 1 => r69
+  multI r69, 8 => r72
+  loadAO [r70+r72] => r71
+  add r67, r71 => r73
+  loadI 264 => r75
+  loadI 2 => r74
+  multI r74, 8 => r77
+  loadAO [r75+r77] => r76
+  add r73, r76 => r78
+  loadI 264 => r80
+  loadI 3 => r79
+  multI r79, 8 => r82
+  loadAO [r80+r82] => r81
+  add r78, r81 => r83
+  loadI 264 => r85
+  loadI 4 => r84
+  multI r84, 8 => r87
+  loadAO [r85+r87] => r86
+  add r83, r86 => r88
+  i2i r88 => RET
+  jump l1
+l1:
+  i2i BP => SP
+  pop BP
+  return
+100 300 300 400 500

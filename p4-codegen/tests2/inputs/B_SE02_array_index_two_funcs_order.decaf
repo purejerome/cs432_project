@@ -1,0 +1,31 @@
+// Variation: LHS uses foo(), RHS uses bar().
+// Both increment the same global counter at different rates so order is visible.
+
+int g[1];
+
+def int foo() {          // returns g; g := g + 1
+  int old; old = g[0]; g[0] = g[0] + 1; return old;
+}
+
+def int bar() {          // returns g; g := g + 2
+  int old; old = g[0]; g[0] = g[0] + 2; return old;
+}
+
+def int main() {
+  int a[4];
+  g[0] = 0;
+  a[0] = 11; a[1] = 22; a[2] = 33; a[3] = 44;
+
+  // If LHS first: index_L = foo() returns 0 (g->1), index_R = bar() returns 1 (g->3)
+  //   => a[0] = a[1]  => [22,22,33,44], sum=121
+  // If RHS first (bug): index_R = bar() returns 0 (g->2), index_L = foo() returns 2 (g->3)
+  //   => a[2] = a[0]  => [11,22,11,44], sum=88
+  a[foo()] = a[bar()];
+
+  print_int(a[0]); print_str(" ");
+  print_int(a[1]); print_str(" ");
+  print_int(a[2]); print_str(" ");
+  print_int(a[3]); print_str("\n");
+
+  return a[0] + a[1] + a[2] + a[3];
+}

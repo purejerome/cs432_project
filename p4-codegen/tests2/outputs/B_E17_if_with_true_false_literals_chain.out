@@ -33,7 +33,7 @@ l5:
   storeAI r14 => [BP-8]
 l6:
   loadI 0 => r15
-  cmp_EQ r15, 0 => r16
+  not r15 => r16
   loadI 1 => r17
   and r16, r17 => r18
   cbr r18 => l7, l8

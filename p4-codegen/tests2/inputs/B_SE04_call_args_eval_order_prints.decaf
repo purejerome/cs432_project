@@ -1,0 +1,44 @@
+// Purpose: Show that function-call arguments are evaluated left-to-right,
+//          and that a side effect between left and right changes what gets printed.
+//
+// Mechanism:
+//   - Global counter g[0] tracks calls to foo().
+//   - foo() returns current g[0], then increments it by 1.
+//   - Array a is initialized so that a[0], a[1], a[2] are distinct.
+//   - We call bar(a[foo()], a[foo()]) and let bar print both values.
+//   - Correct left-to-right evaluation prints "100 200". If reversed, it would print "200 100".
+
+int g[1];
+
+def int foo() {
+  int old;
+  old = g[0];
+  g[0] = g[0] + 1;
+  return old;
+}
+
+// Prints two ints with a space and newline
+def void bar(int x, int y) {
+  print_int(x);
+  print_str(" ");
+  print_int(y);
+  print_str("\n");
+}
+
+def int main() {
+  int a[3];
+  // Initialize counter and array (all in-bounds, no errors)
+  g[0] = 0;
+  a[0] = 100;
+  a[1] = 200;
+  a[2] = 300;
+
+  // Left argument evaluated first, then right argument.
+  // With g[0]=0:
+  //   left:  foo()->0 (g becomes 1) => a[0] = 100
+  //   right: foo()->1 (g becomes 2) => a[1] = 200
+  bar(a[foo()], a[foo()]);
+
+  // Return a checksum to keep the harness happy (not essential)
+  return g[0] + a[0] + a[1] + a[2];  // 2 + 100 + 200 + 300 = 602
+}

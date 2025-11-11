@@ -40,3 +40,8 @@ l1:
   i2i BP => SP
   pop BP
   return
+start
+v=7
+v=42
+0
+end
