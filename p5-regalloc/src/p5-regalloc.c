@@ -77,4 +77,42 @@ void insert_load(int bp_offset, int pr, ILOCInsn* prev_insn)
 
 void allocate_registers (InsnList* list, int num_physical_registers)
 {
+    FOR_EACH(ILOCInsn*, insn, list) {
+        printf("Allocating registers for instruction\n");
+        ILOCInsn_print(insn, stdout);
+        // for each read vr in i:
+        //     pr = ensure(vr)                     // make sure vr is in a phys reg
+        //     replace vr with pr in i             // change register id
+
+        ILOCInsn* read_regs = ILOCInsn_get_read_registers(insn);
+        for(int i = 0; i < 3; i++){
+            if(read_regs->op[i].type == VIRTUAL_REG){
+                int virtual_reg = read_regs->op[i].id;
+                int physical_reg = virtual_reg; //TODO: implement ensure(vr)
+                replace_register(virtual_reg, physical_reg, insn);
+                //TODO: this stuff
+                //     if dist(vr) == INFINITY:            // if no future use
+                //         name[pr] = INVALID              // then free pr
+            }
+        }
+        ILOCInsn_free(read_regs);
+
+        // written vr in i:
+        //     pr = allocate(vr)                   // make sure phys reg is available
+        //     replace vr with pr in i             // change register id and type
+        Operand write_reg = ILOCInsn_get_write_register(insn);
+        if(write_reg.type == VIRTUAL_REG) {
+            int virtual_reg = write_reg.id;
+            
+            //TODO: implement pr = allocate(vr)
+            int physical_reg = virtual_reg;
+            replace_register(virtual_reg, physical_reg, insn);
+        }
+        if(write_reg.type != EMPTY) {
+            printf("\n");
+            printf("write:");
+            Operand_print(write_reg, stdout);
+        }
+        printf("\n");
+    }
 }
