@@ -1,49 +1,16 @@
-// Purpose: Show that in A[foo()] = A[foo()], the LEFT index (location) is
-// evaluated before the RIGHT index (value). Uses a GLOBAL array (valid) and
-// a side-effectful foo().
-//
-// Mechanism:
-//   - g[0] is a global counter.
-//   - foo() returns current g[0], then increments it by 1.
-//   - We start g[0] = 1 and A = [100,200,300,400,500].
-//   - Statement: A[foo()] = A[foo()]
-//
-// Correct left-to-right:
-//   LHS: foo() -> 1 (g=2)   => target A[1]
-//   RHS: foo() -> 2 (g=3)   => value  A[2] == 300
-//   Result: A[1] = 300  => A becomes [100,300,300,400,500]
-//
-// Wrong right-to-left (bug):
-//   RHS: foo() -> 1 (g=2)   => value  A[1] == 200
-//   LHS: foo() -> 2 (g=3)   => target A[2]
-//   Result: A[2] = 200  => A becomes [100,200,200,400,500]
+def int foo2(int x) {
+    return x + 1;
+}
 
-int g[1];      // global counter
-int A[5];      // global array (valid)
-
-// foo(): returns g[0], then increments it
-def int foo() {
-  int old;
-  old = g[0];
-  g[0] = g[0] + 1;
-  return old;
+def int nameShadowEdge() {
+    int foo;
+    int result;
+    foo = 10;
+    // use function name even though variable exists
+    result = foo2(foo); // should call the *function* foo(10), not load variable foo
+    return result;
 }
 
 def int main() {
-  // init globals (all indexes in-bounds)
-  g[0] = 1;
-  A[0] = 100; A[1] = 200; A[2] = 300; A[3] = 400; A[4] = 500;
-
-  // Key statement under test:
-  A[foo()] = A[foo()];
-
-  // Print array to expose the order
-  print_int(A[0]); print_str(" ");
-  print_int(A[1]); print_str(" ");
-  print_int(A[2]); print_str(" ");
-  print_int(A[3]); print_str(" ");
-  print_int(A[4]); print_str("\n");
-
-  // Return checksum for extra clarity
-  return A[0] + A[1] + A[2] + A[3] + A[4];
+    return nameShadowEdge();
 }

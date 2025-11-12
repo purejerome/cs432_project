@@ -57,12 +57,11 @@ main:
   push r20
   call bar
   addI SP, 16 => SP
-  i2i RET => r22
-  loadI 256 => r24
-  loadI 0 => r23
-  multI r23, 8 => r26
-  loadAO [r24+r26] => r25
-  i2i r25 => RET
+  loadI 256 => r23
+  loadI 0 => r22
+  multI r22, 8 => r25
+  loadAO [r23+r25] => r24
+  i2i r24 => RET
   jump l2
 l2:
   i2i BP => SP
