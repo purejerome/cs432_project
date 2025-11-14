@@ -1,5 +1,6 @@
 int x;
 bool y[10];
+int d[10];
 
 def int doubleIt(int a) {
     return a * 2;
@@ -19,9 +20,11 @@ def int main() {
     y[compute(3)] = false;
     z = y[compute(3)];
     if(z){
-        a = 1;
+        d[compute(3)] = 2;
+        a = d[compute(3)];
     } else {
-        a = 2;
+        d[compute(3)] = 5;
+        a = d[compute(3)];
     }
     return a;
 }
