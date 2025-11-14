@@ -2,6 +2,7 @@
  * @file p4-codegen.c
  * @brief Compiler phase 4: code generation
  */
+// Authors: Jerome Donfack, Alex Boyce-Draeger
 /*
     AI Statement: The use of ChatGPT was used in assitance with generating test cases and the code to
     run the test cases. CoPilot was used in order to help with auto filling code.
