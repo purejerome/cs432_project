@@ -15,7 +15,13 @@ def int compute(int y) {
 
 def int main() {
     bool z;
-    y[compute(3)] = !false;
-    // z = y[compute(3)];
-    return 1;
+    int a;
+    y[compute(3)] = false;
+    z = y[compute(3)];
+    if(z){
+        a = 1;
+    } else {
+        a = 2;
+    }
+    return a;
 }

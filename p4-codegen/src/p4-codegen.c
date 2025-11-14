@@ -376,7 +376,7 @@ CodeGenVisitor_gen_location (NodeVisitor *visitor, ASTNode *node)
       Operand offset_reg = virtual_register ();
       Operand idx_reg = ASTNode_get_temp_reg (node->location.index);
       if (var_symbol->type == BOOL)
-        EMIT3OP (MULT_I, idx_reg, int_const (sizeof (bool)), offset_reg);
+        EMIT3OP (MULT_I, idx_reg, int_const (sizeof (long)), offset_reg);
       else if (var_symbol->type == INT)
         EMIT3OP (MULT_I, idx_reg, int_const (sizeof (long)), offset_reg);
       EMIT3OP (LOAD_AO, base_reg, offset_reg, reg);
