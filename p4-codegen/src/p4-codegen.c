@@ -2,6 +2,10 @@
  * @file p4-codegen.c
  * @brief Compiler phase 4: code generation
  */
+/*
+    AI Statement: The use of ChatGPT was used in assitance with generating test cases and the code to
+    run the test cases. CoPilot was used in order to help with auto filling code.
+*/
 #include "p4-codegen.h"
 
 /**
@@ -186,7 +190,6 @@ CodeGenVisitor_gen_funcdecl (NodeVisitor *visitor, ASTNode *node)
   /* every function begins with the corresponding call label */
   EMIT1OP (LABEL, call_label (node->funcdecl.name));
 
-  /* BOILERPLATE: TODO: implement prologue */
   EMIT1OP (PUSH, base_pointer);
   EMIT2OP (I2I, stack_pointer, base_pointer);
   EMIT3OP (ADD_I, stack_pointer, int_const (-local_size), stack_pointer);
@@ -196,7 +199,6 @@ CodeGenVisitor_gen_funcdecl (NodeVisitor *visitor, ASTNode *node)
 
   /* Unified epilogue label and epilogue */
   EMIT1OP (LABEL, DATA->current_epilogue_jump_label);
-  /* BOILERPLATE: TODO: implement epilogue */
   EMIT2OP (I2I, base_pointer, stack_pointer);
   EMIT1OP (POP, base_pointer);
   EMIT0OP (RETURN);
@@ -269,7 +271,7 @@ CodeGenVisitor_gen_funccall (NodeVisitor *visitor, ASTNode *node)
 
   /* Move return register into a fresh temp and set it as this node's temp */
   DecafType return_type = (DecafType )ASTNode_get_int_attribute (node, "type");
-  if(return_type != VOID)
+  if(return_type != VOID) // only set temp reg if there is a return value.
   {
     Operand temp_ret_reg = virtual_register ();
     EMIT2OP (I2I, return_register (), temp_ret_reg);
@@ -290,7 +292,7 @@ CodeGenVisitor_gen_block (NodeVisitor *visitor, ASTNode *node)
 void
 CodeGenVisitor_gen_return (NodeVisitor *visitor, ASTNode *node)
 {
-  if (node->funcreturn.value != NULL)
+  if (node->funcreturn.value != NULL) // only generate i2i if there is a return value.
     {
       ASTNode_copy_code (node, node->funcreturn.value);
       Operand child_reg = ASTNode_get_temp_reg (node->funcreturn.value);
@@ -362,12 +364,12 @@ CodeGenVisitor_gen_location (NodeVisitor *visitor, ASTNode *node)
   Operand reg = virtual_register ();
   ASTNode_set_temp_reg (node, reg);
 
-  if (var_symbol->symbol_type == SCALAR_SYMBOL)
+  if (var_symbol->symbol_type == SCALAR_SYMBOL) // calculate offset in stack
     {
       Operand offset_op = var_offset (node, var_symbol);
       EMIT3OP (LOAD_AI, base_reg, offset_op, reg);
     }
-  else
+  else // calculate offset using array index
     {
       ASTNode_copy_code (node, node->location.index);
       Operand offset_reg = virtual_register ();
@@ -395,7 +397,8 @@ CodeGenVisitor_gen_conditional (NodeVisitor *visitor, ASTNode *node)
   ASTNode_copy_code (node, node->conditional.condition);
   Operand cond_reg = ASTNode_get_temp_reg (node->conditional.condition);
 
-  if (node->conditional.else_block != NULL)
+  /* condition */
+  if (node->conditional.else_block != NULL) // add else label if there is an else block
     {
       else_label = end_label;
       end_label = anonymous_label ();
@@ -406,16 +409,19 @@ CodeGenVisitor_gen_conditional (NodeVisitor *visitor, ASTNode *node)
       EMIT3OP (CBR, cond_reg, if_label, end_label);
     }
 
+  /* if block */
   EMIT1OP (LABEL, if_label);
   ASTNode_copy_code (node, node->conditional.if_block);
 
-  if (node->conditional.else_block != NULL)
+  /* else block (if applicable) */
+  if (node->conditional.else_block != NULL) // generate else block if it exists
     {
       EMIT1OP (JUMP, end_label);
       EMIT1OP (LABEL, else_label);
       ASTNode_copy_code (node, node->conditional.else_block);
     }
 
+  /* exit */
   EMIT1OP (LABEL, end_label);
 }
 
@@ -491,11 +497,7 @@ CodeGenVisitor_gen_unaryop (NodeVisitor *visitor, ASTNode *node)
       unary_op_code_gen (visitor, node, NEG);
       break;
     case NOTOP:
-      {
-        unary_op_code_gen (visitor, node, NOT);
-        break;
-      }
-
+      unary_op_code_gen (visitor, node, NOT);
       break;
     default:
       break;
@@ -557,46 +559,6 @@ modulus_code_gen (NodeVisitor *visitor, ASTNode *node)
   ASTNode_set_temp_reg (node, result_reg); // ensure later ops (cmp_EQ) use r10
 }
 
-//
-/* LITERALS */
-//
-
-void
-CodeGenVisitor_gen_int (NodeVisitor *visitor, ASTNode *node)
-{
-  Operand reg = virtual_register ();
-  EMIT2OP (LOAD_I, int_const (node->literal.integer), reg);
-  ASTNode_set_temp_reg (node, reg);
-}
-
-void
-CodeGenVisitor_gen_bool (NodeVisitor *visitor, ASTNode *node)
-{
-  Operand reg = virtual_register ();
-  EMIT2OP (LOAD_I, int_const (node->literal.boolean ? 1 : 0), reg);
-  ASTNode_set_temp_reg (node, reg);
-}
-
-void
-CodeGenVisitor_gen_literal (NodeVisitor *visitor, ASTNode *node)
-{
-  switch (node->literal.type)
-    {
-    case INT:
-      CodeGenVisitor_gen_int (visitor, node);
-      break;
-    case BOOL:
-      CodeGenVisitor_gen_bool (visitor, node);
-      break;
-      // Decaf doesn't support STR
-      // case STR:
-      //     CodeGenVisitor_gen_str(visitor, node);
-      //     break;
-    default:
-      break;
-    }
-}
-
 static void
 CodeGenVisitor_gen_binaryop (NodeVisitor *visitor, ASTNode *node)
 {
@@ -649,6 +611,42 @@ CodeGenVisitor_gen_binaryop (NodeVisitor *visitor, ASTNode *node)
       modulus_code_gen (visitor, node);
       break;
 
+    default:
+      break;
+    }
+}
+
+//
+/* LITERALS */
+//
+
+void
+CodeGenVisitor_gen_int (NodeVisitor *visitor, ASTNode *node)
+{
+  Operand reg = virtual_register ();
+  EMIT2OP (LOAD_I, int_const (node->literal.integer), reg);
+  ASTNode_set_temp_reg (node, reg);
+}
+
+void
+CodeGenVisitor_gen_bool (NodeVisitor *visitor, ASTNode *node)
+{
+  Operand reg = virtual_register ();
+  EMIT2OP (LOAD_I, int_const (node->literal.boolean ? 1 : 0), reg);
+  ASTNode_set_temp_reg (node, reg);
+}
+
+void
+CodeGenVisitor_gen_literal (NodeVisitor *visitor, ASTNode *node)
+{
+  switch (node->literal.type)
+    {
+    case INT:
+      CodeGenVisitor_gen_int (visitor, node);
+      break;
+    case BOOL:
+      CodeGenVisitor_gen_bool (visitor, node);
+      break;
     default:
       break;
     }

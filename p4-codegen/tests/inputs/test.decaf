@@ -12,5 +12,7 @@ def int nameShadowEdge() {
 }
 
 def int main() {
+    bool love;
+    love = !true;
     return nameShadowEdge();
 }
