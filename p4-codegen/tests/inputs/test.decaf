@@ -1,18 +1,21 @@
-def int foo2(int x) {
-    return x + 1;
+int x;
+bool y[10];
+
+def int doubleIt(int a) {
+    return a * 2;
 }
 
-def int nameShadowEdge() {
-    int foo;
-    int result;
-    foo = 10;
-    // use function name even though variable exists
-    result = foo2(foo); // should call the *function* foo(10), not load variable foo
-    return result;
+def int compute(int y) {
+    int z;
+    z = y + 5;       // (1) z is now live
+    x = doubleIt(z); // (2) z is used as argument for a call
+                     // (3) z is still needed after the call
+    return z + x;    // (4) z must survive the call
 }
 
 def int main() {
-    bool love;
-    love = !true;
-    return nameShadowEdge();
+    bool z;
+    y[compute(3)] = !false;
+    // z = y[compute(3)];
+    return 1;
 }

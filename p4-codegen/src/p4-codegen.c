@@ -329,7 +329,7 @@ CodeGenVisitor_gen_assignment (NodeVisitor *visitor, ASTNode *node)
       Operand offset_reg = virtual_register ();
       if (var_symbol->type == BOOL)
         {
-          EMIT3OP (MULT_I, index_reg, int_const (sizeof (bool)), offset_reg);
+          EMIT3OP (MULT_I, index_reg, int_const (sizeof (long)), offset_reg);
         }
       else if (var_symbol->type == INT)
         {
