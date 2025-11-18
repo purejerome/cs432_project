@@ -1,0 +1,10 @@
+A_memcheck                     FAIL (see outputs/A_memcheck.diff for details)
+Memory leak(s) found. See files listed below for details.
+  - ==1620783== 4 bytes in 1 blocks are definitely lost in loss record 1 of 2
+  - ==1620783== 16 bytes in 1 blocks are definitely lost in loss record 2 of 2
+  - ==1620783==    definitely lost
+No uninitialized value found.
+========================================
+ NOTICE: THIS TESTSUITE IS INCOMPLETE.
+YOU WILL BE GRADED ON OTHER TEST CASES.
+        WRITE YOUR OWN TESTS!
