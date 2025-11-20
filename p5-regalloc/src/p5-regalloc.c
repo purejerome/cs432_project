@@ -116,6 +116,7 @@ void allocate_registers (InsnList* list, int num_physical_registers)
     ILOCInsn* local_allocator = NULL;
     ILOCInsn* prev_insn = NULL;
     FOR_EACH(ILOCInsn*, insn, list) {
+        
         //save reference to stack allocator instruction if i is a call label
         if(insn->form == LABEL){
             ILOCInsn* potential_allocator = insn->next->next->next; //assumes standard function prologue
@@ -127,6 +128,7 @@ void allocate_registers (InsnList* list, int num_physical_registers)
             }
         }
 
+        // allocate registers for read operands
         ILOCInsn* read_regs = ILOCInsn_get_read_registers(insn);
         for(int i = 0; i < 3; i++){
             if(read_regs->op[i].type == VIRTUAL_REG){
@@ -137,30 +139,20 @@ void allocate_registers (InsnList* list, int num_physical_registers)
                 if(distance(virtual_reg, insn) == INF_DIST){ //INFINITY
                     physical_regs[physical_reg] = INVALID_VR; //INVALID
                 }
-                //TODO: this stuff
-                //     if dist(vr) == INFINITY:            // if no future use
-                //         name[pr] = INVALID              // then free pr
             }
         }
         ILOCInsn_free(read_regs);
-
-        // written vr in i:
-        //     pr = allocate(vr)                   // make sure phys reg is available
-        //     replace vr with pr in i             // change register id and type
+        
+        // allocate register for write operand
         Operand write_reg = ILOCInsn_get_write_register(insn);
         if(write_reg.type == VIRTUAL_REG) {
             int virtual_reg = write_reg.id;
             
-            //TODO: implement pr = allocate(vr)
             int physical_reg = allocate(virtual_reg, physical_regs, spill_offsets, num_physical_registers, prev_insn, insn, local_allocator);
             replace_register(virtual_reg, physical_reg, insn);
         }
         
-        //SPILL:
-        // spill any live registers before procedure calls
-        // if i is a CALL instruction:
-        //     for each pr where name[pr] != INVALID:
-        //         spill(pr)
+        // spill all registers before a call instruction
         if(insn->form == CALL){
             for(int i = 0; i < num_physical_registers; i++){
                 if(physical_regs[i] != INVALID_VR){ //INVALID
@@ -168,8 +160,9 @@ void allocate_registers (InsnList* list, int num_physical_registers)
                 }
             }
         }
-        prev_insn = insn;
+        
         // save reference to i to facilitate spilling before next instruction
+        prev_insn = insn;
     }
     free(physical_regs);
     free(spill_offsets);
@@ -177,13 +170,17 @@ void allocate_registers (InsnList* list, int num_physical_registers)
 
 int ensure(int vr, int* physical_regs, int* spill_offsets, int num_physical_registers, ILOCInsn* prev_insn, ILOCInsn* insn, ILOCInsn* local_allocator)
 {
-    CHECK_MALLOC_PTR(physical_regs);
+    // check if already allocated
     for(int i = 0; i < num_physical_registers; i++){
         if(physical_regs[i] == vr){
             return i;
         }
     }
+    
+    // allocate new register
     int pr = allocate(vr, physical_regs, spill_offsets, num_physical_registers, prev_insn, insn, local_allocator);
+    
+    // load from spill if necessary
     if(spill_offsets[vr] != INVALID_OFFSET){ //SPILLED
         insert_load(spill_offsets[vr], pr, prev_insn);
         spill_offsets[vr] = INVALID_OFFSET;
@@ -193,13 +190,15 @@ int ensure(int vr, int* physical_regs, int* spill_offsets, int num_physical_regi
 
 int allocate(int vr, int* physical_regs, int* spill_offsets, int num_physical_registers, ILOCInsn* prev_insn, ILOCInsn* insn, ILOCInsn* local_allocator)
 {
-    CHECK_MALLOC_PTR(physical_regs);
+    // check for free register
     for(int i = 0; i < num_physical_registers; i++){
         if(physical_regs[i] == INVALID_VR){ //INVALID
             physical_regs[i] = vr;
             return i;
         }
     }
+    
+    // need to spill a register
     int fartherst_pr = -1;
     int fartherst_distance = INT_MIN;
     for(int i = 0; i < num_physical_registers; i++){
@@ -236,7 +235,7 @@ int distance(int vr, ILOCInsn* insn)
             }
         }
         ILOCInsn_free(read_regs);
-        Operand write_reg = ILOCInsn_get_write_register(current);
+        Operand write_reg = ILOCInsn_get_write_register(current); // if overwitten, then distance is infinity
         if(write_reg.type == VIRTUAL_REG && write_reg.id == vr){
             return INF_DIST; //INFINITY
         }
