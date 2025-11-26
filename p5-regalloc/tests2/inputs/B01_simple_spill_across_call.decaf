@@ -1,0 +1,29 @@
+// B01_simple_spill_across_call.decaf
+// Value live across a call; forces saving/restoring caller registers.
+
+def int add_three(int x)
+{
+    int r;
+    r = x + 3;
+    return r;
+}
+
+def int main()
+{
+    int a;
+    int b;
+    int c;
+    int total;
+
+    a = 10;
+    b = 20;
+    c = 30;
+
+    // Make 'c' live across multiple calls.
+    total = add_three(a) + add_three(b) + c;  // 13 + 23 + 30 = 66
+
+    print_int(total);
+    print_str("\n");
+
+    return total;
+}

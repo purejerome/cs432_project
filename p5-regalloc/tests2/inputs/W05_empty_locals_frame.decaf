@@ -1,0 +1,21 @@
+// W05_empty_locals_frame.decaf
+// Function with no local variables; still must emit a correct prologue/epilogue.
+
+def int id(int x)
+{
+    // no locals here
+    return x;
+}
+
+def int main()
+{
+    int v;
+    v = 9;
+
+    v = id(v);
+
+    print_int(v);
+    print_str("\n");
+
+    return v;
+}

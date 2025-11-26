@@ -1,0 +1,52 @@
+// B08_call_inside_loop_with_bool.decaf
+// Boolean condition plus call in loop; several live values across each call.
+
+def int adjust(int base, int delta, bool up)
+{
+    int r;
+
+    if (up)
+    {
+        r = base + delta;
+    }
+    else
+    {
+        r = base - delta;
+    }
+
+    return r;
+}
+
+def int main()
+{
+    int base;
+    int delta;
+    int i;
+    int acc;
+    bool up;
+
+    base = 10;
+    delta = 2;
+    i = 0;
+    acc = 0;
+
+    while (i < 5)
+    {
+        up = (i % 2 == 0);
+        acc = acc + adjust(base, delta, up);
+        base = base + 1;
+        i = i + 1;
+    }
+
+    // i runs 0..4, up true on 0,2,4:
+    // i=0: up,  base=10 -> 12, acc=12, base=11
+    // i=1: !up, base=11 -> 9,  acc=21, base=12
+    // i=2: up,  base=12 -> 14, acc=35, base=13
+    // i=3: !up, base=13 -> 11, acc=46, base=14
+    // i=4: up,  base=14 -> 16, acc=62, base=15
+    // final acc = 62
+    print_int(acc);
+    print_str("\n");
+
+    return acc;
+}

@@ -1,0 +1,32 @@
+// C01_many_locals.decaf
+// Many locals live at once to exercise basic main-only register allocation.
+
+def int main()
+{
+    int a;
+    int b;
+    int c;
+    int d;
+    int e;
+    int f;
+    int g;
+    int h;
+    int result;
+
+    a = 1;
+    b = 2;
+    c = 3;
+    d = 4;
+    e = 5;
+    f = 6;
+    g = 7;
+    h = 8;
+
+    // Keep a..h live and combine them.
+    result = a + b + c + d + e + f + g + h;   // 36
+
+    print_int(result);
+    print_str("\n");
+
+    return result;
+}

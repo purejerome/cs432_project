@@ -1,0 +1,38 @@
+// B03_many_params_call.decaf
+// More parameters than a small register set; stresses argument passing and spills.
+
+def int sum8(int a, int b, int c, int d, int e, int f, int g, int h)
+{
+    int s;
+    s = a + b + c + d + e + f + g + h;
+    return s;
+}
+
+def int main()
+{
+    int x1;
+    int x2;
+    int x3;
+    int x4;
+    int x5;
+    int x6;
+    int x7;
+    int x8;
+    int result;
+
+    x1 = 1;
+    x2 = 2;
+    x3 = 3;
+    x4 = 4;
+    x5 = 5;
+    x6 = 6;
+    x7 = 7;
+    x8 = 8;
+
+    result = sum8(x1, x2, x3, x4, x5, x6, x7, x8);  // 36
+
+    print_int(result);
+    print_str("\n");
+
+    return result;
+}

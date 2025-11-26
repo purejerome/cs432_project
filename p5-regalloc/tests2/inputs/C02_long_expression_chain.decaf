@@ -1,0 +1,30 @@
+// C02_long_expression_chain.decaf
+// Long chain of expressions reusing intermediates.
+
+def int main()
+{
+    int x;
+    int y;
+    int z;
+    int t1;
+    int t2;
+    int t3;
+    int t4;
+    int result;
+
+    x = 2;
+    y = 3;
+    z = 4;
+
+    t1 = x + y;          // 5
+    t2 = t1 * z;         // 20
+    t3 = t2 - x;         // 18
+    t4 = t3 + y * z;     // 18 + 12 = 30
+
+    result = t4 + x + y + z;  // 30 + 2 + 3 + 4 = 39
+
+    print_int(result);
+    print_str("\n");
+
+    return result;
+}

@@ -1,0 +1,34 @@
+// B04_recursive_factorial.decaf
+// Recursive function; values must survive deep recursion with spills.
+
+def int fact(int n)
+{
+    int r;
+    int sub;
+
+    if (n <= 1)
+    {
+        r = 1;
+    }
+    else
+    {
+        sub = fact(n - 1);
+        r = n * sub;
+    }
+
+    return r;
+}
+
+def int main()
+{
+    int n;
+    int f;
+
+    n = 5;
+    f = fact(n);    // 120
+
+    print_int(f);
+    print_str("\n");
+
+    return f;
+}

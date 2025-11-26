@@ -1,0 +1,29 @@
+// W03_globals_only.decaf
+// No locals in main; only globals and parameters.
+
+int g1;
+int g2;
+int arr[3];
+
+def int add_globals(int extra)
+{
+    int r;
+    r = g1 + g2 + extra;
+    return r;
+}
+
+def int main()
+{
+    g1 = 5;
+    g2 = 7;
+    arr[0] = 1;
+    arr[1] = 2;
+    arr[2] = 3;
+
+    // use globals and array directly
+    g1 = g1 + arr[0];   // 6
+    g2 = g2 + arr[2];   // 10
+
+    // main has no local vars besides implicit temporaries
+    return add_globals(arr[1]);  // 6 + 10 + 2 = 18
+}

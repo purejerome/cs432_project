@@ -1,0 +1,26 @@
+// weird_returns.decaf
+def int f(int n)
+{
+    if (n < 0) {
+        return -1;
+    }
+    if (n == 0) {
+        return 0;
+    }
+    while (n > 1) {
+        n = n - 1;
+        if (n == 2) {
+            return 42;
+        }
+    }
+    return 1;
+}
+
+def int main()
+{
+    int x;
+    x = f(5);   // should be 42
+    print_int(x);
+    print_str("\n");
+    return x;
+}

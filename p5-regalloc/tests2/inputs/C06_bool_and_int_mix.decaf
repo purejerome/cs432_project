@@ -1,0 +1,33 @@
+// C06_bool_and_int_mix.decaf
+// Mix of boolean and integer expressions in main only.
+
+def int main()
+{
+    int a;
+    int b;
+    int c;
+    bool cond1;
+    bool cond2;
+    int result;
+
+    a = 3;
+    b = 7;
+    c = 10;
+
+    cond1 = (a < b) && (c > b);   // true && true
+    cond2 = (a == c) || (b > c);  // false || false
+
+    if (cond1 && !cond2)
+    {
+        result = a + b + c;       // 20
+    }
+    else
+    {
+        result = 0;
+    }
+
+    print_int(result);
+    print_str("\n");
+
+    return result;
+}

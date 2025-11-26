@@ -1,0 +1,22 @@
+// D04_while_sum.decaf
+// While loop; sum 1..4.
+
+def int main()
+{
+    int i;
+    int sum;
+
+    i = 1;
+    sum = 0;
+
+    while (i <= 4)
+    {
+        sum = sum + i;
+        i = i + 1;
+    }
+
+    print_int(sum);
+    print_str("\n");
+
+    return sum;      // 1+2+3+4 = 10
+}

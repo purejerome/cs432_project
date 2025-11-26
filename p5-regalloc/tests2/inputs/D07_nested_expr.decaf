@@ -1,0 +1,22 @@
+// D07_nested_expr.decaf
+// A nested arithmetic expression to make several temporaries.
+
+def int main()
+{
+    int a;
+    int b;
+    int c;
+    int result;
+
+    a = 2;
+    b = 3;
+    c = 4;
+
+    // result = (a + b) * (b + c) - (a + c);
+    result = (a + b) * (b + c) - (a + c);
+
+    print_int(result);
+    print_str("\n");
+
+    return result;  // (2+3)*(3+4) - (2+4) = 5*7 - 6 = 35 - 6 = 29
+}

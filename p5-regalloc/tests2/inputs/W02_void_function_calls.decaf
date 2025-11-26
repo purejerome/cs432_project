@@ -1,0 +1,33 @@
+// W02_void_function_calls.decaf
+// Void function called in different contexts; ensures no value is assumed.
+
+def void shout(int x)
+{
+    print_str("Value: ");
+    print_int(x);
+    print_str("\n");
+    return;
+}
+
+def int main()
+{
+    int i;
+    int sum;
+
+    i = 1;
+    sum = 0;
+
+    shout(0);      // standalone call
+
+    while (i <= 3)
+    {
+        shout(i);  // call inside loop
+        sum = sum + i;
+        i = i + 1;
+    }
+
+    print_int(sum);
+    print_str("\n");
+
+    return sum;    // 1+2+3 = 6
+}

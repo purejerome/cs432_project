@@ -1,0 +1,41 @@
+// A08_eval_order_and_calls.decaf
+// Relies on left-to-right evaluation of arguments and operands with globals.
+
+int g;
+
+def int step(int delta)
+{
+    int old;
+    old = g;
+    g = g + delta;
+    return old;
+}
+
+def int main()
+{
+    int a;
+    int b;
+    int c;
+    int result;
+
+    g = 0;
+
+    // Arguments evaluated left-to-right:
+    // step(1): returns 0, g=1
+    // step(2): returns 1, g=3
+    a = step(1);
+    b = step(2);
+
+    // Now g=3, a=0, b=1
+    // Expression operands also evaluated left-to-right:
+    // step(3): returns 3, g=6
+    // step(4): returns 6, g=10
+    c = step(3) + step(4);   // 3 + 6 = 9
+
+    result = a + b + c + g;  // 0 + 1 + 9 + 10 = 20
+
+    print_int(result);
+    print_str("\n");
+
+    return result;
+}

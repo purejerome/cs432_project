@@ -1,0 +1,31 @@
+// B02_loop_with_call_and_accumulator.decaf
+// Accumulator 'acc' must remain correct across repeated calls.
+
+def int square(int x)
+{
+    int r;
+    r = x * x;
+    return r;
+}
+
+def int main()
+{
+    int i;
+    int acc;
+
+    i = 1;
+    acc = 0;
+
+    while (i <= 4)
+    {
+        // acc is live across the call to square.
+        acc = acc + square(i);
+        i = i + 1;
+    }
+
+    // acc = 1^2 + 2^2 + 3^2 + 4^2 = 30
+    print_int(acc);
+    print_str("\n");
+
+    return acc;
+}

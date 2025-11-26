@@ -1,0 +1,116 @@
+get_at:
+  push BP
+  i2i SP => BP
+  addI SP, -8 => SP
+  loadI 256 => R0
+  loadAI [BP+16] => R1
+  multI R1, 8 => R1
+  loadAO [R0+R1] => R0
+  storeAI R0 => [BP-8]
+  loadAI [BP-8] => R0
+  i2i R0 => RET
+  jump l0
+l0:
+  i2i BP => SP
+  pop BP
+  return
+set_and_get_twice:
+  push BP
+  i2i SP => BP
+  addI SP, -8 => SP
+  loadAI [BP+16] => R0
+  loadAI [BP+24] => R1
+  loadI 256 => R2
+  multI R0, 8 => R0
+  storeAO R1 => [R2+R0]
+  loadAI [BP+16] => R0
+  push R0
+  call get_at
+  addI SP, 8 => SP
+  i2i RET => R0
+  loadAI [BP+16] => R1
+  push R1
+  storeAI R0 => [BP-8]
+  call get_at
+  addI SP, 8 => SP
+  i2i RET => R0
+  loadAI [BP-8] => R1
+  add R1, R0 => R0
+  i2i R0 => RET
+  jump l1
+l1:
+  i2i BP => SP
+  pop BP
+  return
+main:
+  push BP
+  i2i SP => BP
+  addI SP, -24 => SP
+  loadI 0 => R0
+  loadI 1 => R1
+  loadI 256 => R2
+  multI R0, 8 => R0
+  storeAO R1 => [R2+R0]
+  loadI 1 => R0
+  loadI 2 => R1
+  loadI 256 => R2
+  multI R0, 8 => R0
+  storeAO R1 => [R2+R0]
+  loadI 2 => R0
+  loadI 3 => R1
+  loadI 256 => R2
+  multI R0, 8 => R0
+  storeAO R1 => [R2+R0]
+  loadI 3 => R0
+  loadI 4 => R1
+  loadI 256 => R2
+  multI R0, 8 => R0
+  storeAO R1 => [R2+R0]
+  loadI 4 => R0
+  loadI 5 => R1
+  loadI 256 => R2
+  multI R0, 8 => R0
+  storeAO R1 => [R2+R0]
+  loadI 0 => R0
+  storeAI R0 => [BP-16]
+  loadI 0 => R0
+  storeAI R0 => [BP-8]
+l3:
+  loadAI [BP-8] => R0
+  loadI 5 => R1
+  cmp_LT R0, R1 => R0
+  cbr R0 => l4, l5
+l4:
+  loadAI [BP-8] => R0
+  loadI 256 => R1
+  loadAI [BP-8] => R2
+  multI R2, 8 => R2
+  loadAO [R1+R2] => R1
+  loadI 1 => R2
+  add R1, R2 => R1
+  push R1
+  push R0
+  call set_and_get_twice
+  addI SP, 16 => SP
+  i2i RET => R0
+  storeAI R0 => [BP-24]
+  loadAI [BP-16] => R0
+  loadAI [BP-24] => R1
+  add R0, R1 => R0
+  storeAI R0 => [BP-16]
+  loadAI [BP-8] => R0
+  loadI 1 => R1
+  add R0, R1 => R0
+  storeAI R0 => [BP-8]
+  jump l3
+l5:
+  loadAI [BP-16] => R0
+  print R0
+  print \"\\n\"
+  loadAI [BP-16] => R0
+  i2i R0 => RET
+  jump l2
+l2:
+  i2i BP => SP
+  pop BP
+  return

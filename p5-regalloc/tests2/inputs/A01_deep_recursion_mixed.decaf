@@ -1,0 +1,41 @@
+// A01_deep_recursion_mixed.decaf
+// Deep-ish recursion plus arithmetic and boolean logic.
+
+def int f(int n, int acc)
+{
+    int next;
+    int r;
+
+    if (n <= 0)
+    {
+        r = acc;
+    }
+    else
+    {
+        next = acc + n;
+        r = f(n - 1, next);
+    }
+
+    return r;
+}
+
+def int main()
+{
+    int n;
+    int res;
+    bool ok;
+
+    n = 7;
+    res = f(n, 0);      // sum 1..7 = 28
+    ok = (res == 28) && (n == 7);
+
+    if (!ok)
+    {
+        return 0;
+    }
+
+    print_int(res);
+    print_str("\n");
+
+    return res;
+}

@@ -1,0 +1,32 @@
+// D06_globals_and_arrays.decaf
+// Global variables and arrays, simple indexing.
+
+int g;
+int arr[4];
+
+def int main()
+{
+    int i;
+    int sum;
+
+    g = 2;
+
+    arr[0] = 1;
+    arr[1] = 2;
+    arr[2] = 3;
+    arr[3] = 4;
+
+    i = 0;
+    sum = 0;
+
+    while (i < 4)
+    {
+        sum = sum + arr[i] * g;  // (1+2+3+4) * 2 = 20
+        i = i + 1;
+    }
+
+    print_int(sum);
+    print_str("\n");
+
+    return sum;
+}

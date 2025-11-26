@@ -1,0 +1,32 @@
+main:
+  push BP
+  i2i SP => BP
+  addI SP, -32 => SP
+  loadI 2 => R0
+  storeAI R0 => [BP-8]
+  loadI 3 => R0
+  storeAI R0 => [BP-16]
+  loadI 4 => R0
+  storeAI R0 => [BP-24]
+  loadAI [BP-8] => R0
+  loadAI [BP-16] => R1
+  add R0, R1 => R0
+  loadAI [BP-16] => R1
+  loadAI [BP-24] => R2
+  add R1, R2 => R1
+  mult R0, R1 => R0
+  loadAI [BP-8] => R1
+  loadAI [BP-24] => R2
+  add R1, R2 => R1
+  sub R0, R1 => R0
+  storeAI R0 => [BP-32]
+  loadAI [BP-32] => R0
+  print R0
+  print \"\\n\"
+  loadAI [BP-32] => R0
+  i2i R0 => RET
+  jump l0
+l0:
+  i2i BP => SP
+  pop BP
+  return

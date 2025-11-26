@@ -1,0 +1,33 @@
+// D08_bool_ops.decaf
+// Basic boolean operators &&, ||, ! and comparisons.
+
+def int main()
+{
+    int x;
+    int y;
+    int z;
+    bool b1;
+    bool b2;
+
+    x = 5;
+    y = 10;
+    z = 5;
+
+    b1 = (x < y) && (x == z);   // true && true
+    b2 = (x > y) || !(x == z);  // false || !(true) = false
+
+    print_bool(b1);  // expect 1
+    print_str(" ");
+    print_bool(b2);  // expect 0
+    print_str("\n");
+
+    // Return something that depends on booleans:
+    if (b1 && !b2)
+    {
+        return 1;
+    }
+    else
+    {
+        return 0;
+    }
+}

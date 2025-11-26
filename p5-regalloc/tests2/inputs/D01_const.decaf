@@ -1,0 +1,7 @@
+// D01_const.decaf
+// Simplest possible: just return a constant.
+
+def int main()
+{
+    return 7;
+}

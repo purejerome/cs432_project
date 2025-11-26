@@ -1,0 +1,48 @@
+// A07_global_array_recursion_calls.decaf
+// Recursion working with a global array; tests addressing and spills.
+
+int arr[6];
+
+def int fill(int idx, int value)
+{
+    arr[idx] = value;
+    return value;
+}
+
+def int sum_prefix(int n)
+{
+    int r;
+    int prev;
+
+    if (n == 0)
+    {
+        r = arr[0];
+    }
+    else
+    {
+        prev = sum_prefix(n - 1);
+        r = prev + arr[n];
+    }
+
+    return r;
+}
+
+def int main()
+{
+    int i;
+    int total;
+
+    i = 0;
+    while (i < 6)
+    {
+        fill(i, i + 1);   // arr = [1,2,3,4,5,6]
+        i = i + 1;
+    }
+
+    total = sum_prefix(5);  // sum 1..6 = 21
+
+    print_int(total);
+    print_str("\n");
+
+    return total;
+}

@@ -1,0 +1,28 @@
+// W04_no_locals_helper_params_only.decaf
+// Helper uses only parameters; main uses locals+calls.
+
+def int combine(int a, int b, int c)
+{
+    int r;
+    r = a * 10 + b * 2 + c;
+    return r;
+}
+
+def int main()
+{
+    int x;
+    int y;
+    int z;
+    int result;
+
+    x = 3;
+    y = 4;
+    z = 5;
+
+    result = combine(x, y, z);  // 3*10 + 4*2 + 5 = 30+8+5=43
+
+    print_int(result);
+    print_str("\n");
+
+    return result;
+}

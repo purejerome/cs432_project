@@ -1,0 +1,30 @@
+// C04_if_join_liveness.decaf
+// Values defined in both branches of an if, then used after the join.
+
+def int main()
+{
+    int x;
+    int y;
+    int z;
+    int result;
+
+    x = 10;
+    y = 5;
+
+    if (x > y)
+    {
+        z = x - y;       // 5
+    }
+    else
+    {
+        z = y - x;       // not taken
+    }
+
+    // x, y, z all live here.
+    result = x + y + z;  // 10 + 5 + 5 = 20
+
+    print_int(result);
+    print_str("\n");
+
+    return result;
+}

@@ -1,0 +1,63 @@
+// A06_mutual_recursion.decaf
+// Mutual recursion with extra locals and conditionals.
+
+def int is_even(int n);
+def int is_odd(int n);
+
+def int is_even(int n)
+{
+    int r;
+
+    if (n == 0)
+    {
+        r = 1;
+    }
+    else
+    {
+        r = is_odd(n - 1);
+    }
+
+    return r;
+}
+
+def int is_odd(int n)
+{
+    int r;
+
+    if (n == 0)
+    {
+        r = 0;
+    }
+    else
+    {
+        r = is_even(n - 1);
+    }
+
+    return r;
+}
+
+def int main()
+{
+    int n;
+    int s;
+    int i;
+
+    n = 9;
+    s = 0;
+    i = 0;
+
+    while (i <= n)
+    {
+        if (is_even(i))
+        {
+            s = s + i;
+        }
+        i = i + 1;
+    }
+
+    // sum of even numbers 0..9 = 0+2+4+6+8 = 20
+    print_int(s);
+    print_str("\n");
+
+    return s;
+}

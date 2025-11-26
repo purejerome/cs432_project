@@ -1,0 +1,99 @@
+fill:
+  push BP
+  i2i SP => BP
+  addI SP, 0 => SP
+  loadAI [BP+16] => R0
+  loadAI [BP+24] => R1
+  loadI 256 => R2
+  multI R0, 8 => R0
+  storeAO R1 => [R2+R0]
+  loadAI [BP+24] => R0
+  i2i R0 => RET
+  jump l0
+l0:
+  i2i BP => SP
+  pop BP
+  return
+sum_prefix:
+  push BP
+  i2i SP => BP
+  addI SP, -16 => SP
+  loadAI [BP+16] => R0
+  loadI 0 => R1
+  cmp_EQ R0, R1 => R0
+  cbr R0 => l2, l3
+l2:
+  loadI 256 => R0
+  loadI 0 => R1
+  multI R1, 8 => R1
+  loadAO [R0+R1] => R0
+  storeAI R0 => [BP-8]
+  jump l4
+l3:
+  loadAI [BP+16] => R0
+  loadI 1 => R1
+  sub R0, R1 => R0
+  push R0
+  call sum_prefix
+  addI SP, 8 => SP
+  i2i RET => R0
+  storeAI R0 => [BP-16]
+  loadAI [BP-16] => R0
+  loadI 256 => R1
+  loadAI [BP+16] => R2
+  multI R2, 8 => R2
+  loadAO [R1+R2] => R1
+  add R0, R1 => R0
+  storeAI R0 => [BP-8]
+l4:
+  loadAI [BP-8] => R0
+  i2i R0 => RET
+  jump l1
+l1:
+  i2i BP => SP
+  pop BP
+  return
+main:
+  push BP
+  i2i SP => BP
+  addI SP, -24 => SP
+  loadI 0 => R0
+  storeAI R0 => [BP-8]
+l6:
+  loadAI [BP-8] => R0
+  loadI 6 => R1
+  cmp_LT R0, R1 => R0
+  cbr R0 => l7, l8
+l7:
+  loadAI [BP-8] => R0
+  loadAI [BP-8] => R1
+  loadI 1 => R2
+  add R1, R2 => R1
+  push R1
+  push R0
+  call fill
+  addI SP, 16 => SP
+  i2i RET => R0
+  loadAI [BP-8] => R1
+  loadI 1 => R2
+  add R1, R2 => R1
+  storeAI R1 => [BP-8]
+  jump l6
+l8:
+  loadI 5 => R1
+  push R1
+  storeAI R0 => [BP-24]
+  call sum_prefix
+  addI SP, 8 => SP
+  i2i RET => R0
+  storeAI R0 => [BP-16]
+  loadAI [BP-16] => R0
+  print R0
+  print \"\\n\"
+  loadAI [BP-16] => R0
+  i2i R0 => RET
+  jump l5
+l5:
+  i2i BP => SP
+  pop BP
+  return

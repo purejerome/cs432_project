@@ -1,0 +1,51 @@
+add_three:
+  push BP
+  i2i SP => BP
+  addI SP, -8 => SP
+  loadAI [BP+16] => R0
+  loadI 3 => R1
+  add R0, R1 => R0
+  storeAI R0 => [BP-8]
+  loadAI [BP-8] => R0
+  i2i R0 => RET
+  jump l0
+l0:
+  i2i BP => SP
+  pop BP
+  return
+main:
+  push BP
+  i2i SP => BP
+  addI SP, -40 => SP
+  loadI 10 => R0
+  storeAI R0 => [BP-8]
+  loadI 20 => R0
+  storeAI R0 => [BP-16]
+  loadI 30 => R0
+  storeAI R0 => [BP-24]
+  loadAI [BP-8] => R0
+  push R0
+  call add_three
+  addI SP, 8 => SP
+  i2i RET => R0
+  loadAI [BP-16] => R1
+  push R1
+  storeAI R0 => [BP-40]
+  call add_three
+  addI SP, 8 => SP
+  i2i RET => R0
+  loadAI [BP-40] => R1
+  add R1, R0 => R0
+  loadAI [BP-24] => R1
+  add R0, R1 => R0
+  storeAI R0 => [BP-32]
+  loadAI [BP-32] => R0
+  print R0
+  print \"\\n\"
+  loadAI [BP-32] => R0
+  i2i R0 => RET
+  jump l1
+l1:
+  i2i BP => SP
+  pop BP
+  return

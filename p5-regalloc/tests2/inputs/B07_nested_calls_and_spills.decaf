@@ -1,0 +1,49 @@
+// B07_nested_calls_and_spills.decaf
+// Nested calls and many locals to encourage spills around calls.
+
+def int add2(int x)
+{
+    int r;
+    r = x + 2;
+    return r;
+}
+
+def int mul3(int x)
+{
+    int r;
+    r = x * 3;
+    return r;
+}
+
+def int main()
+{
+    int a;
+    int b;
+    int c;
+    int d;
+    int e;
+    int f;
+    int g;
+    int h;
+    int result;
+
+    a = 1;
+    b = 2;
+    c = 3;
+    d = 4;
+    e = 5;
+    f = 6;
+    g = 7;
+    h = 8;
+
+    // The inner calls return values that feed into another call.
+    result = mul3(add2(a + b + c)) + add2(d + e + f + g + h);
+    // (a+b+c)=6 -> add2 -> 8 -> mul3 -> 24
+    // (d+e+f+g+h)=30 -> add2 -> 32
+    // total = 56
+
+    print_int(result);
+    print_str("\n");
+
+    return result;
+}

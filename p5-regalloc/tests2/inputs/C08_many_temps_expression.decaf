@@ -1,0 +1,32 @@
+// C08_many_temps_expression.decaf
+// One big expression broken into many named temporaries to lengthen live ranges.
+
+def int main()
+{
+    int a;
+    int b;
+    int c;
+    int t1;
+    int t2;
+    int t3;
+    int t4;
+    int t5;
+    int result;
+
+    a = 4;
+    b = 6;
+    c = 9;
+
+    t1 = a + b;          // 10
+    t2 = b + c;          // 15
+    t3 = a * c;          // 36
+    t4 = t1 + t2;        // 25
+    t5 = t3 - t1;        // 26
+
+    result = t4 + t5;    // 25 + 26 = 51
+
+    print_int(result);
+    print_str("\n");
+
+    return result;
+}

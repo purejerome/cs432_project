@@ -1,0 +1,47 @@
+// B05_global_array_and_helper_calls.decaf
+// Global array with helper functions reading/writing it.
+
+int arr[5];
+
+def int get_at(int idx)
+{
+    int v;
+    v = arr[idx];
+    return v;
+}
+
+def int set_and_get_twice(int idx, int val)
+{
+    arr[idx] = val;
+    return get_at(idx) + get_at(idx);
+}
+
+def int main()
+{
+    int i;
+    int sum;
+    int tmp;
+
+    arr[0] = 1;
+    arr[1] = 2;
+    arr[2] = 3;
+    arr[3] = 4;
+    arr[4] = 5;
+
+    sum = 0;
+    i = 0;
+
+    while (i < 5)
+    {
+        tmp = set_and_get_twice(i, arr[i] + 1);
+        sum = sum + tmp;       // each contributes 2*(arr[i]+1)
+        i = i + 1;
+    }
+
+    // Original arr: 1,2,3,4,5 -> set to 2,3,4,5,6
+    // tmp values: 2*2 + 2*3 + 2*4 + 2*5 + 2*6 = 4+6+8+10+12=40
+    print_int(sum);
+    print_str("\n");
+
+    return sum;
+}

@@ -1,0 +1,55 @@
+shout:
+  push BP
+  i2i SP => BP
+  addI SP, 0 => SP
+  print \"Value: \"
+  loadAI [BP+16] => R0
+  print R0
+  print \"\\n\"
+  jump l0
+l0:
+  i2i BP => SP
+  pop BP
+  return
+main:
+  push BP
+  i2i SP => BP
+  addI SP, -16 => SP
+  loadI 1 => R0
+  storeAI R0 => [BP-8]
+  loadI 0 => R0
+  storeAI R0 => [BP-16]
+  loadI 0 => R0
+  push R0
+  call shout
+  addI SP, 8 => SP
+l2:
+  loadAI [BP-8] => R0
+  loadI 3 => R1
+  cmp_LE R0, R1 => R0
+  cbr R0 => l3, l4
+l3:
+  loadAI [BP-8] => R0
+  push R0
+  call shout
+  addI SP, 8 => SP
+  loadAI [BP-16] => R0
+  loadAI [BP-8] => R1
+  add R0, R1 => R0
+  storeAI R0 => [BP-16]
+  loadAI [BP-8] => R0
+  loadI 1 => R1
+  add R0, R1 => R0
+  storeAI R0 => [BP-8]
+  jump l2
+l4:
+  loadAI [BP-16] => R0
+  print R0
+  print \"\\n\"
+  loadAI [BP-16] => R0
+  i2i R0 => RET
+  jump l1
+l1:
+  i2i BP => SP
+  pop BP
+  return

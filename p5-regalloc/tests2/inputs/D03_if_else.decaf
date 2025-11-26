@@ -1,0 +1,27 @@
+// D03_if_else.decaf
+// Simple if/else with a comparison.
+
+def int main()
+{
+    int x;
+    int y;
+    int z;
+
+    x = 10;
+    y = 4;
+
+    // condition: x > y
+    if (x > y)
+    {
+        z = x - y;   // 6
+    }
+    else
+    {
+        z = y - x;
+    }
+
+    print_int(z);
+    print_str("\n");
+
+    return z;        // expect 6
+}

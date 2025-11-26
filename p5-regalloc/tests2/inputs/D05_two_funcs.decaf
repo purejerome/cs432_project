@@ -1,0 +1,26 @@
+// D05_two_funcs.decaf
+// Simple function call with parameters and return value.
+
+def int add_two(int x, int y)
+{
+    int r;
+    r = x + y;
+    return r;
+}
+
+def int main()
+{
+    int a;
+    int b;
+    int c;
+
+    a = 7;
+    b = 8;
+
+    c = add_two(a, b);   // 15
+
+    print_int(c);
+    print_str("\n");
+
+    return c;
+}

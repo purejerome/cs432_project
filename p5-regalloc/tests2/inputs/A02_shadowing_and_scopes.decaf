@@ -1,0 +1,33 @@
+// A02_shadowing_and_scopes.decaf
+// Global vs local shadowing, nested blocks, and correct use of scopes.
+
+int g;
+int h;
+
+def int main()
+{
+    int g;     // shadows global g
+    int x;
+    int y;
+    int z;
+
+    g = 10;    // local g
+    h = 3;     // global h
+    x = 1;
+    y = 2;
+    z = 0;
+
+    {
+        int h;   // shadows global h
+        h = 5;
+        x = x + g + h;  // 1 + 10 + 5 = 16
+    }
+
+    // here: local g=10, global h=3
+    z = x + g + h + y;  // 16 + 10 + 3 + 2 = 31
+
+    print_int(z);
+    print_str("\n");
+
+    return z;
+}

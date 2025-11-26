@@ -1,0 +1,45 @@
+// A04_complex_bool_expressions.decaf
+// Complex boolean expressions with all operators; no short-circuiting.
+
+def int main()
+{
+    int a;
+    int b;
+    int c;
+    bool p;
+    bool q;
+    bool r;
+    bool s;
+    int score;
+
+    a = 5;
+    b = 10;
+    c = 5;
+
+    p = (a < b) && (b > c);        // true && true = true
+    q = (a == c) || (b < c);       // true || false = true
+    r = !(b <= a);                 // !(false) = true
+    s = (a != b) && (c >= a);      // true && true = true
+
+    score = 0;
+
+    if (p && q && r && s)
+    {
+        score = score + 10;
+    }
+
+    if ((a + b > c) || (a - b > 0))
+    {
+        score = score + 5;
+    }
+
+    if (!((a > b) || (b < c)) && (c <= b))
+    {
+        score = score + 3;
+    }
+
+    print_int(score);
+    print_str("\n");
+
+    return score;     // should be 18
+}

@@ -1,0 +1,43 @@
+// B06_if_branches_with_calls.decaf
+// Calls in both branches; variable used after the join.
+
+def int inc(int x)
+{
+    int r;
+    r = x + 1;
+    return r;
+}
+
+def int dec(int x)
+{
+    int r;
+    r = x - 1;
+    return r;
+}
+
+def int main()
+{
+    int x;
+    int y;
+    int z;
+
+    x = 10;
+    y = 3;
+
+    if (x > y)
+    {
+        z = inc(x);   // 11
+    }
+    else
+    {
+        z = dec(y);
+    }
+
+    // x and z live here.
+    z = z + x;        // 11 + 10 = 21
+
+    print_int(z);
+    print_str("\n");
+
+    return z;
+}
