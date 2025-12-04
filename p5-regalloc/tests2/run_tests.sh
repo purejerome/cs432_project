@@ -9,7 +9,7 @@ set -u
 # ---- paths you may need to tweak ----
 REF="/cs/students/cs432/f25/decaf"   # reference compiler
 ME="../decaf"                        # your compiler binary (relative to p5-regalloc)
-BASE_DIR="$HOME/cs432/cs432_project/p5-regalloc"
+BASE_DIR="$HOME/cs-432/cs432_project/p5-regalloc"
 REGS=8                               # number of physical registers (>= 2)
 # ------------------------------------
 

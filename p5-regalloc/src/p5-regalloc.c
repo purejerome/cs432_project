@@ -2,6 +2,11 @@
  * @file p5-regalloc.c
  * @brief Compiler phase 5: register allocation
  */
+/**
+ * Authors: Alex Boyce-Draeger and Jerome Donfack
+ * AI Statement: Used ChatGPT to create tests for the project. Used CoPilot
+ * for autocompletion and suggestions, as well as helping to debug issues with spill code.
+ */
 #include "p5-regalloc.h"
 #include <limits.h>
 #define INVALID_VR      -1
@@ -120,7 +125,8 @@ void allocate_registers (InsnList* list, int num_physical_registers)
         //save reference to stack allocator instruction if i is a call label
         if(insn->form == LABEL){
             ILOCInsn* potential_allocator = insn->next->next->next; //assumes standard function prologue
-            if(potential_allocator->form == ADD_I &&
+            if(potential_allocator != NULL &&
+               potential_allocator->form == ADD_I &&
                potential_allocator->op[0].type == STACK_REG &&
                potential_allocator->op[1].type == INT_CONST &&
                potential_allocator->op[2].type == STACK_REG){
