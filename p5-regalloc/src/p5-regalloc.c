@@ -123,7 +123,7 @@ void allocate_registers (InsnList* list, int num_physical_registers)
     FOR_EACH(ILOCInsn*, insn, list) {
         
         //save reference to stack allocator instruction if i is a call label
-        if(insn->form == LABEL){
+        if(insn->op->type == CALL_LABEL){
             ILOCInsn* potential_allocator = insn->next->next->next; //assumes standard function prologue
             if(potential_allocator != NULL &&
                potential_allocator->form == ADD_I &&
